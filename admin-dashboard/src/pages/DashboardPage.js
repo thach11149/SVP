@@ -5,12 +5,16 @@ import { supabase } from '../supabaseClient';
 import { Button, Box, Typography, Container, Tabs, Tab } from '@mui/material';
 import CustomerList from '../components/CustomerList';
 import ScheduleCalendar from '../components/ScheduleCalendar'; // Import component lịch
+import { useNavigate } from 'react-router-dom';
 
 export default function DashboardPage({ session }) {
+  const navigate = useNavigate();
+
   const [tabIndex, setTabIndex] = useState(0); // State để quản lý tab đang được chọn
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    navigate('/loginpage', { replace: true });
   };
 
   const handleTabChange = (event, newValue) => {

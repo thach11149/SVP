@@ -1,43 +1,49 @@
-// src/App.js
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
+import { CssBaseline } from '@mui/material';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
-import { CssBaseline } from '@mui/material'; // Giúp giao diện đồng nhất trên các trình duyệt
+import ForgotPassword from './components/ForgotPassword';
+import ResetPassword from './components/ResetPassword';
 
 function App() {
   const [session, setSession] = useState(null);
 
   useEffect(() => {
-    // Lấy phiên đăng nhập hiện tại nếu có
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
     });
 
-    // Lắng nghe các thay đổi về trạng thái đăng nhập (đăng nhập, đăng xuất)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
 
-    // Dọn dẹp listener khi component bị hủy
     return () => subscription.unsubscribe();
   }, []);
 
   return (
     <>
       <CssBaseline />
-      <div className="App">
-        {/* Nếu không có session (chưa đăng nhập), hiển thị trang Login */}
-        {/* Nếu có session (đã đăng nhập), hiển thị trang Dashboard */}
-        {!session ? (
-          <LoginPage />
-        ) : (
-          <DashboardPage key={session.user.id} session={session} />
-        )}
-      </div>
+      <BrowserRouter>
+        <Routes>
+          <Route
+            path="/"
+            element={!session ? <Navigate to="/loginpage" /> : <Navigate to="/dashboard" />}
+          />
+          <Route path="/loginpage" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route
+            path="/dashboard"
+            element={session ? <DashboardPage session={session} /> : <Navigate to="/loginpage" />}
+          />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </BrowserRouter>
     </>
   );
 }
