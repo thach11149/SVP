@@ -55,12 +55,12 @@ function Sidebar({ session }) {
           <ListItemText primary="Lịch làm việc" />
         </ListItem>
         
-        <ListItem button component={Link} to="/lich-thang">
+        {/* <ListItem button component={Link} to="/lich-thang">
           <ListItemIcon>
             <EventIcon />
           </ListItemIcon>
           <ListItemText primary="Lịch tháng" />
-        </ListItem>
+        </ListItem> */}
         
         <ListItem button component={Link} to="/checklist-cong-viec">
           <ListItemIcon>
