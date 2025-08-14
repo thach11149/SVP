@@ -1,63 +1,46 @@
 // src/pages/DashboardPage.js
 
-import React, { useState } from 'react';
-import { supabase } from '../supabaseClient';
-import { Button, Box, Typography, Container, Tabs, Tab } from '@mui/material';
-import CustomerList from '../components/CustomerList';
-import ScheduleCalendar from '../components/ScheduleCalendar'; // Import component lịch
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Box, Typography, Container } from '@mui/material';
 
 export default function DashboardPage({ session }) {
-  const navigate = useNavigate();
-
-  const [tabIndex, setTabIndex] = useState(0); // State để quản lý tab đang được chọn
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/loginpage', { replace: true });
-  };
-
-  const handleTabChange = (event, newValue) => {
-    setTabIndex(newValue);
-  };
-
   return (
-    <Container component="main" maxWidth="xl"> {/* Tăng độ rộng tối đa */}
+    <Container component="main" maxWidth="xl">
       <Box sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
         marginTop: 4,
         marginBottom: 2,
       }}>
-        <Typography component="h1" variant="h4">
+        <Typography component="h1" variant="h4" gutterBottom>
           Dashboard Quản lý
         </Typography>
-        <Box>
-          <Typography component="span" sx={{ mr: 2 }}>{session.user.email}</Typography>
-          <Button variant="contained" color="error" onClick={handleLogout}>Đăng xuất</Button>
-        </Box>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          Chào mừng {session.user.email} đến với hệ thống quản lý Sao Việt Pest
+        </Typography>
       </Box>
 
-      {/* Phần Tabs */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={tabIndex} onChange={handleTabChange} aria-label="dashboard tabs">
-          <Tab label="Quản lý Khách hàng" />
-          <Tab label="Lịch làm việc" />
-        </Tabs>
+      {/* Nội dung chính của Dashboard */}
+      <Box sx={{ p: 3 }}>
+        <Typography variant="h5" gutterBottom>
+          Tổng quan hệ thống
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Sử dụng menu bên trái để điều hướng đến các chức năng khác nhau của hệ thống:
+        </Typography>
+        <Box component="ul" sx={{ mt: 2 }}>
+          <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+            <strong>Quản lý Khách hàng:</strong> Thêm, sửa, xóa thông tin khách hàng
+          </Typography>
+          <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+            <strong>Lịch làm việc:</strong> Xem lịch làm việc chi tiết với FullCalendar
+          </Typography>
+          <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+            <strong>Lịch tháng:</strong> Xem lịch làm việc theo tháng
+          </Typography>
+          <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+            <strong>Lập kế hoạch công việc:</strong> Tạo và phân công công việc mới
+          </Typography>
+        </Box>
       </Box>
-
-      {/* Phần nội dung của Tabs */}
-      {tabIndex === 0 && (
-        <Box sx={{ p: 3 }}>
-          <CustomerList />
-        </Box>
-      )}
-      {tabIndex === 1 && (
-        <Box sx={{ p: 3 }}>
-          <ScheduleCalendar />
-        </Box>
-      )}
     </Container>
   );
 }

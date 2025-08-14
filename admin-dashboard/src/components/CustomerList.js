@@ -2,11 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button, Box, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button, Box, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip } from '@mui/material';
+import { Edit, Delete, Work } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import CustomerForm from './AddCustomerForm'; // Đổi tên import cho đúng
 import AlertMessage from './AlertMessage'; // Thêm import
 
 export default function CustomerList() {
+  const navigate = useNavigate();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
@@ -159,6 +162,12 @@ export default function CustomerList() {
     fetchWards(districtCode);
   };
 
+  // Xử lý khi nhấn nút "Thêm công việc"
+  const handleAddJob = (customer) => {
+    // Chuyển đến trang lập kế hoạch với customer_id trong URL params
+    navigate(`/lap-ke-hoach-cong-viec?customer_id=${customer.id}&customer_name=${encodeURIComponent(customer.name)}`);
+  };
+
   if (loading) return <Typography>Đang tải dữ liệu...</Typography>;
 
   return (
@@ -230,21 +239,43 @@ export default function CustomerList() {
                 <TableCell>{customer.primary_contact_phone}</TableCell>
                 <TableCell>{customer.primary_contact_name}</TableCell>
                 <TableCell>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    sx={{ mr: 1 }}
-                    onClick={() => handleEdit(customer)}
-                  >
-                    Sửa
-                  </Button>
-                  <Button
-                    color="error"
-                    variant="contained"
-                    onClick={() => handleDeleteClick(customer.id)}
-                  >
-                    Xóa
-                  </Button>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Tooltip title="Sửa thông tin">
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={() => handleEdit(customer)}
+                      >
+                        <Edit />
+                      </IconButton>
+                    </Tooltip>
+                    
+                    <Tooltip title="Xóa khách hàng">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => handleDeleteClick(customer.id)}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                  
+                  <Box sx={{ mt: 1 }}>
+                    <Button
+                      variant="outlined"
+                      color="success"
+                      startIcon={<Work />}
+                      size="small"
+                      onClick={() => handleAddJob(customer)}
+                      sx={{ 
+                        textTransform: 'none',
+                        fontSize: '0.8rem'
+                      }}
+                    >
+                      Thêm công việc
+                    </Button>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}

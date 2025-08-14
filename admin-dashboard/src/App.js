@@ -8,6 +8,11 @@ import DashboardPage from './pages/DashboardPage';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import LichLamViec from './pages/LichLamViec';
+import QuanLyKhachHang from './pages/QuanLyKhachHang';
+import LichThang from './pages/LichThang';
+import LapKeHoachCongViec from './pages/LapKeHoachCongViec';
+import ChecklistCongViec from './pages/ChecklistCongViec';
+import DanhSachCongViec from './pages/DanhSachCongViec';
 import Sidebar from './components/Sidebar';
 
 function App() {
@@ -31,28 +36,40 @@ function App() {
     <>
       <CssBaseline />
       <Router>
-        <Box sx={{ display: 'flex', height: '100vh' }}>
-          <Box sx={{ width: 240 }}>
-            <Sidebar />
-          </Box>
-          <Box sx={{ flex: 1, overflow: 'auto' }}>
-            <Routes>
-              <Route
-                path="/"
-                element={!session ? <Navigate to="/loginpage" /> : <Navigate to="/dashboard" />}
-              />
-              <Route path="/loginpage" element={<LoginPage />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route
-                path="/dashboard"
-                element={session ? <DashboardPage session={session} /> : <Navigate to="/loginpage" />}
-              />
-              <Route path="/lich-lam-viec" element={<LichLamViec />} />
-              <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
-          </Box>
-        </Box>
+        <Routes>
+          {/* Routes không cần sidebar (Login, etc.) */}
+          <Route path="/loginpage" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          
+          {/* Routes với sidebar - cần authentication */}
+          <Route
+            path="/*"
+            element={
+              session ? (
+                <Box sx={{ display: 'flex', height: '100vh' }}>
+                  <Box sx={{ width: 240, borderRight: 1, borderColor: 'divider' }}>
+                    <Sidebar session={session} />
+                  </Box>
+                  <Box sx={{ flex: 1, overflow: 'auto' }}>
+                    <Routes>
+                      <Route path="/" element={<Navigate to="/dashboard" />} />
+                      <Route path="/dashboard" element={<DashboardPage session={session} />} />
+                      <Route path="/quan-ly-khach-hang" element={<QuanLyKhachHang />} />
+                      <Route path="/lich-lam-viec" element={<LichLamViec />} />
+                      <Route path="/lich-thang" element={<LichThang />} />
+                      <Route path="/lap-ke-hoach-cong-viec" element={<LapKeHoachCongViec session={session} />} />
+                      <Route path="/checklist-cong-viec" element={<ChecklistCongViec session={session} />} />
+                      <Route path="/danh-sach-cong-viec" element={<DanhSachCongViec session={session} />} />
+                    </Routes>
+                  </Box>
+                </Box>
+              ) : (
+                <Navigate to="/loginpage" />
+              )
+            }
+          />
+        </Routes>
       </Router>
     </>
   );
