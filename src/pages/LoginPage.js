@@ -62,12 +62,12 @@ export default function LoginPage() {
 
       if (error) {
         if (error.message === 'Invalid login credentials') {
-          showSnackbar('Tài khoản hoặc mật khẩu không đúng, vui lòng thử lại', 'error');
+          showSnackbar('❌ Tài khoản hoặc mật khẩu không đúng, vui lòng thử lại', 'error');
         } else {
           showSnackbar(`❌ Lỗi: ${error.message}`, 'error');
         }
       } else {
-        showSnackbar('Đăng nhập thành công!', 'success', 1000);
+        showSnackbar('✅ Đăng nhập thành công!', 'success', 1000);
         setTimeout(() => {
           navigate('/dashboard', { replace: true });
         }, 1000);

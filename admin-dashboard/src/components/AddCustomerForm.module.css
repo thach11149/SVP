@@ -1,0 +1,8 @@
+.addressRow {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.addressField {
+  flex: 1;
+}

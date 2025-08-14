@@ -1,0 +1,16 @@
+admin-dashboard
+
+
+📄 Ví dụ cấu hình Nginx:
+nginx
+location / {
+  try_files $uri /index.html;
+}
+📄 Ví dụ cấu hình Apache (.htaccess):
+apache
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]

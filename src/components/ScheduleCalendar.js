@@ -7,7 +7,6 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { supabase } from '../supabaseClient';
 import { Box, Typography } from '@mui/material';
 import JobForm from './JobForm';
-import AlertMessage from './AlertMessage'; // Import component thông báo
 
 const localizer = momentLocalizer(moment);
 
@@ -26,7 +25,6 @@ export default function ScheduleCalendar() {
   const [openJobDialog, setOpenJobDialog] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null); // State cho event đang được chọn
-  const [alert, setAlert] = useState(null); // Thêm state cho thông báo
 
   const fetchJobs = useCallback(async () => {
     setLoading(true);
@@ -76,7 +74,7 @@ export default function ScheduleCalendar() {
       if (error) throw error;
       setEvents(events.filter(e => e.id !== jobId));
       handleCloseDialog();
-      setAlert({ type: 'success', message: 'Xóa công việc thành công!' });
+      alert('Xóa công việc thành công!');
     } catch (error) {
       alert('Lỗi khi xóa công việc: ' + error.message);
     }
@@ -104,16 +102,7 @@ export default function ScheduleCalendar() {
         selectable={true}
         onSelectSlot={handleSelectSlot}
         onSelectEvent={handleSelectEvent} // Thêm handler khi nhấn vào event
-        views={['month', 'week', 'day']} // Thêm chế độ xem theo ngày
       />
-      {alert && (
-        <AlertMessage
-          type={alert.type}
-          message={alert.message}
-          duration={4000}
-          onClose={() => setAlert(null)}
-        />
-      )}
     </Box>
   );
 }
