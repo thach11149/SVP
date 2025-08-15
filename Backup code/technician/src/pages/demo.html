@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng Dụng KTV - Demo</title>
+    <!-- Tải Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tải font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tải Font Awesome cho các biểu tượng -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent; /* Loại bỏ hiệu ứng highlight khi chạm trên di động */
+        }
+        .screen {
+            display: none; /* Mặc định ẩn tất cả màn hình */
+        }
+        .screen.active {
+            display: block; /* Hiển thị màn hình đang hoạt động */
+        }
+        /* Style cho thông báo tạm thời */
+        #temp-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none; /* Cho phép click xuyên qua */
+        }
+        #temp-notification.show {
+            opacity: 1;
+        }
+        .collapsible-header {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .collapsible-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            max-height: 0;
+        }
+        .collapsible-content.expanded {
+            max-height: 500px; /* Adjust as needed */
+            transition: max-height 0.5s ease-in;
+        }
+        /* Style cho các input/textarea bị disabled */
+        input:disabled, textarea:disabled, button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            background-color: #e2e8f0; /* bg-gray-200 */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+    <!-- Header Chung -->
+    <header class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center z-10">
+        <button id="back-button" class="hidden text-xl p-2 rounded-full hover:bg-blue-700 transition-colors">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <h1 id="header-title" class="text-xl font-bold flex-grow text-center">Lịch Làm Việc</h1>
+        <div class="w-8"></div> <!-- Giữ khoảng trống để căn giữa tiêu đề -->
+    </header>
+
+    <!-- Các Màn Hình Chính -->
+    <main class="flex-grow p-4 overflow-auto">
+
+        <!-- Màn hình Lịch làm việc 📅 -->
+        <section id="schedule-screen" class="screen active">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Các Công Việc Được Giao</h2>
+
+            <!-- Tổng hóa chất cần lấy trong ngày -->
+            <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+                <div id="chemicals-summary-header" class="collapsible-header text-lg font-semibold text-gray-800 mb-2">
+                    Tổng Hóa Chất Cần Lấy Trong Ngày <span id="daily-chemicals-status-text" class="text-sm font-normal text-gray-500 ml-2">(Chưa xác nhận)</span> <i class="fas fa-chevron-down ml-2"></i>
+                </div>
+                <div id="chemicals-summary-content" class="collapsible-content">
+                    <div id="daily-chemicals-list" class="mb-4">
+                        <!-- Danh sách hóa chất tổng hợp sẽ được thêm vào đây bằng JS -->
+                        <p class="text-gray-600">Không có hóa chất cần lấy trong ngày này.</p>
+                    </div>
+
+                    <div class="flex items-center mb-4">
+                        <input type="checkbox" id="chemicals-collected-checkbox" class="form-checkbox h-5 w-5 text-green-600 rounded focus:ring-green-500">
+                        <label for="chemicals-collected-checkbox" class="ml-3 text-gray-700 font-medium">Đã xác nhận lấy đủ hóa chất</label>
+                    </div>
+                    <div id="chemicals-notes-container" class="hidden">
+                        <label for="chemicals-collection-notes" class="block text-gray-700 text-sm font-bold mb-2">Ghi chú (nếu không đủ):</label>
+                        <textarea id="chemicals-collection-notes" class="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-y" rows="2" placeholder="Ghi chú nếu có hóa chất không đủ hoặc các vấn đề khác..."></textarea>
+                    </div>
+                    <button id="save-daily-chemicals-status" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 rounded-lg transition-colors shadow-md mt-4">
+                        Lưu Trạng Thái Hóa Chất
+                    </button>
+                </div>
+            </div>
+
+            <!-- Danh sách công việc -->
+            <div id="job-list" class="space-y-3">
+                <!-- Các mục công việc sẽ được thêm vào đây bằng JS -->
+            </div>
+        </section>
+
+        <!-- Màn hình Báo cáo Công tác Hiện trường 📝 (bao gồm cả Chi tiết công việc) -->
+        <section id="report-screen" class="screen">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4" id="report-screen-title">Chi Tiết Công Việc</h2>
+
+            <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+                <!-- Thông tin Chi tiết công việc -->
+                <p class="text-gray-600 mb-2"><strong class="text-gray-800">Mã CV:</strong> <span id="report-job-id"></span></p>
+                <p class="text-gray-600 mb-2"><strong class="text-gray-800">Khách hàng:</strong> <span id="report-customer-name-detail"></span></p>
+                <p class="text-gray-600 mb-2"><strong class="text-gray-800">Địa chỉ:</strong> <span id="report-address-detail"></span></p>
+                <p class="text-gray-600 mb-2"><strong class="text-gray-800">Nội dung:</strong> <span id="report-content-detail"></span></p>
+                <p class="text-gray-600 mb-2"><strong class="text-gray-800">Người liên hệ:</strong> <span id="report-contact-person"></span></p>
+                <p class="text-gray-600 mb-4 flex items-center flex-wrap">
+                    <strong class="text-gray-800 mr-2">Số điện thoại:</strong> <span id="report-contact-phone"></span>
+                    <div class="flex space-x-2 mt-2 sm:mt-0 ml-0 sm:ml-2">
+                        <button id="call-phone-button" class="px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded-md transition-colors shadow-sm flex items-center">
+                            <i class="fas fa-phone-alt mr-1"></i> Gọi
+                        </button>
+                        <button id="zalo-phone-button" class="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded-md transition-colors shadow-sm flex items-center">
+                            <i class="fas fa-comment-dots mr-1"></i> Zalo
+                        </button>
+                    </div>
+                </p>
+                <p class="text-gray-600 mb-4"><strong class="text-gray-800">Yêu cầu đặc biệt:</strong> <span id="report-special-requests"></span></p>
+
+                <!-- Checklist công việc thực hiện (Xem trước) -->
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Checklist công việc thực hiện:</label>
+                    <ul id="report-detail-checklist" class="list-disc list-inside text-gray-700 space-y-1 pl-4">
+                        <!-- Checklist items will be loaded here -->
+                    </ul>
+                </div>
+
+                <!-- Hóa chất cần chuẩn bị (Xem trước) -->
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Hóa chất cần chuẩn bị:</label>
+                    <ul id="report-required-chemicals" class="list-disc list-inside text-gray-700 space-y-1 pl-4">
+                        <!-- Required chemicals will be loaded here -->
+                    </ul>
+                </div>
+
+                <!-- Nút Bắt đầu công việc (Chỉ hiển thị khi pending) -->
+                <button id="start-job-button" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg transition-colors shadow-md mb-6">
+                    Bắt Đầu Công Việc (Check-in)
+                </button>
+
+                <!-- Các phần của Báo cáo Công tác (chỉ tương tác khi checkedIn hoặc checkedOut) -->
+                <div id="report-edit-area">
+                    <hr class="my-6 border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Nhập Báo Cáo Hiện Trường</h3>
+
+                    <!-- Ghi chú -->
+                    <div class="mb-6">
+                        <label for="notes" class="block text-gray-700 text-sm font-bold mb-2">Ghi chú / Khuyến cáo:</label>
+                        <div class="relative">
+                            <textarea id="notes" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-y" rows="4" placeholder="Nhập ghi chú hoặc khuyến cáo..."></textarea>
+                            <button id="microphone-button" class="absolute bottom-2 right-2 bg-blue-500 text-white p-2 rounded-full shadow-md hover:bg-blue-600 transition-colors" title="Nhập liệu bằng giọng nói (chức năng demo)">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Chụp và đính kèm hình ảnh -->
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Hình ảnh hiện trường:</label>
+                        <input type="file" id="image-upload" accept="image/*" class="hidden">
+                        <button id="upload-image-button" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-lg transition-colors flex items-center justify-center shadow-md">
+                            <i class="fas fa-camera mr-2"></i> Chụp / Đính kèm ảnh (Tối ưu tự động)
+                        </button>
+                        <div id="image-preview-container" class="mt-4 grid grid-cols-3 gap-2">
+                            <!-- Ảnh xem trước sẽ được thêm vào đây -->
+                        </div>
+                    </div>
+
+                    <!-- Checklist công việc (đánh dấu) -->
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Checklist công việc:</label>
+                        <div id="checklist" class="space-y-2">
+                            <!-- Các mục checklist sẽ được thêm vào đây bằng JS -->
+                        </div>
+                    </div>
+
+                    <!-- Báo cáo hóa chất và vật tư sử dụng -->
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Báo cáo hóa chất và vật tư đã sử dụng:</label>
+                        <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+                            <thead>
+                                <tr class="bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    <th class="py-3 px-4 border-b">Loại Hóa Chất/Vật Tư</th>
+                                    <th class="py-3 px-4 border-b text-right">Số Lượng Yêu Cầu</th>
+                                    <th class="py-3 px-4 border-b text-right">Số Lượng Thực Tế</th>
+                                    <th class="py-3 px-4 border-b text-center">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="material-report-body" class="divide-y divide-gray-200">
+                                <!-- Các hàng vật tư sẽ được thêm vào đây bằng JS -->
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4" class="p-4 text-center">
+                                        <button id="add-material-button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors shadow-md">
+                                            <i class="fas fa-plus mr-1"></i> Thêm Hóa Chất/Vật Tư Khác
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Nút Lưu Báo Cáo -->
+                    <button id="save-report-button" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg transition-colors shadow-md mb-3">
+                        <i class="fas fa-save mr-2"></i> Lưu Báo Cáo
+                    </button>
+
+                    <!-- Nút Check-out -->
+                    <button id="checkout-button" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-lg transition-colors shadow-md">
+                        Kết Thúc Công Việc (Check-out)
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal tùy chỉnh cho thông báo (thay thế alert()) -->
+    <div id="custom-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-white p-6 rounded-lg shadow-xl text-center max-w-sm w-full">
+            <h3 class="text-xl font-bold mb-4 text-gray-800" id="modal-title">Thông báo</h3>
+            <p id="modal-message" class="mb-6 text-gray-700"></p>
+            <button id="modal-close-button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                Đóng
+            </button>
+        </div>
+    </div>
+
+    <!-- Thông báo copy tạm thời -->
+    <div id="temp-notification"></div>
+
+    <script>
+        // Hàm lấy ngày hiện tại ở định dạng YYYY-MM-DD
+        function getTodayDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Data mẫu cho các công việc
+        const jobs = [
+            {
+                id: 'CV001',
+                customerName: 'Công ty TNHH ABC',
+                address: '123 Đường Nguyễn Huệ, Q1, TP.HCM',
+                content: 'Kiểm tra, bảo trì hệ thống điều hòa',
+                specialRequests: 'Mang theo dụng cụ kiểm tra áp suất.',
+                contactPerson: 'Chị Lan',
+                contactPhone: '0901234567',
+                scheduledDate: getTodayDate(), // Đặt ngày hôm nay
+                scheduledTime: '08:00 - 10:00',
+                requiredChemicals: [
+                    { name: 'Ga lạnh R410A', quantity: 1.5, unit: 'kg' },
+                    { name: 'Chất tẩy rửa dàn lạnh', quantity: 0.5, unit: 'lít' }
+                ],
+                checklistItems: [
+                    'Kiểm tra áp suất gas',
+                    'Vệ sinh lưới lọc',
+                    'Kiểm tra ống thoát nước'
+                ]
+            },
+            {
+                id: 'CV002',
+                customerName: 'Cửa hàng XYZ',
+                address: '456 Đường Trần Hưng Đạo, Q5, TP.HCM',
+                content: 'Diệt côn trùng định kỳ',
+                specialRequests: 'Cẩn thận với vật nuôi trong nhà.',
+                contactPerson: 'Anh Bình',
+                contactPhone: '0908765432',
+                scheduledDate: getTodayDate(), // Đặt ngày hôm nay
+                scheduledTime: '10:30 - 12:00',
+                requiredChemicals: [
+                    { name: 'Thuốc diệt muỗi', quantity: 1, unit: 'lít' },
+                    { name: 'Thuốc diệt gián', quantity: 200, unit: 'gram' }
+                ],
+                checklistItems: [
+                    'Phun thuốc diệt muỗi khu vực trong nhà',
+                    'Đặt bẫy gián tại bếp',
+                    'Kiểm tra các khe hở'
+                ]
+            },
+            {
+                id: 'CV003',
+                customerName: 'Nhà riêng Anh Tuấn',
+                address: '789 Đường Lê Lợi, Q3, TP.HCM',
+                content: 'Sửa chữa điện nước',
+                specialRequests: 'Mang theo thang cao.',
+                contactPerson: 'Anh Tuấn',
+                contactPhone: '0912345678',
+                scheduledDate: '2025-08-16', // Ngày khác để minh họa
+                scheduledTime: '14:00 - 16:00',
+                requiredChemicals: [],
+                checklistItems: [
+                    'Kiểm tra rò rỉ đường ống nước',
+                    'Sửa chữa ổ cắm điện bị hỏng'
+                ]
+            }
+        ];
+
+        // Lấy các phần tử DOM
+        const scheduleScreen = document.getElementById('schedule-screen');
+        const reportScreen = document.getElementById('report-screen');
+        const jobList = document.getElementById('job-list');
+        const headerTitle = document.getElementById('header-title');
+        const backButton = document.getElementById('back-button');
+
+        const reportScreenTitle = document.getElementById('report-screen-title');
+        const reportJobId = document.getElementById('report-job-id');
+        const reportCustomerNameDetail = document.getElementById('report-customer-name-detail');
+        const reportAddressDetail = document.getElementById('report-address-detail');
+        const reportContentDetail = document.getElementById('report-content-detail');
+        const reportContactPerson = document.getElementById('report-contact-person');
+        const reportContactPhone = document.getElementById('report-contact-phone');
+        const callPhoneButton = document.getElementById('call-phone-button');
+        const zaloPhoneButton = document.getElementById('zalo-phone-button');
+        const reportSpecialRequests = document.getElementById('report-special-requests');
+        const reportDetailChecklist = document.getElementById('report-detail-checklist');
+        const reportRequiredChemicals = document.getElementById('report-required-chemicals');
+        const startJobButton = document.getElementById('start-job-button');
+
+        const reportEditArea = document.getElementById('report-edit-area');
+        const notesTextarea = document.getElementById('notes');
+        const microphoneButton = document.getElementById('microphone-button');
+        const uploadImageButton = document.getElementById('upload-image-button');
+        const imageUploadInput = document.getElementById('image-upload');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const checklistDiv = document.getElementById('checklist');
+        const materialReportBody = document.getElementById('material-report-body');
+        const addMaterialButton = document.getElementById('add-material-button');
+        const saveReportButton = document.getElementById('save-report-button');
+        const checkoutButton = document.getElementById('checkout-button');
+
+        const customModal = document.getElementById('custom-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCloseButton = document.getElementById('modal-close-button');
+
+        const tempNotification = document.getElementById('temp-notification');
+
+        const chemicalsSummaryHeader = document.getElementById('chemicals-summary-header');
+        const chemicalsSummaryContent = document.getElementById('chemicals-summary-content');
+        const dailyChemicalsList = document.getElementById('daily-chemicals-list');
+        const chemicalsCollectedCheckbox = document.getElementById('chemicals-collected-checkbox');
+        const chemicalsCollectionNotes = document.getElementById('chemicals-collection-notes');
+        const chemicalsNotesContainer = document.getElementById('chemicals-notes-container');
+        const saveDailyChemicalsStatusButton = document.getElementById('save-daily-chemicals-status');
+        const dailyChemicalsStatusText = document.getElementById('daily-chemicals-status-text'); // NEW
+
+        let currentJob = null;
+        let jobStatus = {};
+        // Lưu trữ trạng thái tổng hóa chất theo ngày
+        // Mỗi ngày có thể ở trạng thái 'pending' (chưa xác nhận) hoặc 'confirmed' (đã xác nhận)
+        let dailyChemicalsStatus = {
+            // '2025-08-15': { status: 'pending', notes: '' }
+        };
+
+        // --- Hàm Utility ---
+
+        function showCustomModal(title, message) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            customModal.classList.remove('hidden');
+        }
+
+        modalCloseButton.addEventListener('click', () => {
+            customModal.classList.add('hidden');
+        });
+
+        let notificationTimeout;
+        function showTempNotification(message) {
+            tempNotification.textContent = message;
+            tempNotification.classList.add('show');
+            clearTimeout(notificationTimeout);
+            notificationTimeout = setTimeout(() => {
+                tempNotification.classList.remove('show');
+            }, 1000);
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+
+            if (screenId === 'schedule-screen') {
+                headerTitle.textContent = 'Lịch Làm Việc';
+                backButton.classList.add('hidden');
+            } else if (screenId === 'report-screen') {
+                // Title set by initializeReportScreen
+                backButton.classList.remove('hidden');
+            }
+        }
+
+        function copyToClipboard(text, message = 'Đã copy vào bộ nhớ tạm') {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showTempNotification(message);
+                } else {
+                    showCustomModal('Copy Thất Bại', 'Không thể copy. Vui lòng thử lại.');
+                }
+            } catch (err) {
+                showCustomModal('Copy Thất Bại', 'Lỗi khi copy: ' + err);
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        // --- Khởi tạo Màn hình Lịch làm việc ---
+        function renderJobList() {
+            jobList.innerHTML = '';
+            jobs.sort((a, b) => {
+                const dateA = new Date(`${a.scheduledDate}T${a.scheduledTime.split(' - ')[0]}`);
+                const dateB = new Date(`${b.scheduledDate}T${b.scheduledTime.split(' - ')[0]}`);
+                return dateA - dateB;
+            }).forEach(job => {
+                if (!jobStatus[job.id]) {
+                    jobStatus[job.id] = {
+                        status: 'pending',
+                        checkinTime: null,
+                        checkoutTime: null,
+                        reportData: { notes: '', images: [], checklist: {}, materials: [] }
+                    };
+                }
+
+                const jobItem = document.createElement('div');
+                let statusBadge = '';
+                const currentJobStatus = jobStatus[job.id].status;
+
+                if (currentJobStatus === 'checkedIn') {
+                    statusBadge = '<span class="ml-2 px-2 py-1 bg-yellow-200 text-yellow-800 text-xs font-semibold rounded-full">Đang thực hiện</span>';
+                } else if (currentJobStatus === 'checkedOut') {
+                    statusBadge = '<span class="ml-2 px-2 py-1 bg-green-200 text-green-800 text-xs font-semibold rounded-full">Đã hoàn thành</span>';
+                }
+
+                jobItem.className = 'bg-white p-4 rounded-lg shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition-shadow';
+                jobItem.innerHTML = `
+                    <h3 class="text-lg font-semibold text-blue-700 flex items-center">${job.customerName}${statusBadge}</h3>
+                    <p class="text-gray-600 text-sm mt-1 mb-2">
+                        <i class="far fa-calendar-alt mr-1 text-gray-500"></i> ${job.scheduledDate.split('-').reverse().join('/')} -
+                        <i class="far fa-clock mr-1 text-gray-500"></i> ${job.scheduledTime}
+                        <span class="ml-3"><i class="fas fa-map-marker-alt mr-1 text-gray-500"></i> ${job.address}</span>
+                    </p>
+                    <p class="text-gray-700 text-sm"><strong class="text-gray-800">Nội dung:</strong> ${job.content}</p>
+                `;
+                jobItem.addEventListener('click', () => {
+                    initializeReportScreen(job);
+                    showScreen('report-screen');
+                });
+                jobList.appendChild(jobItem);
+            });
+            renderDailyChemicalsSummary();
+        }
+
+        // --- Khởi tạo Màn hình Báo cáo Công tác Hiện trường (bao gồm cả Chi tiết) ---
+        function initializeReportScreen(job) {
+            currentJob = job;
+            const currentJobStatus = jobStatus[job.id].status;
+            const reportData = jobStatus[job.id].reportData;
+
+            reportJobId.textContent = job.id;
+            reportCustomerNameDetail.textContent = job.customerName;
+            reportAddressDetail.textContent = job.address;
+            reportContentDetail.textContent = job.content;
+            reportSpecialRequests.textContent = job.specialRequests;
+            reportContactPerson.textContent = job.contactPerson;
+            reportContactPhone.textContent = job.contactPhone;
+
+            reportDetailChecklist.innerHTML = '';
+            const checklistToDisplay = job.checklistItems && job.checklistItems.length > 0 ? job.checklistItems : [];
+            if (checklistToDisplay.length > 0) {
+                checklistToDisplay.forEach(item => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = item;
+                    reportDetailChecklist.appendChild(listItem);
+                });
+            } else {
+                reportDetailChecklist.innerHTML = '<li class="text-gray-500">Không có checklist cho công việc này.</li>';
+            }
+
+            reportRequiredChemicals.innerHTML = '';
+            if (job.requiredChemicals && job.requiredChemicals.length > 0) {
+                job.requiredChemicals.forEach(chem => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${chem.name}: ${chem.quantity} ${chem.unit}`;
+                    reportRequiredChemicals.appendChild(listItem);
+                });
+            } else {
+                reportRequiredChemicals.innerHTML = '<li class="text-gray-500">Không có hóa chất cần chuẩn bị cho công việc này.</li>';
+            }
+
+            reportScreenTitle.textContent = (currentJobStatus === 'pending') ? 'Chi Tiết Công Việc' : 'Báo Cáo Công Tác';
+
+            if (currentJobStatus === 'pending') {
+                startJobButton.classList.remove('hidden');
+                reportEditArea.classList.add('hidden');
+            } else {
+                startJobButton.classList.add('hidden');
+                reportEditArea.classList.remove('hidden');
+            }
+
+            if (currentJobStatus === 'checkedIn') {
+                checkoutButton.classList.remove('hidden');
+                saveReportButton.classList.remove('hidden');
+            } else {
+                checkoutButton.classList.add('hidden');
+                saveReportButton.classList.toggle('hidden', currentJobStatus === 'pending');
+            }
+
+            const isReportEditable = (currentJobStatus === 'checkedIn' || currentJobStatus === 'checkedOut');
+            notesTextarea.disabled = !isReportEditable;
+            uploadImageButton.disabled = !isReportEditable;
+            microphoneButton.disabled = !isReportEditable;
+            addMaterialButton.disabled = !isReportEditable;
+
+            notesTextarea.value = reportData.notes;
+
+            imagePreviewContainer.innerHTML = '';
+            reportData.images.forEach(imgSrc => {
+                const imgWrapper = document.createElement('div');
+                imgWrapper.className = 'relative group';
+                imgWrapper.innerHTML = `
+                    <img src="${imgSrc}" class="w-full h-24 object-cover rounded-md shadow-sm" alt="Ảnh hiện trường">
+                    <button class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity delete-image-btn" data-src="${imgSrc}" ${isReportEditable ? '' : 'disabled'}>
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                        imagePreviewContainer.appendChild(imgWrapper);
+            });
+
+            renderInteractiveChecklist(reportData.checklist, isReportEditable);
+
+            // Cập nhật renderMaterialReportTable để truyền đúng dữ liệu hóa chất yêu cầu
+            renderMaterialReportTable(job.requiredChemicals, reportData.materials, isReportEditable);
+        }
+
+        // --- Xử lý nút Bắt đầu Công việc (trên màn hình Báo cáo) ---
+        startJobButton.addEventListener('click', () => {
+            if (!currentJob) return;
+
+            const checkinTime = new Date().toLocaleString('vi-VN');
+            jobStatus[currentJob.id].status = 'checkedIn';
+            jobStatus[currentJob.id].checkinTime = checkinTime;
+
+            showCustomModal('Check-in Thành Công', `Bạn đã check-in vào công việc "${currentJob.customerName}" lúc ${checkinTime}. (Tọa độ GPS sẽ được ghi nhận tự động)`);
+            initializeReportScreen(currentJob);
+            renderJobList();
+        });
+
+        // --- Xử lý nút Gọi điện ---
+        callPhoneButton.addEventListener('click', () => {
+            const phoneNumber = reportContactPhone.textContent;
+            copyToClipboard(phoneNumber, `Đã copy số điện thoại: ${phoneNumber}`);
+            window.location.href = `tel:${phoneNumber}`;
+        });
+
+        // --- Xử lý nút Zalo ---
+        zaloPhoneButton.addEventListener('click', () => {
+            const phoneNumber = reportContactPhone.textContent;
+            copyToClipboard(phoneNumber, `Đã copy số điện thoại Zalo: ${phoneNumber}`);
+            const zaloNumber = phoneNumber.startsWith('0') ? phoneNumber.substring(1) : phoneNumber;
+            window.open(`http://zalo.me/${zaloNumber}`, '_blank');
+        });
+
+        // --- Xử lý Đính kèm hình ảnh ---
+        uploadImageButton.addEventListener('click', () => {
+            if (uploadImageButton.disabled) return;
+            imageUploadInput.click();
+        });
+
+        imageUploadInput.addEventListener('change', (event) => {
+            const files = event.target.files;
+            if (files.length > 0) {
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const imgSrc = e.target.result;
+                        const imgWrapper = document.createElement('div');
+                        imgWrapper.className = 'relative group';
+                        imgWrapper.innerHTML = `
+                            <img src="${imgSrc}" class="w-full h-24 object-cover rounded-md shadow-sm" alt="Ảnh hiện trường">
+                            <button class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity delete-image-btn" data-src="${imgSrc}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                        imagePreviewContainer.appendChild(imgWrapper);
+                        jobStatus[currentJob.id].reportData.images.push(imgSrc);
+                    };
+                    reader.readAsDataURL(file);
+                }
+                showCustomModal('Ảnh Đã Chọn', `Đã chọn ${files.length} ảnh. Ảnh sẽ được tối ưu và tải lên.`);
+            }
+        });
+
+        // Xóa ảnh preview và cập nhật reportData
+        imagePreviewContainer.addEventListener('click', (event) => {
+            const btn = event.target.closest('.delete-image-btn');
+            if (btn && !btn.disabled) {
+                const imgSrcToRemove = btn.dataset.src;
+                const index = jobStatus[currentJob.id].reportData.images.indexOf(imgSrcToRemove);
+                if (index > -1) {
+                    jobStatus[currentJob.id].reportData.images.splice(index, 1);
+                }
+                btn.parentElement.remove();
+                showCustomModal('Xóa ảnh', 'Ảnh đã được xóa khỏi danh sách.');
+            }
+        });
+
+        // --- Render Checklist công việc (phiên bản tương tác) ---
+        function renderInteractiveChecklist(currentChecklistState = {}, isEditable = false) {
+            checklistDiv.innerHTML = '';
+            const checklistToRender = currentJob.checklistItems && currentJob.checklistItems.length > 0 ? currentJob.checklistItems : [];
+
+            if (checklistToRender.length === 0) {
+                 checklistDiv.innerHTML = '<p class="text-gray-500">Không có checklist để đánh dấu.</p>';
+                 return;
+            }
+
+            checklistToRender.forEach((item, index) => {
+                const checklistItem = document.createElement('div');
+                checklistItem.className = 'flex items-center bg-gray-50 p-3 rounded-lg border border-gray-200';
+                checklistItem.innerHTML = `
+                    <input type="checkbox" id="report-checklist-item-${index}" class="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500" ${isEditable ? '' : 'disabled'}>
+                    <label for="report-checklist-item-${index}" class="ml-3 text-gray-700 font-medium">${item}</label>
+                `;
+                const checkbox = checklistItem.querySelector(`#report-checklist-item-${index}`);
+                checkbox.checked = !!currentChecklistState[index];
+                checkbox.addEventListener('change', () => {
+                    if (isEditable) {
+                        jobStatus[currentJob.id].reportData.checklist[index] = checkbox.checked;
+                    }
+                });
+                checklistDiv.appendChild(checklistItem);
+            });
+        }
+
+        // --- Render Báo cáo vật tư (cho bảng chính) ---
+        function renderMaterialReportTable(requiredChemicals = [], savedMaterials = [], isEditable = false) {
+            materialReportBody.innerHTML = '';
+
+            const combinedMaterials = {};
+
+            // Thêm hóa chất yêu cầu trước
+            requiredChemicals.forEach(chem => {
+                combinedMaterials[chem.name] = {
+                    name: chem.name,
+                    requiredQuantity: chem.quantity,
+                    unit: chem.unit,
+                    actualQuantity: null, // Mặc định số lượng thực tế là null
+                    isCustom: false // Không phải vật tư tùy chỉnh
+                };
+            });
+
+            // Ghi đè bằng dữ liệu đã lưu hoặc thêm vật tư tùy chỉnh
+            savedMaterials.forEach(savedChem => {
+                if (combinedMaterials[savedChem.name]) {
+                    // Nếu là hóa chất yêu cầu đã được lưu, cập nhật số lượng thực tế
+                    combinedMaterials[savedChem.name].actualQuantity = savedChem.actualQuantity !== undefined ? savedChem.actualQuantity : savedChem.quantity;
+                } else {
+                    // Đây là vật tư tùy chỉnh được thêm vào
+                    combinedMaterials[savedChem.name] = {
+                        name: savedChem.name,
+                        requiredQuantity: null, // Không có số lượng yêu cầu cho vật tư tùy chỉnh
+                        unit: savedChem.unit || '',
+                        actualQuantity: savedChem.actualQuantity !== undefined ? savedChem.actualQuantity : savedChem.quantity,
+                        isCustom: true
+                    };
+                }
+            });
+
+            const materialsToRender = Object.values(combinedMaterials);
+
+            if (materialsToRender.length > 0) {
+                materialsToRender.forEach(mat => addMaterialRowToTable(
+                    mat.name,
+                    mat.requiredQuantity,
+                    mat.unit,
+                    mat.actualQuantity,
+                    mat.isCustom,
+                    isEditable
+                ));
+            } else if (isEditable) {
+                // Nếu không có hóa chất yêu cầu và có thể chỉnh sửa, thêm một hàng trống để nhập tùy chỉnh
+                addMaterialRowToTable('', null, '', null, true, isEditable);
+            } else {
+                materialReportBody.innerHTML = '<tr><td colspan="4" class="py-2 px-4 text-gray-500 text-center">Không có hóa chất/vật tư nào được sử dụng.</td></tr>';
+            }
+        }
+
+        // Helper function to add a row to the material report table
+        function addMaterialRowToTable(name = '', requiredQuantity = null, unit = '', actualQuantity = null, isCustom = false, isEditable = false) {
+            const newRow = document.createElement('tr');
+            newRow.className = 'hover:bg-gray-50';
+            newRow.innerHTML = `
+                <td class="py-2 px-4 border-b">
+                    <input type="text" value="${name}" placeholder="Tên hóa chất/vật tư" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400 text-sm material-name-input" ${isEditable && isCustom ? '' : 'disabled'}>
+                </td>
+                <td class="py-2 px-4 border-b text-right">
+                    <span class="text-gray-700 font-medium">${requiredQuantity !== null ? requiredQuantity + ' ' + unit : 'N/A'}</span>
+                </td>
+                <td class="py-2 px-4 border-b text-right">
+                    <input type="number" value="${actualQuantity !== null ? actualQuantity : ''}" min="0" step="any" placeholder="0" class="w-20 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400 text-sm text-right material-actual-quantity-input" ${isEditable ? '' : 'disabled'}>
+                </td>
+                <td class="py-2 px-4 border-b text-center">
+                    <button class="remove-material-row bg-red-400 hover:bg-red-500 text-white p-2 rounded-full w-8 h-8 flex items-center justify-center text-sm transition-colors shadow-sm" ${isEditable && isCustom ? '' : 'disabled'}>
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            materialReportBody.appendChild(newRow);
+
+            const actualQuantityInput = newRow.querySelector('.material-actual-quantity-input');
+            if (actualQuantityInput && isEditable) {
+                actualQuantityInput.addEventListener('input', updateReportData);
+            }
+
+            const nameInput = newRow.querySelector('.material-name-input');
+            if (nameInput && isEditable && isCustom) {
+                 nameInput.addEventListener('input', updateReportData);
+            }
+
+            const removeButton = newRow.querySelector('.remove-material-row');
+            if (removeButton && isEditable) {
+                removeButton.addEventListener('click', (event) => {
+                    event.target.closest('tr').remove();
+                    updateReportData();
+                });
+            }
+        }
+
+        addMaterialButton.addEventListener('click', () => {
+            if (currentJob && (jobStatus[currentJob.id].status === 'checkedIn' || jobStatus[currentJob.id].status === 'checkedOut')) {
+                addMaterialRowToTable('', null, '', null, true, true);
+                updateReportData();
+            } else {
+                showCustomModal('Thông báo', 'Bạn cần check-in công việc để thêm hóa chất/vật tư.');
+            }
+        });
+
+        function updateReportData() {
+            if (!currentJob || !jobStatus[currentJob.id]) return;
+
+            jobStatus[currentJob.id].reportData.notes = notesTextarea.value;
+
+            const usedMaterials = [];
+            materialReportBody.querySelectorAll('tr').forEach(row => {
+                const nameInput = row.querySelector('.material-name-input');
+                const actualQuantityInput = row.querySelector('.material-actual-quantity-input');
+                const requiredQuantitySpan = row.querySelector('td:nth-child(2) span');
+                const isCustom = nameInput.disabled === false;
+
+                if (nameInput && actualQuantityInput && nameInput.value.trim() !== '') {
+                    const requiredText = requiredQuantitySpan ? requiredQuantitySpan.textContent : 'N/A';
+                    let requiredValue = null;
+                    let unit = '';
+
+                    if (requiredText !== 'N/A') {
+                        const parts = requiredText.split(' ');
+                        requiredValue = parseFloat(parts[0]);
+                        unit = parts.slice(1).join(' ');
+                    } else if (isCustom && actualQuantityInput.value.trim() !== '') {
+                        unit = '';
+                    }
+
+                    usedMaterials.push({
+                        name: nameInput.value.trim(),
+                        requiredQuantity: requiredValue,
+                        unit: unit,
+                        actualQuantity: parseFloat(actualQuantityInput.value) || 0,
+                        isCustom: isCustom
+                    });
+                }
+            });
+            jobStatus[currentJob.id].reportData.materials = usedMaterials;
+        }
+
+        saveReportButton.addEventListener('click', () => {
+            if (currentJob && (jobStatus[currentJob.id].status === 'checkedIn' || jobStatus[currentJob.id].status === 'checkedOut')) {
+                updateReportData();
+                console.log('Báo cáo đã được lưu:', jobStatus[currentJob.id]);
+                showTempNotification(`Báo cáo cho công việc "${currentJob.customerName}" đã được lưu.`);
+            } else {
+                showCustomModal('Thông báo', 'Bạn cần check-in công việc để lưu báo cáo.');
+            }
+        });
+
+        checkoutButton.addEventListener('click', () => {
+            if (currentJob && jobStatus[currentJob.id].status === 'checkedIn') {
+                updateReportData();
+
+                const checkoutTime = new Date().toLocaleString('vi-VN');
+                jobStatus[currentJob.id].status = 'checkedOut';
+                jobStatus[currentJob.id].checkoutTime = checkoutTime;
+
+                console.log('Báo cáo công tác đã hoàn thành:', jobStatus[currentJob.id]);
+                
+                showCustomModal('Check-out Thành Công', `Bạn đã check-out khỏi công việc "${currentJob.customerName}" lúc ${checkoutTime}. Báo cáo đã được ghi nhận.`);
+                
+                showScreen('schedule-screen');
+                renderJobList();
+            } else {
+                showCustomModal('Lỗi', 'Công việc chưa được check-in hoặc đã check-out.');
+            }
+        });
+
+        backButton.addEventListener('click', () => {
+            showScreen('schedule-screen');
+        });
+
+        notesTextarea.addEventListener('input', updateReportData);
+
+        // --- Logic cho phần Tổng hóa chất cần lấy trong ngày ---
+
+        chemicalsSummaryHeader.addEventListener('click', () => {
+            chemicalsSummaryContent.classList.toggle('expanded');
+            const icon = chemicalsSummaryHeader.querySelector('i');
+            icon.classList.toggle('fa-chevron-down');
+            icon.classList.toggle('fa-chevron-up');
+        });
+
+        chemicalsCollectedCheckbox.addEventListener('change', () => {
+            const today = getTodayDate();
+            if (!dailyChemicalsStatus[today]) {
+                dailyChemicalsStatus[today] = {};
+            }
+            if (chemicalsCollectedCheckbox.checked) {
+                chemicalsNotesContainer.classList.add('hidden');
+                chemicalsCollectionNotes.value = ''; // Clear notes if checked
+                dailyChemicalsStatus[today].notes = ''; // Clear notes in data too
+                dailyChemicalsStatus[today].status = 'confirmed'; // Update status
+            } else {
+                chemicalsNotesContainer.classList.remove('hidden');
+                dailyChemicalsStatus[today].status = 'pending'; // Update status
+            }
+            // Update UI immediately
+            updateDailyChemicalsSummaryUI();
+        });
+
+        chemicalsCollectionNotes.addEventListener('input', () => {
+            const today = getTodayDate();
+            if (!dailyChemicalsStatus[today]) {
+                dailyChemicalsStatus[today] = {};
+            }
+            dailyChemicalsStatus[today].notes = chemicalsCollectionNotes.value;
+        });
+
+        saveDailyChemicalsStatusButton.addEventListener('click', () => {
+            const today = getTodayDate();
+            if (!dailyChemicalsStatus[today]) {
+                dailyChemicalsStatus[today] = { status: 'pending', notes: '' };
+            }
+            
+            // Cập nhật trạng thái và ghi chú dựa trên checkbox
+            dailyChemicalsStatus[today].collected = chemicalsCollectedCheckbox.checked;
+            dailyChemicalsStatus[today].notes = chemicalsCollectionNotes.value;
+            dailyChemicalsStatus[today].status = chemicalsCollectedCheckbox.checked ? 'confirmed' : 'pending';
+
+            console.log('Trạng thái hóa chất trong ngày đã lưu:', dailyChemicalsStatus[today]);
+            showTempNotification('Đã lưu trạng thái hóa chất trong ngày.');
+
+            // Cập nhật UI sau khi lưu
+            updateDailyChemicalsSummaryUI();
+
+            // Tự động thu gọn phần này
+            chemicalsSummaryContent.classList.remove('expanded');
+            chemicalsSummaryHeader.querySelector('i').classList.remove('fa-chevron-up');
+            chemicalsSummaryHeader.querySelector('i').classList.add('fa-chevron-down');
+        });
+
+        // Hàm cập nhật UI cho phần tổng hóa chất
+        function updateDailyChemicalsSummaryUI() {
+            const today = getTodayDate();
+            const currentDayStatus = dailyChemicalsStatus[today] || { status: 'pending', notes: '' };
+
+            chemicalsCollectedCheckbox.checked = currentDayStatus.status === 'confirmed';
+            chemicalsCollectionNotes.value = currentDayStatus.notes;
+
+            // Vô hiệu hóa checkbox và ẩn nút/ghi chú nếu đã xác nhận
+            chemicalsCollectedCheckbox.disabled = currentDayStatus.status === 'confirmed';
+            saveDailyChemicalsStatusButton.disabled = currentDayStatus.status === 'confirmed';
+            microphoneButton.disabled = currentDayStatus.status === 'confirmed'; // Assuming microphone is part of notes
+
+            if (currentDayStatus.status === 'confirmed') {
+                chemicalsNotesContainer.classList.add('hidden');
+                saveDailyChemicalsStatusButton.classList.add('hidden');
+                dailyChemicalsStatusText.textContent = '(Đã xác nhận)';
+                dailyChemicalsStatusText.classList.remove('text-gray-500');
+                dailyChemicalsStatusText.classList.add('text-green-600');
+            } else {
+                chemicalsNotesContainer.classList.remove('hidden');
+                saveDailyChemicalsStatusButton.classList.remove('hidden');
+                dailyChemicalsStatusText.textContent = '(Chưa xác nhận)';
+                dailyChemicalsStatusText.classList.remove('text-green-600');
+                dailyChemicalsStatusText.classList.add('text-gray-500');
+            }
+        }
+
+
+        // Render daily chemicals summary
+        function renderDailyChemicalsSummary() {
+            dailyChemicalsList.innerHTML = '';
+            const today = getTodayDate();
+
+            const dailyChemicals = {};
+            jobs.filter(job => job.scheduledDate === today).forEach(job => {
+                job.requiredChemicals.forEach(chem => {
+                    if (dailyChemicals[chem.name]) {
+                        dailyChemicals[chem.name].quantity += chem.quantity;
+                    } else {
+                        dailyChemicals[chem.name] = { ...chem };
+                    }
+                });
+            });
+
+            if (Object.keys(dailyChemicals).length > 0) {
+                const ul = document.createElement('ul');
+                ul.className = 'list-disc list-inside text-gray-700 space-y-1 pl-4';
+                for (const name in dailyChemicals) {
+                    const chem = dailyChemicals[name];
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${chem.name}: ${chem.quantity} ${chem.unit}`;
+                    ul.appendChild(listItem);
+                }
+                dailyChemicalsList.appendChild(ul);
+            } else {
+                dailyChemicalsList.innerHTML = '<p class="text-gray-600">Không có hóa chất cần lấy cho các công việc hôm nay.</p>';
+            }
+
+            // Gọi hàm cập nhật UI để load trạng thái hiện tại
+            updateDailyChemicalsSummaryUI();
+        }
+
+
+        // Khởi tạo ban đầu
+        renderJobList();
+        showScreen('schedule-screen');
+    </script>
+</body>
+</html>

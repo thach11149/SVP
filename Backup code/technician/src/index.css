@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* --- Styles cho JobList.js --- */
+
+/* Box chứa tiêu đề và nút đăng xuất */
+.job-list-header-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px; /* Tương đương theme.spacing(4) nếu base spacing là 8px */
+  margin-bottom: 16px; /* Tương đương theme.spacing(2) */
+}
+
+/* Box chứa Tabs và nút Sắp xếp */
+.sort-and-tabs-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+/* Responsive cho Box chứa Tabs và nút Sắp xếp */
+@media (max-width: 600px) { /* Áp dụng khi màn hình nhỏ hơn hoặc bằng 600px (small breakpoint của Material-UI) */
+  .sort-and-tabs-box {
+    flex-direction: column; /* Chuyển thành cột */
+    align-items: flex-start; /* Căn lề trái */
+  }
+
+  /* Điều chỉnh khoảng cách cho Tabs và Button khi xếp chồng */
+  .sort-and-tabs-box .MuiTabs-root {
+    margin-bottom: 12px; /* Thêm khoảng cách dưới cho Tabs */
+  }
+}
+
+/* Điều chỉnh style cho các Tab để trông gọn hơn */
+.custom-tab-root .MuiTab-root {
+  min-width: unset; /* Bỏ giới hạn chiều rộng tối thiểu của tab */
+  padding: 8px 16px; /* Điều chỉnh padding (top/bottom, left/right) */
+}
+
+/* Container chứa danh sách các Card công việc */
+.cards-container {
+  margin-top: 16px; /* Khoảng cách từ header đến danh sách */
+}
+
+/* Box chứa phân trang */
+.pagination-box {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px; /* Khoảng cách từ danh sách đến phân trang */
+}
