@@ -1,6 +1,6 @@
 // src/components/CustomerList.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button, Box, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip } from '@mui/material';
 import { Edit, Delete, Work } from '@mui/icons-material';
@@ -20,12 +20,7 @@ export default function CustomerList() {
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
 
-  useEffect(() => {
-    fetchCustomers();
-    fetchProvinces();
-  }, []);
-
-  async function fetchCustomers() {
+  const fetchCustomers = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase.from('customers').select('*').order('created_at', { ascending: false });
@@ -36,7 +31,7 @@ export default function CustomerList() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   async function fetchProvinces() {
     // Xóa hoặc comment đoạn fetch từ Supabase cho provinces
@@ -89,20 +84,6 @@ export default function CustomerList() {
   // Đóng alert
   const handleCloseAlert = () => {
     setAlert({ ...alert, open: false });
-  };
-
-  // Xử lý xóa
-  const handleDelete = async (customerId) => {
-    showConfirmDelete(async () => {
-      try {
-        const { error } = await supabase.from('customers').delete().eq('id', customerId);
-        if (error) throw error;
-        setCustomers(customers.filter(customer => customer.id !== customerId));
-        showAlert('Xóa khách hàng thành công!', 'success');
-      } catch (error) {
-        showAlert('Lỗi khi xóa khách hàng: ' + error.message, 'error');
-      }
-    });
   };
 
   const handleDeleteClick = (customerId) => {
@@ -167,6 +148,11 @@ export default function CustomerList() {
     // Chuyển đến trang lập kế hoạch với customer_id trong URL params
     navigate(`/lap-ke-hoach-cong-viec?customer_id=${customer.id}&customer_name=${encodeURIComponent(customer.name)}`);
   };
+
+  useEffect(() => {
+    fetchCustomers();
+    fetchProvinces();
+  }, [fetchCustomers]);
 
   if (loading) return <Typography>Đang tải dữ liệu...</Typography>;
 

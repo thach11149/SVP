@@ -20,7 +20,14 @@ export default function LoginPage() {
   return (
     <Container component="main" maxWidth="xs">
       <Box sx={{ marginTop: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography component="h1" variant="h5">Đăng nhập Nhân viên</Typography>
+        <Box sx={{ mb: 2 }}>
+          <img 
+            src="https://dichvudietcontrung.vn/wp-content/uploads/2024/03/sao-viet-pest-logo-1024x307.webp" 
+            alt="Sao Việt Pest Logo" 
+            style={{ maxWidth: '300px', width: '100%', height: 'auto' }}
+          />
+        </Box>
+        <Typography component="h1" variant="h5">Kỹ thuật viên Đăng nhập</Typography>
         <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 1 }}>
           <TextField margin="normal" required fullWidth id="email" label="Email" name="email" onChange={(e) => setEmail(e.target.value)} />
           <TextField margin="normal" required fullWidth name="password" label="Mật khẩu" type="password" id="password" onChange={(e) => setPassword(e.target.value)} />

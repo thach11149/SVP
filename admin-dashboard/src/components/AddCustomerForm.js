@@ -149,14 +149,14 @@ export default function CustomerForm({ open, onClose, onSave, customerToEdit, sh
       setDistricts([]);
       setWards([]);
     }
-  }, [customerToEdit, open, provinces]); // Phụ thuộc vào `provinces` để chạy
+  }, [customerToEdit, open, provinces, showAlert]); // Phụ thuộc vào `provinces` để chạy
 
   // Tự động sinh mã khách hàng theo loại, dựa trên mã lớn nhất hiện có
   useEffect(() => {
     if (!customerToEdit && open) {
       const fetchLatestCode = async () => {
         const prefix = formData.customer_type === 'company' ? 'DN' : 'CN';
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from('customers')
           .select('customer_code')
           .like('customer_code', `${prefix}%`)
@@ -320,13 +320,6 @@ export default function CustomerForm({ open, onClose, onSave, customerToEdit, sh
       setLoading(false);
     }
   };
-
-  function getAddressNames(provinceCode, districtCode, wardCode, provinces, districts, wards) {
-    const province_name = provinces.find(p => p.code === provinceCode)?.name || '';
-    const district_name = districts.find(d => d.code === districtCode)?.name || '';
-    const ward_name = wards.find(w => w.code === wardCode)?.name || '';
-    return { province_name, district_name, ward_name };
-  }
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>

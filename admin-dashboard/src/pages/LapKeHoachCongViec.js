@@ -18,6 +18,7 @@ export default function LapKeHoachCongViec({ session }) {
   const [taskContent, setTaskContent] = useState('');
   const [notes, setNotes] = useState('');
   const [technicians, setTechnicians] = useState([]);
+  const [teamLead, setTeamLead] = useState(''); // ID của team lead
   const [checklist, setChecklist] = useState([]);
   const [snackbar, setSnackbar] = useState({ open: false, type: 'success', message: '' });
   const [searchTech, setSearchTech] = useState('');
@@ -28,6 +29,9 @@ export default function LapKeHoachCongViec({ session }) {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [techniciansData, setTechniciansData] = useState([]);
   const [openChecklistPopup, setOpenChecklistPopup] = useState(false);
+  // Vật tư/hóa chất
+  const [materialsList, setMaterialsList] = useState([]);
+  const [selectedMaterials, setSelectedMaterials] = useState([]); // [{material_id, name, unit, category, required_quantity}]
 
   useEffect(() => {
     console.log('Component mounted, starting data fetch...');
@@ -78,6 +82,16 @@ export default function LapKeHoachCongViec({ session }) {
     fetchCustomers();
     fetchTechnicians();
     fetchChecklist();
+    // Fetch materials
+    const fetchMaterials = async () => {
+      const { data, error } = await supabase
+        .from('materials')
+        .select('id, name, unit, category')
+        .eq('active', true)
+        .order('name', { ascending: true });
+      if (!error && data) setMaterialsList(data);
+    };
+    fetchMaterials();
     
     // Nếu có preselected customer, tìm và set selected customer
     if (preselectedCustomerId && customers.length > 0) {
@@ -86,7 +100,7 @@ export default function LapKeHoachCongViec({ session }) {
         setSelectedCustomer(preselectedCustomer);
       }
     }
-  }, [preselectedCustomerId, customers.length]);
+  }, [preselectedCustomerId, customers]);
 
   const handleChecklistAdded = (newItems) => {
     // Refresh checklist sau khi thêm mới từ popup
@@ -151,11 +165,13 @@ export default function LapKeHoachCongViec({ session }) {
     setTaskContent('');
     setNotes('');
     setTechnicians([]);
+    setTeamLead('');
     setChecklist([]);
     setSearchTech('');
     setSearchCustomer('');
     setSelectedCustomer(null);
     setCustomChecklist('');
+    setSelectedMaterials([]);
   };
 
   const handleSubmit = async (e) => {
@@ -166,17 +182,34 @@ export default function LapKeHoachCongViec({ session }) {
     }
 
     try {
-      // Tạo object dữ liệu công việc phù hợp với schema
+      // Tách ngày và giờ
+      const [date, time] = datetime.split('T');
+      
+      // Xác định team members names cho hiển thị
+      const selectedTechNames = techniciansData
+        .filter(tech => technicians.includes(tech.id))
+        .map(tech => tech.name);
+      const teamMembersString = selectedTechNames.length > 1 ? selectedTechNames.join(', ') : null;
+      
+      // Tạo object dữ liệu công việc
       const jobData = {
         customer_id: customer,
         user_id: session?.user?.id || '00000000-0000-0000-0000-000000000000',
         service_type: serviceType,
-        scheduled_date: datetime,
+        scheduled_date: date,
+        scheduled_time: time || null,
         job_content: taskContent,
         job_description: taskContent,
         notes: notes || null,
+        special_requests: notes || null,
+        contact_person: selectedCustomer?.primary_contact_name || '',
+        contact_phone: selectedCustomer?.primary_contact_phone || '',
+        address: formatFullAddress(selectedCustomer),
         checklist: checklist,
-        status: 'Mới tạo'
+        status: 'Mới tạo',
+        team_members: teamMembersString,
+        team_lead_id: teamLead || null,
+        team_size: technicians.length
       };
 
       // Lưu công việc vào bảng jobs
@@ -187,53 +220,47 @@ export default function LapKeHoachCongViec({ session }) {
         .single();
 
       if (jobError) {
-        console.error('Error creating job:', jobError);
-        setSnackbar({ 
-          open: true, 
-          type: 'error', 
-          message: `Lỗi khi tạo công việc: ${jobError.message}` 
-        });
+        setSnackbar({ open: true, type: 'error', message: `Lỗi khi tạo công việc: ${jobError.message}` });
         return;
       }
 
-      // Nếu có job_id, tạo các bản ghi phân công trong bảng job_assignments
+      // Lưu checklist vào bảng job_checklist_items
+      if (jobResult && jobResult.id && checklist.length > 0) {
+        const checklistItems = checklist.map(value => ({
+          job_id: jobResult.id,
+          checklist_id: checklistOptionsState.find(opt => opt.value === value)?.id,
+          completed: false
+        }));
+        await supabase.from('job_checklist_items').insert(checklistItems);
+      }
+
+      // Lưu vật tư/hóa chất vào bảng job_materials
+      if (jobResult && jobResult.id && selectedMaterials.length > 0) {
+        const materialsData = selectedMaterials.map(mat => ({
+          job_id: jobResult.id,
+          material_id: mat.material_id,
+          required_quantity: mat.required_quantity,
+          notes: mat.notes || ''
+        }));
+        await supabase.from('job_materials').insert(materialsData);
+      }
+
+      // Phân công nhân viên
       if (jobResult && jobResult.id && technicians.length > 0) {
         const assignmentData = technicians.map(techId => ({
           job_id: jobResult.id,
           technician_id: techId,
-          status: 'assigned'
+          status: 'assigned',
+          role: techId === teamLead ? 'lead' : 'member'
         }));
-
-        const { error: assignmentError } = await supabase
-          .from('job_assignments')
-          .insert(assignmentData);
-
-        if (assignmentError) {
-          console.error('Error creating job assignments:', assignmentError);
-          setSnackbar({ 
-            open: true, 
-            type: 'warning', 
-            message: 'Công việc đã được tạo nhưng có lỗi khi phân công nhân viên' 
-          });
-          return;
-        }
+        await supabase.from('job_assignments').insert(assignmentData);
       }
 
-      // Thành công
-      setSnackbar({ 
-        open: true, 
-        type: 'success', 
-        message: `Công việc đã được tạo và giao thành công! Mã công việc: ${jobResult.id}` 
-      });
+      setSnackbar({ open: true, type: 'success', message: `Công việc đã được tạo và giao thành công! Mã công việc: ${jobResult.id}` });
       resetForm();
 
     } catch (error) {
-      console.error('Unexpected error:', error);
-      setSnackbar({ 
-        open: true, 
-        type: 'error', 
-        message: 'Có lỗi không mong muốn xảy ra. Vui lòng thử lại.' 
-      });
+      setSnackbar({ open: true, type: 'error', message: 'Có lỗi không mong muốn xảy ra. Vui lòng thử lại.' });
     }
   };
 
@@ -415,30 +442,6 @@ export default function LapKeHoachCongViec({ session }) {
                       label={opt.label}
                       sx={{ mb: 1 }}
                     />
-                    {checklist.includes(opt.value) && (
-                      <Box sx={{ ml: 4, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                        <TextField
-                          label="Số lượng"
-                          type="number"
-                          defaultValue={1}
-                          size="small"
-                          sx={{ width: 100 }}
-                        />
-                        <TextField
-                          label="Đơn vị"
-                          defaultValue={opt.unit || 'cái'}
-                          size="small"
-                          sx={{ width: 80 }}
-                        />
-                        <TextField
-                          label="Ghi chú"
-                          defaultValue={opt.notes || ''}
-                          size="small"
-                          sx={{ flexGrow: 1, minWidth: 150 }}
-                          placeholder="Ghi chú thêm..."
-                        />
-                      </Box>
-                    )}
                   </Box>
                 ))}
                 <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
@@ -456,6 +459,63 @@ export default function LapKeHoachCongViec({ session }) {
                   >
                     Thêm nhiều
                   </Button>
+                </Box>
+              </Paper>
+              {/* Nhóm 3b: Vật tư/Hóa chất cần chuẩn bị */}
+              <Paper variant="outlined" sx={{ p: 3, mb: 3 }}>
+                <Typography variant="h6" fontWeight={600} color="info.main" gutterBottom>
+                  Nhóm 3b: Vật tư/Hóa chất cần chuẩn bị
+                </Typography>
+                <Divider sx={{ mb: 2 }} />
+                <Box>
+                  {materialsList.map(mat => {
+                    const selected = selectedMaterials.find(m => m.material_id === mat.id);
+                    return (
+                      <Box key={mat.id} sx={{ mb: 2, p: 2, border: '1px solid #e0e0e0', borderRadius: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Checkbox
+                          checked={!!selected}
+                          onChange={e => {
+                            if (e.target.checked) {
+                              setSelectedMaterials([...selectedMaterials, {
+                                material_id: mat.id,
+                                name: mat.name,
+                                unit: mat.unit,
+                                category: mat.category,
+                                required_quantity: 1,
+                                notes: ''
+                              }]);
+                            } else {
+                              setSelectedMaterials(selectedMaterials.filter(m => m.material_id !== mat.id));
+                            }
+                          }}
+                        />
+                        <Typography sx={{ minWidth: 120 }}>{mat.name}</Typography>
+                        <TextField
+                          label="Số lượng"
+                          type="number"
+                          size="small"
+                          sx={{ width: 80 }}
+                          value={selected?.required_quantity || ''}
+                          disabled={!selected}
+                          onChange={e => {
+                            const val = parseFloat(e.target.value) || 0;
+                            setSelectedMaterials(selectedMaterials.map(m => m.material_id === mat.id ? { ...m, required_quantity: val } : m));
+                          }}
+                        />
+                        <Typography sx={{ minWidth: 60 }}>{mat.unit}</Typography>
+                        <TextField
+                          label="Ghi chú"
+                          size="small"
+                          sx={{ width: 120 }}
+                          value={selected?.notes || ''}
+                          disabled={!selected}
+                          onChange={e => {
+                            setSelectedMaterials(selectedMaterials.map(m => m.material_id === mat.id ? { ...m, notes: e.target.value } : m));
+                          }}
+                        />
+                      </Box>
+                    );
+                  })}
                 </Box>
               </Paper>
               {/* Nhóm 4: Phân công Nhân viên */}
@@ -482,8 +542,17 @@ export default function LapKeHoachCongViec({ session }) {
                             onChange={e => {
                               if (e.target.checked) {
                                 setTechnicians([...technicians, tech.id]);
+                                // Nếu là người đầu tiên được chọn, tự động set làm lead
+                                if (technicians.length === 0) {
+                                  setTeamLead(tech.id);
+                                }
                               } else {
                                 setTechnicians(technicians.filter(id => id !== tech.id));
+                                // Nếu bỏ chọn người lead, reset team lead
+                                if (teamLead === tech.id) {
+                                  const remainingTechs = technicians.filter(id => id !== tech.id);
+                                  setTeamLead(remainingTechs.length > 0 ? remainingTechs[0] : '');
+                                }
                               }
                             }}
                           />
@@ -492,6 +561,11 @@ export default function LapKeHoachCongViec({ session }) {
                           <Box>
                             <Typography variant="body2" fontWeight={500}>
                               {tech.name} ({tech.tech_code})
+                              {teamLead === tech.id && (
+                                <Typography component="span" color="primary" sx={{ ml: 1, fontWeight: 'bold' }}>
+                                  👑 TEAM LEAD
+                                </Typography>
+                              )}
                             </Typography>
                             <Typography variant="caption" color="text.secondary">
                               {tech.position} - {tech.phone}
@@ -499,11 +573,33 @@ export default function LapKeHoachCongViec({ session }) {
                           </Box>
                         }
                       />
+                      {/* Radio button để chọn team lead */}
+                      {technicians.includes(tech.id) && technicians.length > 1 && (
+                        <Box sx={{ ml: 4, mt: 1 }}>
+                          <FormControlLabel
+                            control={
+                              <Radio
+                                checked={teamLead === tech.id}
+                                onChange={() => setTeamLead(tech.id)}
+                                size="small"
+                              />
+                            }
+                            label={<Typography variant="caption">Chọn làm Team Lead</Typography>}
+                          />
+                        </Box>
+                      )}
                     </Box>
                   ))}
                 </Box>
+                {technicians.length > 1 && (
+                  <Box sx={{ mt: 2, p: 2, bgcolor: 'info.lighter', borderRadius: 1 }}>
+                    <Typography variant="body2" color="info.main" fontWeight={500}>
+                      ℹ️ Team Lead sẽ được phân công lấy hóa chất cho cả nhóm
+                    </Typography>
+                  </Box>
+                )}
                 <Typography variant="caption" color="text.secondary" mt={1}>
-                  Chọn một hoặc nhiều nhân viên thực hiện.
+                  Chọn một hoặc nhiều nhân viên thực hiện. Nếu chọn nhiều người, hãy chỉ định Team Lead.
                 </Typography>
               </Paper>
             </Grid>

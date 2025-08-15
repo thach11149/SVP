@@ -37,7 +37,7 @@ export default function ScheduleCalendar() {
       setEvents(data.map(formatJobToEvent));
     }
     setLoading(false);
-  }, []);
+  }, [alert]);
 
   useEffect(() => {
     fetchJobs();

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button,
   Box, Typography, TextField, Select, MenuItem, FormControl, InputLabel,
@@ -34,18 +34,6 @@ export default function JobFormDialog({
     technicians: [],
     status: 'Mới tạo'
   });
-
-  // Load data when dialog opens
-  useEffect(() => {
-    if (open) {
-      fetchData();
-      if (editJob) {
-        loadEditData();
-      } else {
-        resetForm();
-      }
-    }
-  }, [open, editJob]);
 
   const fetchData = async () => {
     try {
@@ -85,7 +73,7 @@ export default function JobFormDialog({
     }
   };
 
-  const loadEditData = () => {
+  const loadEditData = useCallback(() => {
     if (!editJob) return;
 
     // Format datetime for input
@@ -112,7 +100,7 @@ export default function JobFormDialog({
       technicians: assignedTechnicians,
       status: editJob.status || 'Mới tạo'
     });
-  };
+  }, [editJob, customers]);
 
   const resetForm = () => {
     setFormData({
@@ -131,6 +119,18 @@ export default function JobFormDialog({
     setCustomChecklist('');
   };
 
+  // Load data when dialog opens
+  useEffect(() => {
+    if (open) {
+      fetchData();
+      if (editJob) {
+        loadEditData();
+      } else {
+        resetForm();
+      }
+    }
+  }, [open, editJob, loadEditData]);
+
   const handleSubmit = async () => {
     try {
       // Validate required fields
@@ -145,7 +145,7 @@ export default function JobFormDialog({
 
       if (editJob) {
         // Update existing job
-        const { data: jobResult, error: jobError } = await supabase
+        const { error: jobError } = await supabase
           .from('jobs')
           .update({
             customer_id: formData.customer_id,
