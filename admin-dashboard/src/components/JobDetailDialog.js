@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button, Grid, Chip, 
   Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-  Divider, Box, Typography
+  Divider, Box, Typography, ImageList, ImageListItem, ImageListItemBar
 } from '@mui/material';
-import { CheckCircle } from '@mui/icons-material';
+import { CheckCircle, Image } from '@mui/icons-material';
+import { supabase } from '../supabaseClient';
 
 export default function JobDetailDialog({ 
   open, 
@@ -12,6 +13,72 @@ export default function JobDetailDialog({
   selectedJob, 
   checklistItems = [] 
 }) {
+  const [jobImages, setJobImages] = useState([]);
+  const [loadingImages, setLoadingImages] = useState(false);
+
+  // Reset images when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setJobImages([]);
+    }
+  }, [open]);
+
+  // Fetch job images when selectedJob changes
+  useEffect(() => {
+    if (selectedJob?.id && open) {
+      fetchJobImages(selectedJob.id);
+    }
+  }, [selectedJob?.id, open]);
+
+  const fetchJobImages = async (jobId) => {
+    try {
+      setLoadingImages(true);
+      
+      // Fetch work reports for this job and their associated images
+      const { data: reports, error: reportsError } = await supabase
+        .from('work_reports')
+        .select(`
+          id,
+          job_id,
+          user_email,
+          check_in_time,
+          check_out_time,
+          notes,
+          job_report_images (
+            id,
+            image_url,
+            created_at
+          )
+        `)
+        .eq('job_id', jobId);
+
+      if (reportsError) {
+        console.error('Error fetching job reports:', reportsError);
+        return;
+      }
+
+      // Extract all images from all reports
+      const allImages = [];
+      reports?.forEach(report => {
+        if (report.job_report_images) {
+          report.job_report_images.forEach(image => {
+            allImages.push({
+              ...image,
+              reportId: report.id,
+              reportDate: report.check_in_time || report.created_at,
+              reportNotes: report.notes
+            });
+          });
+        }
+      });
+
+      setJobImages(allImages);
+    } catch (error) {
+      console.error('Error fetching job images:', error);
+    } finally {
+      setLoadingImages(false);
+    }
+  };
   const getStatusColor = (status) => {
     switch (status) {
       case 'Mới tạo': return 'info';
@@ -218,6 +285,64 @@ export default function JobDetailDialog({
                 <Typography variant="body1" sx={{ mb: 2 }}>
                   {formatDate(selectedJob.created_at)}
                 </Typography>
+              </Grid>
+              
+              {/* Job Images Section */}
+              <Grid item xs={12}>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="subtitle1" fontWeight={600} color="primary" gutterBottom>
+                  📷 Hình ảnh Công việc ({jobImages.length} ảnh)
+                </Typography>
+                
+                {loadingImages ? (
+                  <Box sx={{ textAlign: 'center', py: 2 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Đang tải hình ảnh...
+                    </Typography>
+                  </Box>
+                ) : jobImages.length > 0 ? (
+                  <Paper variant="outlined" sx={{ p: 2, mt: 2 }}>
+                    <ImageList sx={{ width: '100%', height: 'auto' }} cols={3} rowHeight={200}>
+                      {jobImages.map((image, index) => (
+                        <ImageListItem key={image.id} sx={{ borderRadius: 1, overflow: 'hidden' }}>
+                          <img
+                            src={image.image_url}
+                            alt={`Ảnh công việc ${index + 1}`}
+                            loading="lazy"
+                            style={{
+                              width: '100%',
+                              height: '200px',
+                              objectFit: 'cover',
+                              cursor: 'pointer'
+                            }}
+                            onClick={() => window.open(image.image_url, '_blank')}
+                          />
+                          <ImageListItemBar
+                            title={`Ảnh #${index + 1}`}
+                            subtitle={
+                              <Typography variant="caption">
+                                {new Date(image.reportDate).toLocaleDateString('vi-VN')}
+                                {image.reportNotes && ` - ${image.reportNotes.substring(0, 30)}...`}
+                              </Typography>
+                            }
+                            sx={{
+                              background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
+                            }}
+                          />
+                        </ImageListItem>
+                      ))}
+                    </ImageList>
+                  </Paper>
+                ) : (
+                  <Paper variant="outlined" sx={{ p: 2, bgcolor: 'grey.50', mt: 2 }}>
+                    <Box sx={{ textAlign: 'center', py: 2 }}>
+                      <Image sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
+                      <Typography variant="body2" color="text.secondary">
+                        Công việc này chưa có hình ảnh nào được upload
+                      </Typography>
+                    </Box>
+                  </Paper>
+                )}
               </Grid>
               
               {/* Checklist Section */}

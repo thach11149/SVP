@@ -28,16 +28,16 @@ export default function DashboardPage({ session }) {
         </Typography>
         <Box component="ul" sx={{ mt: 2 }}>
           <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-            <strong>Quản lý Khách hàng:</strong> Thêm, sửa, xóa thông tin khách hàng
+            <strong>Quản lý Khách hàng:</strong> Thêm, sửa, xóa thông tin khách hàng và quản lý hồ sơ
           </Typography>
           <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-            <strong>Lịch làm việc:</strong> Xem lịch làm việc chi tiết với FullCalendar
+            <strong>Lịch làm việc:</strong> Xem và quản lý lịch làm việc hàng ngày của kỹ thuật viên
           </Typography>
           <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-            <strong>Lịch tháng:</strong> Xem lịch làm việc theo tháng
+            <strong>Checklist công việc:</strong> Quản lý danh sách công việc cần thực hiện
           </Typography>
           <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-            <strong>Lập kế hoạch công việc:</strong> Tạo và phân công công việc mới
+            <strong>Danh sách công việc:</strong> Xem tổng quan và trạng thái các công việc đã giao
           </Typography>
         </Box>
       </Box>

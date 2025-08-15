@@ -4,10 +4,11 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import {
   Container, Box, Typography, CircularProgress, Button, Paper, Divider,
-  Stack, TextField, Grid, IconButton
+  Stack, TextField, Grid, IconButton, Chip
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import moment from 'moment';
 
 export default function JobDetailPage({ session }) {
@@ -21,14 +22,56 @@ export default function JobDetailPage({ session }) {
   const [reportNotes, setReportNotes] = useState('');
   const [selectedFiles, setSelectedFiles] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingReportId, setEditingReportId] = useState(null);
 
   const fetchJobData = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .rpc('get_job_details_with_reports', { job_id_input: Number(jobId) });
-      if (error) throw error;
-      setJobDetails(Array.isArray(data) ? data[0] || null : data || null);
+      
+      // Fetch job details with customer info
+      const { data: jobData, error: jobError } = await supabase
+        .from('jobs')
+        .select(`
+          *,
+          customers (
+            id,
+            name,
+            address,
+            customer_code
+          )
+        `)
+        .eq('id', Number(jobId))
+        .single();
+
+      if (jobError) throw jobError;
+
+      // Fetch work reports with images
+      const { data: reportsData, error: reportsError } = await supabase
+        .from('work_reports')
+        .select(`
+          *,
+          job_report_images (
+            id,
+            image_url,
+            created_at
+          )
+        `)
+        .eq('job_id', Number(jobId))
+        .order('created_at', { ascending: false });
+
+      if (reportsError) throw reportsError;
+
+      // Combine data
+      const jobDetails = {
+        ...jobData,
+        work_reports: reportsData?.map(report => ({
+          ...report,
+          images: report.job_report_images || []
+        })) || []
+      };
+
+      setJobDetails(jobDetails);
     } catch (error) {
       console.error("Lỗi lấy chi tiết công việc:", error);
       alert('Lỗi lấy dữ liệu: ' + error.message);
@@ -114,6 +157,39 @@ export default function JobDetailPage({ session }) {
     }
   };
 
+  const handleUpdateReport = async () => {
+    if (!reportNotes && (!selectedFiles || selectedFiles.length === 0)) {
+      return alert('Vui lòng nhập ghi chú hoặc chọn ảnh.');
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Update report notes
+      await supabase.from('work_reports').update({ notes: reportNotes }).eq('id', editingReportId);
+
+      // Add new images if selected
+      if (selectedFiles && selectedFiles.length > 0) {
+        for (const file of Array.from(selectedFiles)) {
+          const filePath = `${jobId}/${editingReportId}/${Date.now()}-${file.name}`;
+          await supabase.storage.from('report-images').upload(filePath, file, { cacheControl: '3600', upsert: false });
+          const { data: { publicUrl } } = supabase.storage.from('report-images').getPublicUrl(filePath);
+          await supabase.from('job_report_images').insert([{ report_id: editingReportId, image_url: publicUrl }]);
+        }
+      }
+
+      alert('Cập nhật báo cáo thành công!');
+      setIsEditing(false);
+      setEditingReportId(null);
+      fetchJobData();
+      setReportNotes('');
+      setSelectedFiles(null);
+    } catch (error) {
+      alert('Lỗi khi cập nhật báo cáo: ' + error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleDeleteImage = async (image) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa hình ảnh này không?')) return;
     try {
@@ -130,8 +206,13 @@ export default function JobDetailPage({ session }) {
   if (loading) return <Container><Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}><CircularProgress /></Box></Container>;
   if (!jobDetails) return <Container><Typography>Không tìm thấy công việc.</Typography></Container>;
 
+  // Get reports for current user only, sorted by created_at descending
+  const userReports = jobDetails.work_reports?.filter(report => report.user_id === session?.user?.id);
+  const sortedUserReports = userReports?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const latestReport = sortedUserReports?.[0];
+
+  // Get all reports for display, sorted by created_at descending
   const sortedReports = jobDetails.work_reports?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-  const latestReport = sortedReports?.[0];
 
   return (
     <Container maxWidth="md" sx={{ mt: 2, mb: 4 }}>
@@ -153,31 +234,95 @@ export default function JobDetailPage({ session }) {
       <Paper sx={{ p: { xs: 2, md: 3 }, mb: 4 }}>
         <Typography variant="h5" gutterBottom>Hành động</Typography>
         <Stack direction="row" spacing={2}>
-          {(!latestReport || latestReport.check_out_time) && (
-            <Button variant="contained" onClick={handleCheckIn} disabled={isSubmitting}>Check-in</Button>
+          {/* Nếu chưa có report hoặc report cuối chưa check-in */}
+          {!latestReport && (
+            <Button variant="contained" onClick={handleCheckIn} disabled={isSubmitting}>
+              Bắt đầu công việc (Check-in)
+            </Button>
           )}
+          {/* Nếu có report và đã check-in nhưng chưa check-out */}
           {latestReport && !latestReport.check_out_time && (
-            <Button variant="contained" color="secondary" onClick={handleCheckOut} disabled={isSubmitting}>Check-out</Button>
+            <Button variant="contained" color="secondary" onClick={handleCheckOut} disabled={isSubmitting}>
+              Hoàn thành (Check-out)
+            </Button>
+          )}
+          {/* Nếu đã hoàn thành công việc */}
+          {latestReport && latestReport.check_out_time && (
+            <>
+              <Chip 
+                label="✅ Công việc đã hoàn thành" 
+                color="success" 
+                variant="filled"
+                sx={{ fontSize: '1rem', py: 2, px: 1 }}
+              />
+              <Button 
+                variant="outlined" 
+                startIcon={<EditIcon />}
+                onClick={() => {
+                  setIsEditing(true);
+                  setEditingReportId(latestReport.id);
+                  setReportNotes(latestReport.notes || '');
+                }}
+              >
+                Chỉnh sửa báo cáo
+              </Button>
+            </>
           )}
         </Stack>
       </Paper>
 
-      {latestReport && !latestReport.check_out_time && (
+      {(latestReport && !latestReport.check_out_time) || isEditing ? (
         <Paper sx={{ p: { xs: 2, md: 3 }, mb: 4 }}>
-          <Typography variant="h5" gutterBottom>Cập nhật Báo cáo</Typography>
+          <Typography variant="h5" gutterBottom>
+            {isEditing ? 'Chỉnh sửa Báo cáo' : 'Cập nhật Báo cáo'}
+          </Typography>
           <Box>
-            <TextField label="Ghi chú tại hiện trường" multiline rows={4} fullWidth variant="outlined"
-              value={reportNotes} onChange={(e) => setReportNotes(e.target.value)} sx={{ mb: 2 }} />
-            <Button variant="contained" component="label" sx={{ mb: 2 }}>Chọn Ảnh
+            <TextField 
+              label="Ghi chú tại hiện trường" 
+              multiline 
+              rows={4} 
+              fullWidth 
+              variant="outlined"
+              value={reportNotes} 
+              onChange={(e) => setReportNotes(e.target.value)} 
+              sx={{ mb: 2 }} 
+            />
+            <Button variant="contained" component="label" sx={{ mb: 2 }}>
+              Chọn Ảnh
               <input type="file" hidden multiple onChange={handleFileChange} />
             </Button>
-            {selectedFiles && <Typography variant="body2" sx={{ mb: 2 }}>Đã chọn: {selectedFiles.length} ảnh</Typography>}
-            <Button variant="contained" color="success" fullWidth onClick={handleSaveReport} disabled={isSubmitting}>
-              {isSubmitting ? 'Đang lưu...' : 'Lưu Báo cáo'}
-            </Button>
+            {selectedFiles && (
+              <Typography variant="body2" sx={{ mb: 2 }}>
+                Đã chọn: {selectedFiles.length} ảnh
+              </Typography>
+            )}
+            <Stack direction="row" spacing={2}>
+              <Button 
+                variant="contained" 
+                color="success" 
+                onClick={isEditing ? handleUpdateReport : handleSaveReport} 
+                disabled={isSubmitting}
+                sx={{ flex: 1 }}
+              >
+                {isSubmitting ? 'Đang lưu...' : isEditing ? 'Cập nhật Báo cáo' : 'Lưu Báo cáo'}
+              </Button>
+              {isEditing && (
+                <Button 
+                  variant="outlined" 
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditingReportId(null);
+                    setReportNotes('');
+                    setSelectedFiles(null);
+                  }}
+                >
+                  Hủy
+                </Button>
+              )}
+            </Stack>
           </Box>
         </Paper>
-      )}
+      ) : null}
 
       <Typography variant="h5" gutterBottom>Lịch sử Báo cáo</Typography>
       {jobDetails.work_reports?.length > 0 ? (
