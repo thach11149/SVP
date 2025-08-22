@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wireframe - Mobile App KTV</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        /* Mobile Wireframe specific styles */
+        .mobile-wireframe-container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            font-family: Arial, sans-serif;
+            background: white;
+            padding: 20px;
+        }
+        
+        .devices-showcase {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .mobile-device {
+            width: 250px;
+            height: 500px;
+            background: #f8f9fa;
+            border: 8px solid #2c3e50;
+            border-radius: 25px;
+            position: relative;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        .device-screen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 17px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .status-bar {
+            height: 25px;
+            background: #000;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 10px;
+        }
+        
+        .app-header {
+            height: 50px;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .screen-content {
+            height: calc(100% - 75px);
+            padding: 15px;
+            background: #f8f9fa;
+            overflow-y: auto;
+        }
+        
+        .mobile-widget {
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .widget-header {
+            background: #e9ecef;
+            padding: 8px 12px;
+            border-radius: 8px 8px 0 0;
+            font-weight: bold;
+            font-size: 11px;
+            color: #495057;
+        }
+        
+        .widget-body {
+            padding: 12px;
+            font-size: 10px;
+            line-height: 1.4;
+        }
+        
+        .job-card {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .job-title {
+            font-weight: bold;
+            font-size: 10px;
+            color: #2c3e50;
+        }
+        
+        .job-status {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 8px;
+            font-weight: bold;
+        }
+        
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-active { background: #d4edda; color: #155724; }
+        .status-completed { background: #d1ecf1; color: #0c5460; }
+        
+        .job-details {
+            font-size: 9px;
+            color: #6c757d;
+            line-height: 1.3;
+        }
+        
+        .mobile-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 9px;
+            font-weight: bold;
+            margin: 2px;
+            display: inline-block;
+        }
+        
+        .btn-success { background: #28a745; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-danger { background: #dc3545; }
+        .btn-secondary { background: #6c757d; }
+        
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: white;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        
+        .nav-item {
+            text-align: center;
+            font-size: 8px;
+            color: #6c757d;
+            padding: 5px;
+        }
+        
+        .nav-item.active {
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .nav-icon {
+            font-size: 16px;
+            margin-bottom: 2px;
+        }
+        
+        .device-label {
+            position: absolute;
+            bottom: -30px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .metric-number {
+            font-size: 16px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .metric-label {
+            font-size: 8px;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+        
+        .camera-placeholder {
+            width: 100%;
+            height: 120px;
+            background: #e9ecef;
+            border: 2px dashed #adb5bd;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 10px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 8px;
+        }
+        
+        .form-label {
+            font-size: 9px;
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 3px;
+        }
+        
+        .form-input {
+            width: 100%;
+            height: 25px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background: white;
+            font-size: 9px;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-wireframe-container">
+        <div class="dfd-title">Mobile App Wireframes: Ứng dụng Di động cho Kỹ thuật viên (KTV)</div>
+        
+        <div class="devices-showcase">
+            <!-- Screen 1: Dashboard -->
+            <div class="mobile-device">
+                <div class="device-screen">
+                    <div class="status-bar">
+                        <span>9:41</span>
+                        <span>📶 📶 📶 🔋</span>
+                    </div>
+                    <div class="app-header">
+                        <span>📱 KTV Dashboard</span>
+                        <span>🔔</span>
+                    </div>
+                    <div class="screen-content">
+                        <div style="text-align: center; margin-bottom: 15px;">
+                            <div style="font-size: 12px; font-weight: bold; color: #2c3e50;">Xin chào, Nguyễn Văn Minh!</div>
+                            <div style="font-size: 9px; color: #6c757d;">Thứ Hai, 15 Tháng 8, 2024</div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                            <div class="metric-card" style="flex: 1;">
+                                <div class="metric-number">3</div>
+                                <div class="metric-label">CV hôm nay</div>
+                            </div>
+                            <div class="metric-card" style="flex: 1;">
+                                <div class="metric-number">1</div>
+                                <div class="metric-label">Đang thực hiện</div>
+                            </div>
+                            <div class="metric-card" style="flex: 1;">
+                                <div class="metric-number">2</div>
+                                <div class="metric-label">Hoàn thành</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mobile-widget">
+                            <div class="widget-header">📋 Công việc tiếp theo</div>
+                            <div class="widget-body">
+                                <div class="job-card">
+                                    <div class="job-header">
+                                        <div class="job-title">🏠 Diệt kiến - Nhà riêng</div>
+                                        <div class="job-status status-pending">Chờ</div>
+                                    </div>
+                                    <div class="job-details">
+                                        📍 123 Nguyễn Văn A, Q.1<br/>
+                                        ⏰ 10:30 - 12:00<br/>
+                                        👤 Anh Minh - 0901234567
+                                    </div>
+                                </div>
+                                <div style="text-align: center; margin-top: 8px;">
+                                    <span class="mobile-button btn-success">Bắt đầu</span>
+                                    <span class="mobile-button btn-secondary">Chi tiết</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mobile-widget">
+                            <div class="widget-header">⚡ Thao tác nhanh</div>
+                            <div class="widget-body" style="text-align: center;">
+                                <span class="mobile-button">📦 Vật tư</span>
+                                <span class="mobile-button">📍 Vị trí</span>
+                                <span class="mobile-button">💰 Chi phí</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bottom-nav">
+                        <div class="nav-item active">
+                            <div class="nav-icon">🏠</div>
+                            <div>Trang chủ</div>
+                        </div>
+                        <div class="nav-item">
+                            <div class="nav-icon">📋</div>
+                            <div>Công việc</div>
+                        </div>
+                        <div class="nav-item">
+                            <div class="nav-icon">📦</div>
+                            <div>Vật tư</div>
+                        </div>
+                        <div class="nav-item">
+                            <div class="nav-icon">📊</div>
+                            <div>Báo cáo</div>
+                        </div>
+                        <div class="nav-item">
+                            <div class="nav-icon">👤</div>
+                            <div>Cá nhân</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="device-label">Dashboard Screen</div>
+            </div>
+
+            <!-- Screen 2: Job List -->
+            <div class="mobile-device">
+                <div class="device-screen">
+                    <div class="status-bar">
+                        <span>10:15</span>
+                        <span>📶 📶 📶 🔋</span>
+                    </div>
+                    <div class="app-header">
+                        <span>📋 Danh sách Công việc</span>
+                        <span>🔍</span>
+                    </div>
+                    <div class="screen-content">
+                        <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                            <span class="mobile-button" style="font-size: 8px;">Tất cả</span>
+                            <span class="mobile-button btn-warning" style="font-size: 8px;">Hôm nay</span>
+                            <span class="mobile-button btn-secondary" style="font-size: 8px;">Tuần này</span>
+                        </div>
+                        
+                        <div class="job-card">
+                            <div class="job-header">
+                                <div class="job-title">🏢 Diệt gián - Văn phòng</div>
+                                <div class="job-status status-active">Đang làm</div>
+                            </div>
+                            <div class="job-details">
+                                📍 456 Lê Loi, Q.3, TP.HCM<br/>
+                                ⏰ 08:00 - 10:00 (Đã qua 2h15p)<br/>
+                                👤 Chị Lan - 0987654321<br/>
+                                📝 Diệt gián trong bếp và kho
+                            </div>
+                            <div style="margin-top: 5px;">
+                                <span class="mobile-button btn-warning">Tạm dừng</span>
+                                <span class="mobile-button btn-success">Hoàn thành</span>
+                            </div>
+                        </div>
+                        
+                        <div class="job-card">
+                            <div class="job-header">
+                                <div class="job-title">🏠 Diệt kiến - Nhà riêng</div>
+                                <div class="job-status status-pending">Chờ</div>
+                            </div>
+                            <div class="job-details">
+                                📍 123 Nguyễn Văn A, Q.1<br/>
+                                ⏰ 10:30 - 12:00<br/>
+                                👤 Anh Minh - 0901234567<br/>
+                                📝 Diệt kiến bếp, phòng ăn
+                            </div>
+                            <div style="margin-top: 5px;">
+                                <span class="mobile-button btn-success">Check-in</span>
+                                <span class="mobile-button btn-secondary">Gọi KH</span>
+                            </div>
+                        </div>
+                        
+                        <div class="job-card">
+                            <div class="job-header">
+                                <div class="job-title">🏪 Diệt muỗi - Cửa hàng</div>
+                                <div class="job-status status-completed">Xong</div>
+                            </div>
+                            <div class="job-details">
+                                📍 789 Trần Hưng Đạo, Q.5<br/>
+                                ⏰ 06:00 - 07:30 ✅<br/>
+                                👤 Ông Tân - 0912345678<br/>
+                                ⭐ Đánh giá: 5/5
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bottom-nav">
+                        <div class="nav-item">
+                            <div class="nav-icon">🏠</div>
+                            <div>Trang chủ</div>
+                        </div>
+                        <div class="nav-item active">
+                            <div class="nav-icon">📋</div>
+                            <div>Công việc</div>
+                        </div>
+                        <div class="nav-item">
+                            <div class="nav-icon">📦</div>
+                            <div>Vật tư</div>
+                        </div>
+                        <div class="nav-item">
+                            <div class="nav-icon">📊</div>
+                            <div>Báo cáo</div>
+                        </div>
+                        <div class="nav-item">
+                            <div class="nav-icon">👤</div>
+                            <div>Cá nhân</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="device-label">Job List Screen</div>
+            </div>
+
+            <!-- Screen 3: Check-in -->
+            <div class="mobile-device">
+                <div class="device-screen">
+                    <div class="status-bar">
+                        <span>10:32</span>
+                        <span>📶 📶 📶 🔋</span>
+                    </div>
+                    <div class="app-header">
+                        <span>📍 Check-in Hiện trường</span>
+                        <span>❌</span>
+                    </div>
+                    <div class="screen-content">
+                        <div style="text-align: center; margin-bottom: 15px;">
+                            <div style="font-size: 12px; font-weight: bold; color: #2c3e50;">Diệt kiến - Nhà riêng</div>
+                            <div style="font-size: 9px; color: #6c757d;">123 Nguyễn Văn A, Q.1, TP.HCM</div>
+                        </div>
+                        
+                        <div class="mobile-widget">
+                            <div class="widget-header">🌍 Định vị GPS</div>
+                            <div class="widget-body">
+                                <div style="text-align: center; margin-bottom: 8px;">
+                                    <div style="width: 80px; height: 80px; border: 3px solid #28a745; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 24px;">📍</div>
+                                </div>
+                                <div style="text-align: center; font-size: 9px;">
+                                    <div><strong>Vị trí hiện tại:</strong></div>
+                                    <div>123 Nguyễn Văn A, Q.1</div>
+                                    <div style="color: #28a745;"><strong>Độ chính xác: 5m ✅</strong></div>
+                                    <div style="color: #6c757d;">Cập nhật: 10:32:15</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mobile-widget">
+                            <div class="widget-header">📷 Ảnh hiện trường trước khi làm</div>
+                            <div class="widget-body">
+                                <div class="camera-placeholder">
+                                    📷<br/>Chụp ảnh hiện trường<br/>Trước khi bắt đầu
+                                </div>
+                                <div style="text-align: center; margin-top: 8px;">
+                                    <span class="mobile-button">📷 Chụp ảnh</span>
+                                    <span class="mobile-button btn-secondary">📁 Thư viện</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-label">📝 Ghi chú ban đầu</div>
+                            <textarea class="form-input" style="height: 50px; resize: none;" placeholder="Tình trạng hiện trường..."></textarea>
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 15px;">
+                            <span class="mobile-button btn-success" style="font-size: 12px; padding: 12px 30px;">✅ XÁC NHẬN CHECK-IN</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="device-label">Check-in Screen</div>
+            </div>
+
+            <!-- Screen 4: Work Report -->
+            <div class="mobile-device">
+                <div class="device-screen">
+                    <div class="status-bar">
+                        <span>12:05</span>
+                        <span>📶 📶 📶 🔋</span>
+                    </div>
+                    <div class="app-header">
+                        <span>📝 Báo cáo Công việc</span>
+                        <span>💾</span>
+                    </div>
+                    <div class="screen-content">
+                        <div class="mobile-widget">
+                            <div class="widget-header">⏱️ Thời gian làm việc</div>
+                            <div class="widget-body" style="text-align: center;">
+                                <div style="font-size: 18px; font-weight: bold; color: #667eea;">01:33:42</div>
+                                <div style="font-size: 9px; color: #6c757d;">
+                                    Bắt đầu: 10:32 | Kết thúc: 12:05
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-label">🎯 Tình trạng hoàn thành</div>
+                            <select class="form-input">
+                                <option>✅ Hoàn thành xuất sắc</option>
+                                <option>✔️ Hoàn thành tốt</option>
+                                <option>⚠️ Hoàn thành có vấn đề</option>
+                                <option>❌ Chưa hoàn thành</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-label">📐 Diện tích đã xử lý (m²)</div>
+                            <input type="number" class="form-input" placeholder="50" value="50">
+                        </div>
+                        
+                        <div class="mobile-widget">
+                            <div class="widget-header">📦 Vật tư đã sử dụng</div>
+                            <div class="widget-body">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 9px;">
+                                    <span>Thuốc diệt kiến</span>
+                                    <span><strong>200ml</strong></span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 9px;">
+                                    <span>Bẫy kiến</span>
+                                    <span><strong>5 cái</strong></span>
+                                </div>
+                                <div style="text-align: center; margin-top: 8px;">
+                                    <span class="mobile-button btn-secondary">➕ Thêm vật tư</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mobile-widget">
+                            <div class="widget-header">📷 Ảnh kết quả sau khi hoàn thành</div>
+                            <div class="widget-body">
+                                <div class="camera-placeholder">
+                                    📷<br/>Chụp ảnh kết quả<br/>Sau khi hoàn thành
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="form-label">💬 Ghi chú cho khách hàng</div>
+                            <textarea class="form-input" style="height: 40px; resize: none;" placeholder="Đã xử lý xong khu vực bếp và phòng ăn..."></textarea>
+                        </div>
+                    </div>
+                    <div style="position: absolute; bottom: 70px; left: 15px; right: 15px; text-align: center;">
+                        <span class="mobile-button btn-success" style="width: 100%; padding: 12px;">📤 GỬI BÁO CÁO & CHECK-OUT</span>
+                    </div>
+                </div>
+                <div class="device-label">Work Report Screen</div>
+            </div>
+
+            <!-- Screen 5: Inventory -->
+            <div class="mobile-device">
+                <div class="device-screen">
+                    <div class="status-bar">
+                        <span>14:20</span>
+                        <span>📶 📶 📶 🔋</span>
+                    </div>
+                    <div class="app-header">
+                        <span>📦 Vật tư Di động</span>
+                        <span>🔍</span>
+                    </div>
+                    <div class="screen-content">
+                        <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                            <div class="metric-card" style="flex: 1;">
+                                <div class="metric-number">15</div>
+                                <div class="metric-label">Tổng loại VT</div>
+                            </div>
+                            <div class="metric-card" style="flex: 1;">
+                                <div class="metric-number">8</div>
+                                <div class="metric-label">Sắp hết</div>
+                            </div>
+                            <div class="metric-card" style="flex: 1;">
+                                <div class="metric-number">3</div>
+                                <div class="metric-label">Đã hết</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mobile-widget">
+                            <div class="widget-header">🧪 Thuốc diệt côn trùng</div>
+                            <div class="widget-body">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <span style="font-size: 9px;">Thuốc diệt kiến A+</span>
+                                    <span style="font-size: 9px; color: #28a745;"><strong>300ml</strong></span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <span style="font-size: 9px;">Thuốc diệt gián B12</span>
+                                    <span style="font-size: 9px; color: #ffc107;"><strong>50ml</strong></span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <span style="font-size: 9px;">Thuốc diệt muỗi C9</span>
+                                    <span style="font-size: 9px; color: #dc3545;"><strong>0ml</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mobile-widget">
+                            <div class="widget-header">🪤 Dụng cụ & Bẫy</div>
+                            <div class="widget-body">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <span style="font-size: 9px;">Bẫy kiến thông minh</span>
+                                    <span style="font-size: 9px; color: #28a745;"><strong>15 cái</strong></span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <span style="font-size: 9px;">Bẫy gián dính</span>
+                                    <span style="font-size: 9px; color: #ffc107;"><strong>3 cái</strong></span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                    <span style="font-size: 9px;">Máy phun cầm tay</span>
+                                    <span style="font-size: 9px; color: #28a745;"><strong>1 cái</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mobile-widget">
+                            <div class="widget-header">📊 Lịch sử sử dụng hôm nay</div>
+                            <div class="widget-body">
+                                <div style="font-size: 9px; margin-bottom: 3px;">• 08:30 - Thuốc diệt gián: 100ml</div>
+                                <div style="font-size: 9px; margin-bottom: 3px;">• 10:45 - Thuốc diệt kiến: 200ml</div>
+                                <div style="font-size: 9px; margin-bottom: 3px;">• 10:45 - Bẫy kiến: 5 cái</div>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; margin-top: 10px;">
+                            <span class="mobile-button">📝 Ghi nhận sử dụng</span>
+                            <span class="mobile-button btn-warning">📞 Yêu cầu bổ sung</span>
+                        </div>
+                    </div>
+                    <div class="bottom-nav">
+                        <div class="nav-item">
+                            <div class="nav-icon">🏠</div>
+                            <div>Trang chủ</div>
+                        </div>
+                        <div class="nav-item">
+                            <div class="nav-icon">📋</div>
+                            <div>Công việc</div>
+                        </div>
+                        <div class="nav-item active">
+                            <div class="nav-icon">📦</div>
+                            <div>Vật tư</div>
+                        </div>
+                        <div class="nav-item">
+                            <div class="nav-icon">📊</div>
+                            <div>Báo cáo</div>
+                        </div>
+                        <div class="nav-item">
+                            <div class="nav-icon">👤</div>
+                            <div>Cá nhân</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="device-label">Inventory Screen</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 50px; font-size: 14px; line-height: 1.6;">
+            <h3>Đặc tả kỹ thuật Mobile App Wireframes:</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <div>
+                    <h4>📱 Mobile Design Specifications:</h4>
+                    <ul>
+                        <li><strong>Screen Size:</strong> Optimized cho 375x667px (iPhone SE) đến 414x896px (iPhone 11)</li>
+                        <li><strong>Status Bar:</strong> 25px height với thông tin network và battery</li>
+                        <li><strong>App Header:</strong> 50px với gradient background và navigation icons</li>
+                        <li><strong>Bottom Navigation:</strong> 60px với 5 tabs chính</li>
+                        <li><strong>Content Area:</strong> Scrollable với 15px padding</li>
+                    </ul>
+                    
+                    <h4>🎨 Visual Design Elements:</h4>
+                    <ul>
+                        <li><strong>Color Scheme:</strong> Primary #667eea, Success #28a745, Warning #ffc107, Danger #dc3545</li>
+                        <li><strong>Typography:</strong> Font sizes từ 8px (labels) đến 18px (metrics)</li>
+                        <li><strong>Cards:</strong> White background với border-radius 8px và subtle shadows</li>
+                        <li><strong>Buttons:</strong> Rounded (20px radius) với distinct color coding</li>
+                        <li><strong>Icons:</strong> Emoji-based cho universal recognition</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4>⚡ Functional Requirements:</h4>
+                    <ul>
+                        <li><strong>GPS Integration:</strong> Real-time location tracking với accuracy display</li>
+                        <li><strong>Camera Functions:</strong> In-app photo capture cho job documentation</li>
+                        <li><strong>Offline Mode:</strong> Local storage cho work continuity</li>
+                        <li><strong>Push Notifications:</strong> Job assignments và system alerts</li>
+                        <li><strong>Biometric Auth:</strong> Fingerprint/Face ID cho quick login</li>
+                    </ul>
+                    
+                    <h4>🔄 User Experience Flow:</h4>
+                    <ul>
+                        <li><strong>Dashboard → Job List:</strong> Overview to detailed task management</li>
+                        <li><strong>Job Detail → Check-in:</strong> GPS verification và photo capture</li>
+                        <li><strong>Work Progress:</strong> Timer tracking và material usage logging</li>
+                        <li><strong>Report Generation:</strong> Photo upload, notes, completion status</li>
+                        <li><strong>Inventory Management:</strong> Real-time stock tracking</li>
+                    </ul>
+                    
+                    <h4>📊 Key Performance Indicators:</h4>
+                    <ul>
+                        <li><strong>Load Time:</strong> < 2 seconds cho mỗi screen</li>
+                        <li><strong>Touch Targets:</strong> Minimum 44px cho accessibility</li>
+                        <li><strong>Network Efficiency:</strong> Data compression cho mobile networks</li>
+                        <li><strong>Battery Optimization:</strong> Background processing limits</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

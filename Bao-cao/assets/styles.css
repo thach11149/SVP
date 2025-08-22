@@ -1,0 +1,426 @@
+/* CSS cho báo cáo khoa học */
+body {
+    font-family: 'Times New Roman', serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 40px;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+.container {
+    max-width: 850px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 60px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 50px;
+    border-bottom: 3px solid #0066cc;
+    padding-bottom: 30px;
+}
+
+.university {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.faculty {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.separator {
+    font-size: 16px;
+    margin: 15px 0;
+    color: #666;
+}
+
+.title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 20px 0;
+    text-transform: uppercase;
+    color: #0066cc;
+    letter-spacing: 1px;
+}
+
+.subtitle {
+    font-size: 18px;
+    font-weight: bold;
+    color: #0066cc;
+    margin-bottom: 30px;
+    letter-spacing: 1px;
+}
+
+h1 {
+    color: #0066cc;
+    font-size: 16px;
+    margin-top: 40px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #0066cc;
+    padding-bottom: 8px;
+    font-weight: bold;
+}
+
+h2 {
+    color: #0066cc;
+    font-size: 14px;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    margin-left: 20px;
+    font-weight: bold;
+}
+
+h3 {
+    color: #333;
+    font-size: 13px;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    margin-left: 40px;
+    font-weight: bold;
+}
+
+h4 {
+    color: #333;
+    font-size: 12px;
+    margin-top: 10px;
+    margin-bottom: 8px;
+    margin-left: 60px;
+    font-weight: bold;
+}
+
+h5 {
+    color: #333;
+    font-size: 12px;
+    margin-top: 8px;
+    margin-bottom: 6px;
+    margin-left: 80px;
+    font-weight: bold;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 12px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th {
+    background-color: #0066cc;
+    color: white;
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+td {
+    padding: 10px 8px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.table-center {
+    text-align: center;
+}
+
+tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+tr:hover {
+    background-color: #e8f4fd;
+}
+
+.section {
+    margin: 30px 0;
+}
+
+.subsection {
+    margin: 20px 0;
+    margin-left: 20px;
+}
+
+.highlight {
+    background-color: #fff3cd;
+    padding: 15px;
+    border-left: 4px solid #ffc107;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+.note {
+    background-color: #d1ecf1;
+    padding: 15px;
+    border-left: 4px solid #17a2b8;
+    margin: 20px 0;
+    font-style: italic;
+    border-radius: 4px;
+}
+
+.algorithm {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    margin: 20px 0;
+}
+
+.assignment-table td {
+    text-align: center;
+    font-size: 11px;
+}
+
+.assignment-table .task-column {
+    text-align: left;
+    font-weight: 500;
+    padding-left: 15px;
+}
+
+.completion-row {
+    background-color: #e8f5e8 !important;
+    font-weight: bold;
+}
+
+.completion-row td {
+    font-weight: bold;
+    color: #0066cc;
+}
+
+.x-mark {
+    font-weight: bold;
+    color: #28a745;
+    font-size: 14px;
+}
+
+.timeline {
+    background-color: #f1f3f4;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 20px 0;
+    text-align: center;
+    font-weight: bold;
+    color: #0066cc;
+}
+
+.footer {
+    margin-top: 50px;
+    text-align: right;
+    font-style: italic;
+    color: #666;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+}
+
+ul, ol {
+    margin: 15px 0;
+    padding-left: 30px;
+}
+
+li {
+    margin: 8px 0;
+}
+
+p {
+    margin: 10px 0;
+    text-align: justify;
+}
+
+@media print {
+    body {
+        background-color: white;
+        padding: 20px;
+    }
+    
+    .container {
+        box-shadow: none;
+        padding: 0;
+    }
+    
+    .header {
+        border-bottom: 2px solid #0066cc;
+    }
+}
+
+/* CSS cho DFD Diagrams */
+.dfd-container {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+    background: white;
+    padding: 20px;
+}
+
+.dfd-title {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    color: #2c3e50;
+}
+
+.dfd-diagram {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    overflow: visible;
+}
+
+/* External Entity */
+.external-entity {
+    position: absolute;
+    width: 120px;
+    height: 60px;
+    background: #e3f2fd;
+    border: 2px solid #1976d2;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+    text-align: center;
+    color: #1976d2;
+}
+
+/* Process */
+.process {
+    position: absolute;
+    width: 140px;
+    height: 80px;
+    background: #fff3e0;
+    border: 2px solid #f57c00;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 11px;
+    text-align: center;
+    color: #f57c00;
+}
+
+/* Central System for Context Diagram */
+.central-system {
+    background: #e8f5e8;
+    border: 3px solid #2e7d32;
+    border-radius: 20px;
+    color: #2e7d32;
+    font-size: 12px;
+}
+
+/* Data Store */
+.data-store {
+    position: absolute;
+    width: 160px;
+    height: 50px;
+    background: #f3e5f5;
+    border-top: 2px solid #7b1fa2;
+    border-bottom: 2px solid #7b1fa2;
+    border-left: 8px solid #7b1fa2;
+    border-right: none;
+    display: flex;
+    align-items: center;
+    padding-left: 15px;
+    font-weight: bold;
+    font-size: 12px;
+    color: #7b1fa2;
+}
+
+/* Data Flow Arrows */
+.data-flow {
+    position: absolute;
+    font-size: 10px;
+    color: #666;
+    background: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid #ddd;
+    z-index: 10;
+}
+
+/* SVG for arrows */
+.arrow-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Legend */
+.legend {
+    margin-top: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+}
+
+.legend-box {
+    width: 30px;
+    height: 20px;
+    border: 2px solid;
+    border-radius: 4px;
+}
+
+.legend-circle {
+    width: 30px;
+    height: 20px;
+    border: 2px solid;
+    border-radius: 50%;
+}
+
+.legend-store {
+    width: 30px;
+    height: 20px;
+    border-top: 2px solid;
+    border-bottom: 2px solid;
+    border-left: 6px solid;
+}
+
+/* DFD container trong báo cáo */
+.diagram-container {
+    margin: 20px 0;
+}
+
+#dfd-leader-container,
+#dfd-ktv-container {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    min-height: 700px;
+    background: #f8f9fa;
+}
+
+/* Đặc biệt cho DFD có chiều cao lớn hơn */
+.dfd-diagram.large {
+    height: 650px;
+}

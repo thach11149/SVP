@@ -1,0 +1,106 @@
+<div class="subsection">
+    <h2>2.3. Thiết kế hệ thống</h2>
+    
+    <h3>2.3.1. Kiến trúc hệ thống</h3>
+    <p>Hệ thống được thiết kế theo mô hình <strong>Client-Server với Supabase Backend-as-a-Service</strong> kết hợp <strong>hai ứng dụng frontend riêng biệt</strong> để đảm bảo tính chuyên biệt, hiệu suất cao và dễ bảo trì:</p>
+    
+    <h4>2.3.1.1. Lớp Client Applications</h4>
+    <ul>
+        <li><strong>Admin Dashboard (React SPA):</strong> Ứng dụng quản lý dành cho Leader, CSKH, Admin với Material-UI</li>
+        <li><strong>Technician App (React Mobile-First):</strong> Ứng dụng mobile-optimized cho KTV tại hiện trường với Tailwind CSS</li>
+        <li><strong>Công nghệ:</strong> React 19, Material-UI v7, Tailwind CSS, React Router DOM</li>
+        <li><strong>Đặc điểm:</strong> Single Page Application (SPA), Progressive Web App (PWA) capable</li>
+    </ul>
+    
+    <h4>2.3.1.2. Lớp Backend Services (Supabase)</h4>
+    <ul>
+        <li><strong>Supabase Database:</strong> PostgreSQL với real-time subscriptions</li>
+        <li><strong>Supabase Auth:</strong> Authentication và authorization với JWT</li>
+        <li><strong>Supabase Storage:</strong> File storage cho hình ảnh báo cáo</li>
+        <li><strong>Supabase Realtime:</strong> WebSocket connections cho live updates</li>
+        <li><strong>Row Level Security:</strong> Bảo mật cấp dòng dữ liệu</li>
+    </ul>
+    
+    <h4>2.3.1.3. Lớp External Integrations</h4>
+    <ul>
+        <li><strong>VN Administrative API:</strong> API địa giới hành chính Việt Nam</li>
+        <li><strong>Browser GPS API:</strong> Geolocation tracking tích hợp sẵn</li>
+        <li><strong>Camera API:</strong> Chụp ảnh trực tiếp từ browser</li>
+        <li><strong>Communication APIs:</strong> Tel: và Zalo links</li>
+    </ul>
+    
+    <div class="highlight">
+        <strong>Ưu điểm của kiến trúc Supabase + Dual Frontend:</strong>
+        <ul>
+            <li><strong>Chuyên biệt hóa:</strong> Mỗi ứng dụng tối ưu cho nhóm người dùng cụ thể</li>
+            <li><strong>Real-time sync:</strong> Dữ liệu đồng bộ tức thời giữa hai ứng dụng</li>
+            <li><strong>Scalability:</strong> Supabase tự động scale theo nhu cầu sử dụng</li>
+            <li><strong>Security:</strong> Row Level Security và JWT authentication</li>
+            <li><strong>Development speed:</strong> Backend-as-a-Service giảm thời gian phát triển</li>
+            <li><strong>Offline capability:</strong> Supabase hỗ trợ offline-first patterns</li>
+        </ul>
+    </div>
+    
+    <h3>2.3.2. Mô tả các thành phần trong hệ thống</h3>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 10%">STT</th>
+                <th style="width: 35%">Thành phần</th>
+                <th style="width: 55%">Diễn giải</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="table-center">1</td>
+                <td>Admin Dashboard App</td>
+                <td>React SPA với Material-UI - Quản lý khách hàng (CRUD), lập kế hoạch công việc, phân công KTV, theo dõi tiến độ trên calendar, quản lý checklist và vật tư</td>
+            </tr>
+            <tr>
+                <td class="table-center">2</td>
+                <td>Technician Mobile App</td>
+                <td>React PWA với Tailwind CSS - Nhận công việc, xác nhận hóa chất thông minh, check-in/out GPS, thực hiện checklist, chụp ảnh hiện trường, báo cáo vật tư</td>
+            </tr>
+            <tr>
+                <td class="table-center">3</td>
+                <td>Supabase Database</td>
+                <td>PostgreSQL với 12+ tables: customers, jobs, job_assignments, technicians, materials, checklist, work_reports, etc. Hỗ trợ relationships và constraints</td>
+            </tr>
+            <tr>
+                <td class="table-center">4</td>
+                <td>Supabase Auth</td>
+                <td>Authentication service với email/password, JWT tokens, session management, role-based access control cho Admin và Technician roles</td>
+            </tr>
+            <tr>
+                <td class="table-center">5</td>
+                <td>Supabase Realtime</td>
+                <td>WebSocket-based real-time subscriptions cho live updates: job status changes, new assignments, completion notifications</td>
+            </tr>
+            <tr>
+                <td class="table-center">6</td>
+                <td>Supabase Storage</td>
+                <td>File storage service cho job report images với automatic optimization, CDN delivery và access control policies</td>
+            </tr>
+            <tr>
+                <td class="table-center">7</td>
+                <td>Smart Chemical Management</td>
+                <td>Logic tính toán hóa chất theo role (team lead/member), hỗ trợ chế độ phạm vi ngày, auto-calculate required quantities</td>
+            </tr>
+            <tr>
+                <td class="table-center">8</td>
+                <td>GPS Tracking System</td>
+                <td>Browser Geolocation API integration cho check-in/out tracking, location verification, distance calculation</td>
+            </tr>
+            <tr>
+                <td class="table-center">9</td>
+                <td>Digital Checklist Engine</td>
+                <td>Dynamic checklist system với template management, progress tracking, completion validation</td>
+            </tr>
+            <tr>
+                <td class="table-center">10</td>
+                <td>Team Work Coordinator</td>
+                <td>Multi-technician assignment system với team lead designation, shared resource management, group progress tracking</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

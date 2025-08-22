@@ -1,0 +1,148 @@
+<div class="subsection">
+    <h2>2.2. Xác định và mô hình hóa yêu cầu phần mềm</h2>
+     <h4>2.2.3.2. DFD cho KTV xác nhận và cập nhật báo cáo công việc</h4>
+    <p>Luồng dữ liệu mô tả quá trình KTV thực hiện và báo cáo công việc tại hiện trường:</p>
+    <ul>
+        <li><strong>Input:</strong> Lịch công việc từ Leader, thông tin hiện trường</li>
+        <li><strong>Process:</strong> Check-in → Thực hiện công việc → Chụp ảnh báo cáo → Check-out</li>
+        <li><strong>Output:</strong> Báo cáo công việc hoàn thành, hình ảnh hiện trường</li>
+        <li><strong>Lưu trữ:</strong> GPS tracking, hình ảnh, báo cáo chi tiết</li>
+    </ul>
+    
+    <div class="diagram-container">
+        <div id="dfd-ktv-container" style="border: 1px solid #ddd; border-radius: 8px; min-height: 700px; background: #f8f9fa;">
+            <div style="text-align: center; padding: 20px; color: #666;">
+                Đang tải biểu đồ DFD...
+            </div>
+        </div>
+    </div>
+    
+    <h4>2.2.3.3. DFD cho chức năng Quản lý Hóa chất Thông minh</h4>
+    <p>Luồng dữ liệu mô tả quá trình quản lý hóa chất theo vai trò và team work:</p>
+    <ul>
+        <li><strong>Input:</strong> Job materials requirements, team assignments, user roles (lead/member)</li>
+        <li><strong>Process:</strong> Tính tổng hóa chất theo ngày/phạm vi → Phân biệt trách nhiệm theo role → Xác nhận lấy hóa chất → Báo cáo sử dụng thực tế</li>
+        <li><strong>Output:</strong> Daily chemical status, material usage reports, inventory updates</li>
+        <li><strong>Lưu trữ:</strong> daily_chemical_status, job_materials (actual quantities), materials inventory</li>
+    </ul>
+    
+    <div class="diagram-container">
+        <div id="dfd-quan-ly-kho-container" style="border: 1px solid #ddd; border-radius: 8px; min-height: 700px; background: #f8f9fa;">
+            <div style="text-align: center; padding: 20px; color: #666;">
+                Đang tải biểu đồ DFD...
+            </div>
+        </div>
+    </div> <h3>2.2.1. Phân loại các yêu cầu phần mềm</h3>
+    <div class="note">
+        Phân loại theo: yêu cầu chức năng, yêu cầu phi chức năng, yêu cầu ràng buộc
+    </div>
+    
+    <h3>2.2.2. Bảng trách nhiệm cho từng loại yêu cầu</h3>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 10%">STT</th>
+                <th style="width: 30%">Loại yêu cầu</th>
+                <th style="width: 35%">Mô tả</th>
+                <th style="width: 25%">Người phụ trách</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="table-center">1</td>
+                <td>Yêu cầu chức năng Admin Dashboard</td>
+                <td>Quản lý khách hàng (CRUD), lập kế hoạch và phân công công việc (cá nhân/nhóm), quản lý checklist và vật tư, theo dõi lịch làm việc trên calendar, xem báo cáo từ hiện trường</td>
+                <td>Leader, CSKH, Admin</td>
+            </tr>
+            <tr>
+                <td class="table-center">2</td>
+                <td>Yêu cầu chức năng Technician App</td>
+                <td>Nhận và xem công việc được giao, xác nhận hóa chất thông minh, check-in/out GPS, thực hiện checklist số hóa, chụp ảnh hiện trường, báo cáo vật tư sử dụng, liên hệ khách hàng</td>
+                <td>KTV, Team Lead</td>
+            </tr>
+            <tr>
+                <td class="table-center">3</td>
+                <td>Yêu cầu phi chức năng</td>
+                <td>Đồng bộ real-time giữa hai ứng dụng, bảo mật dữ liệu với Supabase Auth, responsive design cho mobile, hiệu suất tốt với React 19, khả năng mở rộng</td>
+                <td>Nhóm phát triển</td>
+            </tr>
+            <tr>
+                <td class="table-center">4</td>
+                <td>Yêu cầu ràng buộc</td>
+                <td>Sử dụng React + Material-UI, Supabase làm backend, Tailwind CSS, hỗ trợ GPS tracking, tích hợp API địa giới hành chính VN</td>
+                <td>Giám đốc, Nhóm phát triển</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h3>2.2.3. Sơ đồ luồng dữ liệu cho từng yêu cầu</h3>
+    <div class="note">
+        <em>Bao gồm: biểu mẫu và quy định kèm theo, sơ đồ, mô tả các luồng dữ liệu và thuật toán</em>
+    </div>
+    
+    <h4>2.2.3.1. DFD cho Leader giao việc</h4>
+    <p>Luồng dữ liệu mô tả quá trình Leader lập kế hoạch và phân công công việc cho các KTV:</p>
+    <ul>
+        <li><strong>Input:</strong> Thông tin khách hàng, yêu cầu dịch vụ, lịch làm việc hiện tại</li>
+        <li><strong>Process:</strong> Phân tích yêu cầu → Lập kế hoạch → Phân công KTV phù hợp</li>
+        <li><strong>Output:</strong> Lịch công việc chi tiết được gửi cho KTV</li>
+        <li><strong>Lưu trữ:</strong> Cơ sở dữ liệu công việc, thông tin KTV</li>
+    </ul>
+    
+    <div class="diagram-container">
+        <div id="dfd-leader-container" style="border: 1px solid #ddd; border-radius: 8px; min-height: 700px; background: #f8f9fa;">
+            <div style="text-align: center; padding: 20px; color: #666;">
+                Đang tải biểu đồ DFD...
+            </div>
+        </div>
+    </div>
+    
+    <h4>2.2.3.2. DFD cho KTV xác nhận và cập nhật báo cáo công việc</h4>
+    <p>Luồng dữ liệu mô tả quá trình KTV thực hiện và báo cáo công việc tại hiện trường:</p>
+    <ul>
+        <li><strong>Input:</strong> Lịch công việc từ Leader, thông tin hiện trường</li>
+        <li><strong>Process:</strong> Check-in → Thực hiện công việc → Chụp ảnh báo cáo → Check-out</li>
+        <li><strong>Output:</strong> Báo cáo công việc hoàn thành, hình ảnh hiện trường</li>
+        <li><strong>Lưu trữ:</strong> Cơ sở dữ liệu báo cáo, kho hình ảnh</li>
+    </ul>
+    
+    <h4>2.2.3.3. DFD cho chức năng "Quản lý Kho"</h4>
+    <p>Luồng dữ liệu mô tả quá trình quản lý nhập, xuất, tồn kho vật tư:</p>
+    <ul>
+        <li><strong>Input:</strong> Phiếu nhập kho, báo cáo sử dụng vật tư từ KTV</li>
+        <li><strong>Process:</strong> Cập nhật tồn kho → Tính toán xuất kho → Cảnh báo thiếu hàng</li>
+        <li><strong>Output:</strong> Báo cáo tồn kho, đề xuất nhập hàng</li>
+        <li><strong>Lưu trữ:</strong> Cơ sở dữ liệu kho vật tư</li>
+    </ul>
+    
+    <h4>2.2.3.4. DFD cho chức năng Real-time Tracking và Báo cáo</h4>
+    <p>Luồng dữ liệu mô tả quá trình theo dõi real-time và tổng hợp báo cáo:</p>
+    <ul>
+        <li><strong>Input:</strong> GPS coordinates từ mobile app, job status updates, work progress</li>
+        <li><strong>Process:</strong> Real-time sync qua Supabase → Cập nhật trạng thái job → Hiển thị trên Admin Dashboard → Tạo notifications</li>
+        <li><strong>Output:</strong> Live tracking dashboard, progress reports, completion notifications</li>
+        <li><strong>Lưu trữ:</strong> Job status history, GPS tracking data, real-time subscriptions</li>
+    </ul>
+    
+    <h4>2.2.3.5. DFD cho chức năng Team Work Management</h4>
+    <p>Luồng dữ liệu mô tả quá trình quản lý công việc nhóm:</p>
+    <ul>
+        <li><strong>Input:</strong> Multiple technician assignments, team lead designation, shared resources</li>
+        <li><strong>Process:</strong> Phân công nhóm → Chỉ định Team Lead → Phân chia trách nhiệm hóa chất → Đồng bộ tiến độ nhóm</li>
+        <li><strong>Output:</strong> Team coordination reports, shared resource allocation, group progress tracking</li>
+        <li><strong>Lưu trữ:</strong> Team assignments, role-based permissions, shared task status</li>
+    </ul>
+    
+    <div class="highlight">
+        <strong>Lưu ý về công nghệ và thuật toán:</strong>
+        <ul>
+            <li>Real-time sync sử dụng Supabase real-time subscriptions</li>
+            <li>GPS tracking tích hợp sẵn trong browser API</li>
+            <li>Thuật toán phân công team work dựa trên role và capabilities</li>
+            <li>Thuật toán tính hóa chất thông minh theo nhóm/cá nhân</li>
+            <li>API tích hợp địa giới hành chính Việt Nam cho địa chỉ chính xác</li>
+            <li>Material-UI và Tailwind CSS cho responsive design</li>
+            <li>React 19 với hooks patterns cho performance tối ưu</li>
+        </ul>
+    </div>
+</div>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Flow - Customer Service</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        /* Screen Flow specific styles */
+        .flow-container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            font-family: Arial, sans-serif;
+            background: white;
+            padding: 20px;
+        }
+        
+        .flow-diagram {
+            position: relative;
+            width: 100%;
+            height: 900px;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            overflow: visible;
+        }
+        
+        .screen-box {
+            position: absolute;
+            width: 180px;
+            background: white;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .screen-header {
+            background: #3498db;
+            color: white;
+            padding: 8px 12px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .screen-content {
+            padding: 10px;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+        
+        .screen-actions {
+            background: #ecf0f1;
+            padding: 8px;
+            border-top: 1px solid #bdc3c7;
+            font-size: 10px;
+        }
+        
+        .action-button {
+            background: #2ecc71;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            margin: 2px;
+            display: inline-block;
+            font-size: 9px;
+        }
+        
+        .action-secondary {
+            background: #95a5a6;
+        }
+        
+        .action-danger {
+            background: #e74c3c;
+        }
+        
+        .flow-arrow {
+            stroke: #2c3e50;
+            stroke-width: 2;
+            fill: none;
+            marker-end: url(#arrowhead-flow);
+        }
+        
+        .flow-label {
+            position: absolute;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            color: #856404;
+            font-weight: bold;
+        }
+        
+        .start-screen {
+            border-color: #2ecc71;
+        }
+        
+        .start-screen .screen-header {
+            background: #2ecc71;
+        }
+        
+        .decision-screen {
+            border-color: #f39c12;
+        }
+        
+        .decision-screen .screen-header {
+            background: #f39c12;
+        }
+        
+        .end-screen {
+            border-color: #e74c3c;
+        }
+        
+        .end-screen .screen-header {
+            background: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="flow-container">
+        <div class="dfd-title">Screen Flow: Quy trình CSKH Xử lý Khách hàng</div>
+        
+        <div class="flow-diagram">
+            <!-- Start: Login Screen -->
+            <div class="screen-box start-screen" style="top: 50px; left: 100px;">
+                <div class="screen-header">🔐 Màn hình Đăng nhập</div>
+                <div class="screen-content">
+                    • Nhập email/phone<br/>
+                    • Nhập mật khẩu<br/>
+                    • Checkbox "Ghi nhớ"<br/>
+                    • Link "Quên mật khẩu"
+                </div>
+                <div class="screen-actions">
+                    <span class="action-button">Đăng nhập</span>
+                    <span class="action-secondary">Quên MK</span>
+                </div>
+            </div>
+
+            <!-- Dashboard CSKH -->
+            <div class="screen-box" style="top: 50px; left: 350px;">
+                <div class="screen-header">📊 Dashboard CSKH</div>
+                <div class="screen-content">
+                    • Tổng quan cuộc gọi<br/>
+                    • Khách hàng chờ xử lý<br/>
+                    • Lịch hẹn hôm nay<br/>
+                    • Thông báo mới<br/>
+                    • Shortcut nhanh
+                </div>
+                <div class="screen-actions">
+                    <span class="action-button">KH mới</span>
+                    <span class="action-button">Tìm KH</span>
+                    <span class="action-secondary">Lịch</span>
+                </div>
+            </div>
+
+            <!-- Quản lý Khách hàng -->
+            <div class="screen-box" style="top: 250px; left: 50px;">
+                <div class="screen-header">👥 Quản lý Khách hàng</div>
+                <div class="screen-content">
+                    • Danh sách KH<br/>
+                    • Tìm kiếm/Lọc<br/>
+                    • Trạng thái dịch vụ<br/>
+                    • Lịch sử liên hệ<br/>
+                    • Ghi chú quan trọng
+                </div>
+                <div class="screen-actions">
+                    <span class="action-button">Thêm KH</span>
+                    <span class="action-button">Sửa</span>
+                    <span class="action-secondary">Xem chi tiết</span>
+                </div>
+            </div>
+
+            <!-- Thêm Khách hàng mới -->
+            <div class="screen-box" style="top: 450px; left: 50px;">
+                <div class="screen-header">➕ Thêm Khách hàng</div>
+                <div class="screen-content">
+                    • Thông tin cá nhân<br/>
+                    • Địa chỉ dịch vụ<br/>
+                    • Loại côn trùng<br/>
+                    • Ghi chú đặc biệt<br/>
+                    • Upload hình ảnh
+                </div>
+                <div class="screen-actions">
+                    <span class="action-button">Lưu</span>
+                    <span class="action-secondary">Hủy</span>
+                    <span class="action-button">Lưu & Đặt lịch</span>
+                </div>
+            </div>
+
+            <!-- Lập Lịch Hẹn -->
+            <div class="screen-box" style="top: 250px; left: 300px;">
+                <div class="screen-header">📅 Lập Lịch Hẹn</div>
+                <div class="screen-content">
+                    • Chọn ngày/giờ<br/>
+                    • KTV khả dụng<br/>
+                    • Loại dịch vụ<br/>
+                    • Ước tính thời gian<br/>
+                    • Ghi chú cho KTV
+                </div>
+                <div class="screen-actions">
+                    <span class="action-button">Đặt lịch</span>
+                    <span class="action-secondary">Kiểm tra lịch</span>
+                    <span class="action-secondary">Hủy</span>
+                </div>
+            </div>
+
+            <!-- Xác nhận Lịch hẹn -->
+            <div class="screen-box decision-screen" style="top: 450px; left: 300px;">
+                <div class="screen-header">✅ Xác nhận Đặt lịch</div>
+                <div class="screen-content">
+                    • Thông tin KH<br/>
+                    • Thời gian dịch vụ<br/>
+                    • KTV được phân công<br/>
+                    • Chi phí ước tính<br/>
+                    • Điều khoản dịch vụ
+                </div>
+                <div class="screen-actions">
+                    <span class="action-button">Xác nhận</span>
+                    <span class="action-secondary">Sửa lại</span>
+                    <span class="action-danger">Hủy</span>
+                </div>
+            </div>
+
+            <!-- Theo dõi Tiến độ -->
+            <div class="screen-box" style="top: 250px; left: 550px;">
+                <div class="screen-header">📋 Theo dõi Công việc</div>
+                <div class="screen-content">
+                    • Danh sách job<br/>
+                    • Trạng thái real-time<br/>
+                    • Vị trí KTV<br/>
+                    • Thời gian ước tính<br/>
+                    • Chat với KTV
+                </div>
+                <div class="screen-actions">
+                    <span class="action-button">Refresh</span>
+                    <span class="action-button">Chat KTV</span>
+                    <span class="action-secondary">Chi tiết</span>
+                </div>
+            </div>
+
+            <!-- Xử lý Khiếu nại -->
+            <div class="screen-box" style="top: 450px; left: 550px;">
+                <div class="screen-header">⚠️ Xử lý Khiếu nại</div>
+                <div class="screen-content">
+                    • Thông tin khiếu nại<br/>
+                    • Mức độ ưu tiên<br/>
+                    • Ghi nhận vấn đề<br/>
+                    • Đề xuất giải pháp<br/>
+                    • Lịch sử xử lý
+                </div>
+                <div class="screen-actions">
+                    <span class="action-button">Giải quyết</span>
+                    <span class="action-secondary">Chuyển leader</span>
+                    <span class="action-secondary">Ghi chú</span>
+                </div>
+            </div>
+
+            <!-- Báo cáo & Thống kê -->
+            <div class="screen-box" style="top: 50px; left: 600px;">
+                <div class="screen-header">📈 Báo cáo CSKH</div>
+                <div class="screen-content">
+                    • Số cuộc gọi/ngày<br/>
+                    • Tỷ lệ chuyển đổi<br/>
+                    • Thời gian xử lý TB<br/>
+                    • Đánh giá KH<br/>
+                    • Top khiếu nại
+                </div>
+                <div class="screen-actions">
+                    <span class="action-button">Xuất BC</span>
+                    <span class="action-secondary">Lọc theo ngày</span>
+                </div>
+            </div>
+
+            <!-- Hoàn thành -->
+            <div class="screen-box end-screen" style="top: 650px; left: 350px;">
+                <div class="screen-header">🎉 Hoàn thành Dịch vụ</div>
+                <div class="screen-content">
+                    • Báo cáo từ KTV<br/>
+                    • Ảnh hiện trường<br/>
+                    • Đánh giá dịch vụ<br/>
+                    • Thanh toán<br/>
+                    • Lịch hẹn tiếp theo
+                </div>
+                <div class="screen-actions">
+                    <span class="action-button">Xác nhận</span>
+                    <span class="action-button">Đánh giá</span>
+                    <span class="action-secondary">In hóa đơn</span>
+                </div>
+            </div>
+
+            <!-- SVG for flow arrows -->
+            <svg class="arrow-svg">
+                <defs>
+                    <marker id="arrowhead-flow" markerWidth="10" markerHeight="7" 
+                            refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#2c3e50" />
+                    </marker>
+                </defs>
+                
+                <!-- Login to Dashboard -->
+                <line x1="280" y1="130" x2="350" y2="130" class="flow-arrow"/>
+                
+                <!-- Dashboard to Quản lý KH -->
+                <line x1="380" y1="200" x2="200" y2="250" class="flow-arrow"/>
+                
+                <!-- Dashboard to Lập lịch -->
+                <line x1="430" y1="200" x2="400" y2="250" class="flow-arrow"/>
+                
+                <!-- Dashboard to Theo dõi -->
+                <line x1="530" y1="130" x2="600" y2="130" class="flow-arrow"/>
+                
+                <!-- Quản lý KH to Thêm KH -->
+                <line x1="140" y1="400" x2="140" y2="450" class="flow-arrow"/>
+                
+                <!-- Thêm KH to Lập lịch -->
+                <line x1="230" y1="520" x2="350" y2="350" class="flow-arrow"/>
+                
+                <!-- Lập lịch to Xác nhận -->
+                <line x1="380" y1="400" x2="380" y2="450" class="flow-arrow"/>
+                
+                <!-- Xác nhận to Theo dõi -->
+                <line x1="480" y1="500" x2="580" y2="350" class="flow-arrow"/>
+                
+                <!-- Theo dõi to Khiếu nại -->
+                <line x1="630" y1="400" x2="630" y2="450" class="flow-arrow"/>
+                
+                <!-- Khiếu nại to Hoàn thành -->
+                <line x1="580" y1="600" x2="480" y2="650" class="flow-arrow"/>
+                
+                <!-- Theo dõi to Hoàn thành -->
+                <line x1="600" y1="400" x2="450" y2="650" class="flow-arrow"/>
+                
+                <!-- Dashboard to Báo cáo -->
+                <line x1="530" y1="110" x2="600" y2="110" class="flow-arrow"/>
+            </svg>
+
+            <!-- Flow Labels -->
+            <div class="flow-label" style="top: 110px; left: 310px;">Đăng nhập<br/>thành công</div>
+            <div class="flow-label" style="top: 220px; left: 280px;">Quản lý<br/>khách hàng</div>
+            <div class="flow-label" style="top: 220px; left: 480px;">Đặt lịch<br/>dịch vụ</div>
+            <div class="flow-label" style="top: 110px; left: 560px;">Theo dõi<br/>công việc</div>
+            <div class="flow-label" style="top: 420px; left: 100px;">Thêm KH mới</div>
+            <div class="flow-label" style="top: 380px; left: 280px;">Lưu thông tin</div>
+            <div class="flow-label" style="top: 420px; left: 340px;">Xác nhận<br/>đặt lịch</div>
+            <div class="flow-label" style="top: 380px; left: 520px;">Chuyển theo dõi</div>
+            <div class="flow-label" style="top: 420px; left: 590px;">Có khiếu nại</div>
+            <div class="flow-label" style="top: 620px; left: 520px;">Hoàn thành<br/>dịch vụ</div>
+            <div class="flow-label" style="top: 90px; left: 560px;">Xem báo cáo</div>
+        </div>
+        
+        <div style="margin-top: 30px; font-size: 14px; line-height: 1.6;">
+            <h3>Mô tả quy trình Screen Flow CSKH:</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <div>
+                    <h4>🎯 Các luồng chính:</h4>
+                    <ol>
+                        <li><strong>Đăng nhập:</strong> CSKH đăng nhập vào hệ thống</li>
+                        <li><strong>Dashboard:</strong> Xem tổng quan công việc và thông báo</li>
+                        <li><strong>Quản lý KH:</strong> Tìm kiếm, thêm mới, cập nhật thông tin khách hàng</li>
+                        <li><strong>Đặt lịch:</strong> Lập lịch hẹn dịch vụ cho khách hàng</li>
+                        <li><strong>Theo dõi:</strong> Theo dõi tiến độ thực hiện công việc</li>
+                        <li><strong>Xử lý khiếu nại:</strong> Giải quyết các vấn đề phát sinh</li>
+                        <li><strong>Báo cáo:</strong> Xem thống kê hiệu suất công việc</li>
+                    </ol>
+                    
+                    <h4>💡 Tính năng đặc biệt:</h4>
+                    <ul>
+                        <li><strong>Real-time tracking:</strong> Theo dõi KTV trực tiếp</li>
+                        <li><strong>Chat integration:</strong> Liên lạc với KTV qua chat</li>
+                        <li><strong>Quick actions:</strong> Shortcut cho các tác vụ thường dùng</li>
+                        <li><strong>Smart notifications:</strong> Thông báo ưu tiên theo mức độ</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4>🔄 Decision Points:</h4>
+                    <ul>
+                        <li><strong>Sau Dashboard:</strong> Chọn quản lý KH, đặt lịch, hoặc theo dõi</li>
+                        <li><strong>Sau Quản lý KH:</strong> Thêm mới hoặc cập nhật KH hiện có</li>
+                        <li><strong>Sau Đặt lịch:</strong> Xác nhận hoặc sửa đổi thông tin</li>
+                        <li><strong>Trong Theo dõi:</strong> Xử lý bình thường hoặc có khiếu nại</li>
+                    </ul>
+                    
+                    <h4>📱 UX/UI Considerations:</h4>
+                    <ul>
+                        <li><strong>Responsive design:</strong> Hoạt động tốt trên desktop và tablet</li>
+                        <li><strong>Quick access:</strong> Menu sidebar với các tính năng chính</li>
+                        <li><strong>Status indicators:</strong> Màu sắc rõ ràng cho từng trạng thái</li>
+                        <li><strong>Search & filter:</strong> Tìm kiếm nhanh trong tất cả màn hình</li>
+                        <li><strong>Breadcrumb navigation:</strong> Dễ dàng quay lại màn hình trước</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

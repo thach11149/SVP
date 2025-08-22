@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo Đồ án Môn học - Nhập môn Công nghệ Phần mềm</title>
+    <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div id="header-content"></div>
+        
+        <!-- Section 1: Hình thức trình bày -->
+        <div id="section1-content"></div>
+        
+        <!-- Section 2.1: Giới thiệu -->
+        <div id="section2-1-content"></div>
+        
+        <!-- Section 2.2: Yêu cầu phần mềm -->
+        <div id="section2-2-content"></div>
+        
+        <!-- Section 2.3: Thiết kế hệ thống -->
+        <div id="section2-3-content"></div>
+        
+        <!-- Section 2.4: Thiết kế dữ liệu -->
+        <div id="section2-4-content"></div>
+        
+        <!-- Section 2.4.4: Mô tả bảng -->
+        <div id="section2-4-4-content"></div>
+        
+        <!-- Section 2.5: Thiết kế giao diện -->
+        <div id="section2-5-content"></div>
+        
+        <!-- Section 2.5.3: Mô tả màn hình -->
+        <div id="section2-5-3-content"></div>
+        
+        <!-- Section 2.6: Cài đặt -->
+        <div id="section2-6-content"></div>
+        
+        <!-- Section 2.7-2.10: Kết luận -->
+        <div id="section2-7-10-content"></div>
+        
+        <!-- Section 2.11: Phân công -->
+        <div id="section2-11-content"></div>
+        
+        <!-- Section 3: Thời gian -->
+        <div id="section3-content"></div>
+    </div>
+
+    <script>
+        // Function để load nội dung từ các file HTML riêng biệt
+        async function loadSection(sectionId, filePath) {
+            try {
+                const response = await fetch(filePath);
+                const content = await response.text();
+                document.getElementById(sectionId).innerHTML = content;
+            } catch (error) {
+                console.error(`Error loading ${filePath}:`, error);
+                document.getElementById(sectionId).innerHTML = `<p>Error loading section</p>`;
+            }
+        }
+
+        // Function để load DFD diagrams
+        async function loadDFD(containerId, dfdFilePath) {
+            try {
+                const response = await fetch(dfdFilePath);
+                const html = await response.text();
+                
+                // Extract body content from the DFD HTML
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const dfdContainer = doc.querySelector('.dfd-container');
+                
+                const container = document.getElementById(containerId);
+                if (container && dfdContainer) {
+                    container.innerHTML = dfdContainer.outerHTML;
+                } else if (container) {
+                    container.innerHTML = '<div style="text-align: center; padding: 20px; color: #e74c3c;">Không thể load biểu đồ DFD</div>';
+                }
+            } catch (error) {
+                console.error(`Error loading DFD ${dfdFilePath}:`, error);
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = `<div style="text-align: center; padding: 20px; color: #e74c3c;">Lỗi: Không thể tải được biểu đồ DFD.<br/><small>Đường dẫn: ${dfdFilePath}</small></div>`;
+                }
+            }
+        }
+
+        // Load tất cả các sections và DFDs
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Load sections trước
+            await loadSection('header-content', 'sections/header.html');
+            await loadSection('section1-content', 'sections/section1-hinh-thuc.html');
+            await loadSection('section2-1-content', 'sections/section2.1-gioi-thieu.html');
+            await loadSection('section2-2-content', 'sections/section2.2-yeu-cau.html');
+            await loadSection('section2-3-content', 'sections/section2.3-thiet-ke-he-thong.html');
+            await loadSection('section2-4-content', 'sections/section2.4-thiet-ke-du-lieu.html');
+            await loadSection('section2-4-4-content', 'sections/section2.4.4-mo-ta-bang.html');
+            await loadSection('section2-5-content', 'sections/section2.5-thiet-ke-giao-dien.html');
+            await loadSection('section2-5-3-content', 'sections/section2.5.3-mo-ta-man-hinh.html');
+            await loadSection('section2-6-content', 'sections/section2.6-cai-dat-thu-nghiem.html');
+            await loadSection('section2-7-10-content', 'sections/section2.7-2.10-ket-luan.html');
+            await loadSection('section2-11-content', 'sections/section2.11-phan-cong.html');
+            await loadSection('section3-content', 'sections/section3-thoi-gian.html');
+            
+            // Delay nhỏ để đảm bảo DOM đã render
+            setTimeout(() => {
+                // Load DFDs sau khi sections đã load xong
+                loadDFD('dfd-leader-container', 'diagrams/dfd-leader-giao-viec.html');
+                loadDFD('dfd-ktv-container', 'diagrams/dfd-ktv-bao-cao.html');
+                loadDFD('dfd-quan-ly-kho-container', 'diagrams/dfd-quan-ly-kho.html');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

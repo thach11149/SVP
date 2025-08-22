@@ -1,0 +1,183 @@
+<div class="subsection">
+    <h2>2.4. Thiết kế dữ liệu</h2>
+    
+    <h3>2.4.1. Thuật toán lập sơ đồ logic</h3>
+    <div class="algorithm">
+        <h4>2.4.1.1. Bước 1: Xét yêu cầu Admin Dashboard - Quản lý và Phân công</h4>
+        <h5>a. Thiết kế dữ liệu với tính đúng đắn</h5>
+        <p><strong>Phân tích thực thể chính:</strong></p>
+        <ul>
+            <li><strong>customers:</strong> Thông tin khách hàng với địa chỉ chi tiết (tỉnh/huyện/xã), mã tự động</li>
+            <li><strong>technicians:</strong> Thông tin KTV với user_id linking đến Supabase Auth</li>
+            <li><strong>jobs:</strong> Công việc chính với customer, service type, scheduled date/time</li>
+            <li><strong>job_assignments:</strong> Phân công nhiều KTV cho một job với role (lead/member)</li>
+        </ul>
+        
+        <p><strong>Quan hệ giữa các thực thể:</strong></p>
+        <ul>
+            <li>customers (1) - (n) jobs: Một khách hàng có nhiều công việc</li>
+            <li>jobs (1) - (n) job_assignments: Một job có nhiều assignments (team work)</li>
+            <li>technicians (1) - (n) job_assignments: Một KTV có nhiều assignments</li>
+            <li>jobs (n) - (1) users: Job được tạo bởi admin/leader (created_by)</li>
+        </ul>
+        
+        <h5>b. Thiết kế dữ liệu với tính tiến hóa</h5>
+        <p>Thiết kế hỗ trợ mở rộng:</p>
+        <ul>
+            <li>checklist table cho template management, có thể customize</li>
+            <li>materials table với categories cho inventory management</li>
+            <li>team_lead_id trong jobs để support team hierarchy</li>
+            <li>JSON fields cho flexible data storage (checklist data)</li>
+        </ul>
+        
+        <h4>2.4.1.2. Bước 2: Xét yêu cầu Technician App - Thực hiện và Báo cáo</h4>
+        <h5>a. Thiết kế dữ liệu với tính đúng đắn</h5>
+        <p><strong>Phân tích thực thể bổ sung:</strong></p>
+        <ul>
+            <li><strong>work_reports:</strong> Báo cáo từ hiện trường với GPS coordinates, checkin/checkout times</li>
+            <li><strong>job_report_images:</strong> Hình ảnh hiện trường với Supabase Storage URLs</li>
+            <li><strong>job_checklist_items:</strong> Checklist items đã hoàn thành theo từng job</li>
+            <li><strong>daily_chemical_status:</strong> Trạng thái hóa chất hàng ngày theo user</li>
+        </ul>
+        
+        <p><strong>Quan hệ bổ sung:</strong></p>
+        <ul>
+            <li>jobs (1) - (1) work_reports: Mỗi job có một work report</li>
+            <li>work_reports (1) - (n) job_report_images: Một report có nhiều hình ảnh</li>
+            <li>jobs (1) - (n) job_checklist_items: Job có nhiều checklist items</li>
+            <li>users (1) - (n) daily_chemical_status: User có nhiều chemical status records</li>
+        </ul>
+        
+        <h5>b. Thiết kế dữ liệu với tính tiến hóa</h5>
+        <ul>
+            <li>GPS coordinates storage cho location tracking và distance calculation</li>
+            <li>Timestamp fields chi tiết cho check-in/out tracking</li>
+            <li>Status enum fields cho job lifecycle management</li>
+            <li>Range date support trong daily_chemical_status (start_date, end_date)</li>
+        </ul>
+        
+        <h4>2.4.1.3. Bước 3: Xét yêu cầu Smart Chemical Management</h4>
+        <h5>a. Thiết kế dữ liệu với tính đúng đắn</h5>
+        <p><strong>Thực thể quản lý vật tư thông minh:</strong></p>
+        <ul>
+            <li><strong>materials:</strong> Master data vật tư/hóa chất với category classification</li>
+            <li><strong>job_materials:</strong> Required vs actual quantities per job</li>
+            <li><strong>daily_chemical_status:</strong> Smart chemical management với role-based logic</li>
+        </ul>
+        
+        <h5>b. Thiết kế dữ liệu với tính tiến hóa</h5>
+        <ul>
+            <li>Role-based chemical responsibility (team lead vs member)</li>
+            <li>Range mode support cho business trips</li>
+            <li>Automatic calculation algorithms trong application layer</li>
+            <li>Integration ready cho future inventory management modules</li>
+        </ul>
+    </div>
+    
+    <h3>2.4.2. Sơ đồ logic hoàn chỉnh</h3>
+    <p>Dựa trên phân tích các yêu cầu thực tế từ hai ứng dụng, sơ đồ ERD hoàn chỉnh bao gồm <strong>12+ bảng chính</strong> với PostgreSQL relationships:</p>
+    
+    <div class="highlight">
+        <strong>Các thực thể chính trong Supabase Database:</strong>
+        <ul>
+            <li><strong>customers:</strong> Thông tin khách hàng với địa chỉ chi tiết theo API VN administrative</li>
+            <li><strong>technicians:</strong> Thông tin KTV với user_id link đến Supabase Auth</li>
+            <li><strong>jobs:</strong> Công việc chính với full job lifecycle management</li>
+            <li><strong>job_assignments:</strong> Many-to-many relationship cho team work với roles</li>
+            <li><strong>materials:</strong> Master data vật tư/hóa chất với categories</li>
+            <li><strong>job_materials:</strong> Required vs actual quantities per job</li>
+            <li><strong>checklist:</strong> Template checklist items có thể customize</li>
+            <li><strong>job_checklist_items:</strong> Checklist completion tracking per job</li>
+            <li><strong>work_reports:</strong> Báo cáo hiện trường với GPS coordinates</li>
+            <li><strong>job_report_images:</strong> Image storage với Supabase Storage integration</li>
+            <li><strong>daily_chemical_status:</strong> Smart chemical management theo user và date ranges</li>
+        </ul>
+    </div>
+    
+    <p><strong>Mối quan hệ chính với Foreign Keys:</strong></p>
+    <ul>
+        <li>customers (1:N) jobs - customer_id reference</li>
+        <li>jobs (1:N) job_assignments - job_id reference cho team assignments</li>
+        <li>technicians (1:N) job_assignments - technician_id reference</li>
+        <li>jobs (1:N) job_materials - job_id với materials management</li>
+        <li>materials (1:N) job_materials - material_id reference</li>
+        <li>jobs (1:N) job_checklist_items - job_id cho checklist tracking</li>
+        <li>checklist (1:N) job_checklist_items - checklist_id template reference</li>
+        <li>jobs (1:1) work_reports - job_id unique constraint</li>
+        <li>work_reports (1:N) job_report_images - report_id reference</li>
+        <li>auth.users (1:N) daily_chemical_status - user_id từ Supabase Auth</li>
+    </ul>
+    
+    <h3>2.4.3. Danh sách các bảng dữ liệu (table) trong sơ đồ</h3>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 10%">STT</th>
+                <th style="width: 35%">Tên bảng dữ liệu</th>
+                <th style="width: 55%">Diễn giải</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="table-center">1</td>
+                <td>customers</td>
+                <td>Thông tin khách hàng với mã tự động, địa chỉ chi tiết (tỉnh/huyện/xã), thông tin liên hệ, tích hợp API địa giới hành chính VN</td>
+            </tr>
+            <tr>
+                <td class="table-center">2</td>
+                <td>technicians</td>
+                <td>Thông tin kỹ thuật viên với user_id linking đến Supabase Auth, tech_code, vị trí, trạng thái active</td>
+            </tr>
+            <tr>
+                <td class="table-center">3</td>
+                <td>jobs</td>
+                <td>Công việc chính với customer_id, service_type (Định kỳ/1 lần/SOS), scheduled_date/time, status, team_lead_id, created_by</td>
+            </tr>
+            <tr>
+                <td class="table-center">4</td>
+                <td>job_assignments</td>
+                <td>Phân công nhiều KTV cho một job với role (lead/member), status (assigned/completed), many-to-many relationship</td>
+            </tr>
+            <tr>
+                <td class="table-center">5</td>
+                <td>materials</td>
+                <td>Master data vật tư/hóa chất với name, unit, category, active status cho inventory management</td>
+            </tr>
+            <tr>
+                <td class="table-center">6</td>
+                <td>job_materials</td>
+                <td>Required quantities vs actual quantities của materials cho từng job, hỗ trợ smart chemical calculation</td>
+            </tr>
+            <tr>
+                <td class="table-center">7</td>
+                <td>checklist</td>
+                <td>Template checklist items với label, value, unit, notes - có thể customize và reuse</td>
+            </tr>
+            <tr>
+                <td class="table-center">8</td>
+                <td>job_checklist_items</td>
+                <td>Tracking completion status của checklist items cho từng job cụ thể với completed_at timestamp</td>
+            </tr>
+            <tr>
+                <td class="table-center">9</td>
+                <td>work_reports</td>
+                <td>Báo cáo hiện trường với check_in/out times, GPS coordinates, notes, images, user_email tracking</td>
+            </tr>
+            <tr>
+                <td class="table-center">10</td>
+                <td>job_report_images</td>
+                <td>Lưu trữ URLs của hình ảnh hiện trường trong Supabase Storage với automatic optimization</td>
+            </tr>
+            <tr>
+                <td class="table-center">11</td>
+                <td>daily_chemical_status</td>
+                <td>Smart chemical management với date ranges, user_id, status (pending/confirmed), notes, role-based logic</td>
+            </tr>
+            <tr>
+                <td class="table-center">12</td>
+                <td>vn_provinces/districts/wards</td>
+                <td>Dữ liệu địa giới hành chính Việt Nam để hỗ trợ địa chỉ chính xác và tìm kiếm khách hàng</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

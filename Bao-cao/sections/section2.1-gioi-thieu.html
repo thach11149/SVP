@@ -1,0 +1,134 @@
+<div class="section">
+    <h1>2. Nội dung báo cáo</h1>
+    
+    <div class="subsection">
+        <h2>2.1. Giới thiệu bài toán cần giải quyết</h2>
+        
+        <h3>2.1.1. Bối cảnh và động lực thực hiện</h3>
+        <p>Trong bối cảnh cạnh tranh của ngành dịch vụ hiện nay, việc tối ưu hóa quy trình vận hành là yếu tố sống còn đối với các doanh nghiệp. Đối với các công ty cung cấp dịch vụ kiểm soát côn trùng, công tác quản lý và điều phối nhân viên kỹ thuật (KTV) tại hiện trường là một bài toán phức tạp.</p>
+        
+        <p>Hiện tại, nhiều doanh nghiệp vẫn đang quản lý công việc này một cách thủ công qua các công cụ rời rạc như Zalo, Google Sheets, và các biểu mẫu giấy. Quy trình này bộc lộ nhiều bất cập như:</p>
+        
+        <ul>
+            <li>Khó khăn trong việc theo dõi tiến độ công việc theo thời gian thực</li>
+            <li>Dữ liệu dễ thất lạc và không nhất quán</li>
+            <li>Tốn nhiều thời gian tổng hợp báo cáo</li>
+            <li>Việc tính toán công tác phí, quãng đường di chuyển thiếu chính xác</li>
+            <li>Khó khăn trong việc quản lý kho vật tư và hóa chất</li>
+        </ul>
+        
+        <h3>2.1.2. Mục tiêu của hệ thống</h3>
+        <p>Hiểu được tầm quan trọng của việc số hóa quy trình này, nhóm chúng em thực hiện đề tài với mục đích xây dựng <strong>Hệ thống phần mềm Quản lý nhân viên xử lý dịch vụ kiểm soát côn trùng Sao Việt Pest</strong>. Hệ thống bao gồm hai ứng dụng chính được phát triển nhằm:</p>
+        
+        <ul>
+            <li><strong>Trung tâm hóa dữ liệu:</strong> Tập trung tất cả thông tin khách hàng, nhân viên, công việc vào hệ thống Supabase duy nhất</li>
+            <li><strong>Tự động hóa quy trình:</strong> Từ khâu lập kế hoạch, giao việc cho đến báo cáo tại hiện trường với đồng bộ real-time</li>
+            <li><strong>Quản lý vật tư thông minh:</strong> Theo dõi và tự động tính toán hóa chất theo vai trò (team lead/member)</li>
+            <li><strong>Check-in/out GPS:</strong> Ghi nhận vị trí và thời gian làm việc chính xác</li>
+            <li><strong>Báo cáo số hóa:</strong> Checklist, hình ảnh hiện trường, báo cáo vật tư sử dụng</li>
+            <li><strong>Quản lý team work:</strong> Hỗ trợ phân công nhóm với team lead và phân chia trách nhiệm rõ ràng</li>
+        </ul>
+        
+        <h3>2.1.3. Đối tượng sử dụng</h3>
+        <p>Hệ thống được thiết kế gồm <strong>hai ứng dụng riêng biệt</strong> để phục vụ các vai trò chính trong công ty dịch vụ kiểm soát côn trùng:</p>
+        
+        <h4>Admin Dashboard (Phần mềm quản lý)</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 20%">Vai trò</th>
+                    <th style="width: 35%">Trách nhiệm chính</th>
+                    <th style="width: 45%">Chức năng sử dụng</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>CSKH</strong></td>
+                    <td>Tiếp nhận yêu cầu khách hàng, quản lý thông tin</td>
+                    <td>Quản lý khách hàng (CRUD), quản lý hồ sơ, tìm kiếm khách hàng</td>
+                </tr>
+                <tr>
+                    <td><strong>Leader/Manager</strong></td>
+                    <td>Lập kế hoạch, phân công công việc</td>
+                    <td>Tạo lịch làm việc, phân công KTV (cá nhân/nhóm), theo dõi tiến độ trên calendar, quản lý checklist, phân bổ vật tư</td>
+                </tr>
+                <tr>
+                    <td><strong>Admin</strong></td>
+                    <td>Quản lý hệ thống và theo dõi tổng thể</td>
+                    <td>Xem danh sách tất cả công việc, lọc theo trạng thái/nhân viên, quản lý nhân viên</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h4>Technician App (Ứng dụng kỹ thuật viên)</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 20%">Vai trò</th>
+                    <th style="width: 35%">Trách nhiệm chính</th>
+                    <th style="width: 45%">Chức năng sử dụng</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>KTV</strong></td>
+                    <td>Thực hiện công việc tại hiện trường</td>
+                    <td>Nhận lịch, xác nhận hóa chất, check-in/out GPS, thực hiện checklist, chụp ảnh hiện trường, báo cáo vật tư sử dụng</td>
+                </tr>
+                <tr>
+                    <td><strong>Team Lead</strong></td>
+                    <td>Dẫn dắt nhóm và chịu trách nhiệm hóa chất</td>
+                    <td>Tất cả chức năng KTV + lấy hóa chất cho cả nhóm, điều phối công việc nhóm</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h3>2.1.4. Quy trình thực hiện công việc chính</h3>
+        
+        <h4>2.1.4.1. Quy trình Quản lý Khách hàng và Lên kế hoạch (Admin Dashboard)</h4>
+        <div class="algorithm">
+            <ol>
+                <li><strong>Nhập thông tin khách hàng:</strong> Admin/CSKH nhập thông tin khách hàng (mã tự động, tên, địa chỉ chi tiết theo tỉnh/huyện/xã, SĐT, email, người liên hệ)</li>
+                <li><strong>Lập kế hoạch công việc:</strong> Leader chọn khách hàng từ danh sách, đặt ngày giờ cụ thể, chọn loại dịch vụ (Định kỳ/1 lần/SOS)</li>
+                <li><strong>Phân công KTV:</strong> Chọn 1 hoặc nhiều KTV, chỉ định Team Lead (nếu nhóm), ghi rõ nội dung công việc chi tiết</li>
+                <li><strong>Tạo checklist và vật tư:</strong> Chọn checklist từ template hoặc tạo mới, chọn hóa chất/vật tư cần thiết với số lượng</li>
+                <li><strong>Lưu và đồng bộ:</strong> Hệ thống tự động lưu vào Supabase và đồng bộ real-time đến ứng dụng KTV</li>
+            </ol>
+        </div>
+        
+        <h4>2.1.4.2. Quy trình KTV Thực hiện Công việc (Technician App)</h4>
+        <div class="algorithm">
+            <ol>
+                <li><strong>Nhận lịch làm việc:</strong> KTV mở app và xem danh sách công việc được giao, sắp xếp theo thời gian</li>
+                <li><strong>Xác nhận hóa chất:</strong> Kiểm tra và xác nhận đã lấy đủ hóa chất (bắt buộc trước khi check-in). Team lead chịu trách nhiệm lấy hóa chất cho cả nhóm</li>
+                <li><strong>Check-in tại hiện trường:</strong> KTV check-in với GPS tự động, hệ thống ghi nhận vị trí và thời gian chính xác</li>
+                <li><strong>Liên hệ khách hàng:</strong> Gọi điện hoặc Zalo trực tiếp từ app đến người phụ trách</li>
+                <li><strong>Thực hiện công việc:</strong> Làm theo checklist số hóa, đánh dấu từng bước hoàn thành</li>
+                <li><strong>Chụp ảnh hiện trường:</strong> Chụp ảnh bằng camera với tối ưu tự động, lưu trữ trong báo cáo</li>
+                <li><strong>Báo cáo vật tư:</strong> Nhập số lượng hóa chất thực tế sử dụng, có thể thêm vật tư khác nếu cần</li>
+                <li><strong>Ghi chú và check-out:</strong> Nhập ghi chú/khuyến cáo, check-out với GPS, hoàn thành công việc</li>
+                <li><strong>Đồng bộ báo cáo:</strong> Tất cả dữ liệu tự động đồng bộ về Admin Dashboard để quản lý theo dõi</li>
+            </ol>
+        </div>
+        
+        <h4>2.1.4.3. Quy trình Quản lý Hóa chất Thông minh</h4>
+        <div class="algorithm">
+            <ol>
+                <li><strong>Tính toán hóa chất tự động:</strong> Hệ thống tự động tính tổng hóa chất cần lấy theo ngày hoặc phạm vi ngày (cho đi công tác)</li>
+                <li><strong>Phân biệt vai trò:</strong> 
+                    <ul>
+                        <li>Công việc cá nhân: KTV tự lấy hóa chất</li>
+                        <li>Công việc nhóm: Team Lead lấy hóa chất cho cả nhóm, các thành viên chỉ xem để nhắc nhở</li>
+                    </ul>
+                </li>
+                <li><strong>Xác nhận lấy hóa chất:</strong> KTV check và xác nhận đã lấy đủ hóa chất trước khi có thể check-in công việc</li>
+                <li><strong>Báo cáo sử dụng thực tế:</strong> Trong quá trình làm việc, KTV nhập số lượng thực tế đã sử dụng</li>
+                <li><strong>Theo dõi tồn kho:</strong> Admin có thể theo dõi tình hình sử dụng hóa chất qua các báo cáo từ hiện trường</li>
+            </ol>
+        </div>
+        
+        <div class="highlight">
+            <strong>Lợi ích mang lại:</strong> Hệ thống hai ứng dụng tích hợp giúp doanh nghiệp tiết kiệm thời gian đáng kể, giảm thiểu sai sót do nhập liệu thủ công, tăng tính minh bạch trong quản lý với theo dõi real-time, quản lý hóa chất thông minh theo vai trò, và nâng cao chất lượng dịch vụ khách hàng thông qua báo cáo chuyên nghiệp có hình ảnh và checklist chi tiết.
+        </div>
+    </div>
+</div>

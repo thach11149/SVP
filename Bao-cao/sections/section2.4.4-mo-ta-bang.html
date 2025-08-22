@@ -1,0 +1,312 @@
+<div class="subsection">
+    <h3>2.4.4. Mô tả từng bảng dữ liệu</h3>
+    
+    <h4>2.4.4.1. Bảng NHANVIEN:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 8%">STT</th>
+                <th style="width: 25%">Thuộc tính</th>
+                <th style="width: 20%">Kiểu dữ liệu</th>
+                <th style="width: 22%">Ràng buộc</th>
+                <th style="width: 25%">Diễn giải</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="table-center">1</td>
+                <td>ma_nhanvien</td>
+                <td>UUID</td>
+                <td>PRIMARY KEY</td>
+                <td>Mã định danh duy nhất nhân viên</td>
+            </tr>
+            <tr>
+                <td class="table-center">2</td>
+                <td>email</td>
+                <td>VARCHAR(255)</td>
+                <td>UNIQUE, NOT NULL</td>
+                <td>Email đăng nhập hệ thống</td>
+            </tr>
+            <tr>
+                <td class="table-center">3</td>
+                <td>mat_khau</td>
+                <td>VARCHAR(255)</td>
+                <td>NOT NULL</td>
+                <td>Mật khẩu đã mã hóa</td>
+            </tr>
+            <tr>
+                <td class="table-center">4</td>
+                <td>ho_ten</td>
+                <td>VARCHAR(255)</td>
+                <td>NOT NULL</td>
+                <td>Họ và tên đầy đủ</td>
+            </tr>
+            <tr>
+                <td class="table-center">5</td>
+                <td>vai_tro</td>
+                <td>VARCHAR(50)</td>
+                <td>NOT NULL</td>
+                <td>Leader/KTV/CSKH/Admin</td>
+            </tr>
+            <tr>
+                <td class="table-center">6</td>
+                <td>so_dien_thoai</td>
+                <td>VARCHAR(20)</td>
+                <td></td>
+                <td>Số điện thoại liên hệ</td>
+            </tr>
+            <tr>
+                <td class="table-center">7</td>
+                <td>trang_thai</td>
+                <td>BOOLEAN</td>
+                <td>DEFAULT TRUE</td>
+                <td>Trạng thái hoạt động</td>
+            </tr>
+            <tr>
+                <td class="table-center">8</td>
+                <td>ngay_tao</td>
+                <td>TIMESTAMP</td>
+                <td>DEFAULT NOW()</td>
+                <td>Thời gian tạo tài khoản</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h4>2.4.4.2. Bảng KHACHHANG:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 8%">STT</th>
+                <th style="width: 25%">Thuộc tính</th>
+                <th style="width: 20%">Kiểu dữ liệu</th>
+                <th style="width: 22%">Ràng buộc</th>
+                <th style="width: 25%">Diễn giải</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="table-center">1</td>
+                <td>ma_khachhang</td>
+                <td>UUID</td>
+                <td>PRIMARY KEY</td>
+                <td>Mã định danh khách hàng</td>
+            </tr>
+            <tr>
+                <td class="table-center">2</td>
+                <td>ten_khachhang</td>
+                <td>VARCHAR(255)</td>
+                <td>NOT NULL</td>
+                <td>Tên khách hàng hoặc công ty</td>
+            </tr>
+            <tr>
+                <td class="table-center">3</td>
+                <td>dia_chi</td>
+                <td>TEXT</td>
+                <td>NOT NULL</td>
+                <td>Địa chỉ cụ thể thực hiện dịch vụ</td>
+            </tr>
+            <tr>
+                <td class="table-center">4</td>
+                <td>so_dien_thoai</td>
+                <td>VARCHAR(20)</td>
+                <td></td>
+                <td>Số điện thoại liên hệ</td>
+            </tr>
+            <tr>
+                <td class="table-center">5</td>
+                <td>email</td>
+                <td>VARCHAR(255)</td>
+                <td></td>
+                <td>Email liên hệ</td>
+            </tr>
+            <tr>
+                <td class="table-center">6</td>
+                <td>nguoi_lien_he</td>
+                <td>VARCHAR(255)</td>
+                <td></td>
+                <td>Tên người liên hệ chính</td>
+            </tr>
+            <tr>
+                <td class="table-center">7</td>
+                <td>ghi_chu</td>
+                <td>TEXT</td>
+                <td></td>
+                <td>Ghi chú đặc biệt về khách hàng</td>
+            </tr>
+            <tr>
+                <td class="table-center">8</td>
+                <td>ngay_tao</td>
+                <td>TIMESTAMP</td>
+                <td>DEFAULT NOW()</td>
+                <td>Thời gian tạo thông tin</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h4>2.4.4.3. Bảng CONGVIEC:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 8%">STT</th>
+                <th style="width: 25%">Thuộc tính</th>
+                <th style="width: 20%">Kiểu dữ liệu</th>
+                <th style="width: 22%">Ràng buộc</th>
+                <th style="width: 25%">Diễn giải</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="table-center">1</td>
+                <td>ma_congviec</td>
+                <td>UUID</td>
+                <td>PRIMARY KEY</td>
+                <td>Mã định danh công việc</td>
+            </tr>
+            <tr>
+                <td class="table-center">2</td>
+                <td>ma_khachhang</td>
+                <td>UUID</td>
+                <td>FOREIGN KEY</td>
+                <td>Tham chiếu đến bảng KHACHHANG</td>
+            </tr>
+            <tr>
+                <td class="table-center">3</td>
+                <td>ma_ktv</td>
+                <td>UUID</td>
+                <td>FOREIGN KEY</td>
+                <td>KTV được phân công</td>
+            </tr>
+            <tr>
+                <td class="table-center">4</td>
+                <td>ma_leader</td>
+                <td>UUID</td>
+                <td>FOREIGN KEY</td>
+                <td>Leader tạo công việc</td>
+            </tr>
+            <tr>
+                <td class="table-center">5</td>
+                <td>tieu_de</td>
+                <td>VARCHAR(255)</td>
+                <td>NOT NULL</td>
+                <td>Tiêu đề công việc</td>
+            </tr>
+            <tr>
+                <td class="table-center">6</td>
+                <td>mo_ta</td>
+                <td>TEXT</td>
+                <td></td>
+                <td>Mô tả chi tiết công việc</td>
+            </tr>
+            <tr>
+                <td class="table-center">7</td>
+                <td>ngay_thuc_hien</td>
+                <td>DATE</td>
+                <td>NOT NULL</td>
+                <td>Ngày dự kiến thực hiện</td>
+            </tr>
+            <tr>
+                <td class="table-center">8</td>
+                <td>gio_bat_dau</td>
+                <td>TIME</td>
+                <td></td>
+                <td>Giờ bắt đầu dự kiến</td>
+            </tr>
+            <tr>
+                <td class="table-center">9</td>
+                <td>trang_thai</td>
+                <td>VARCHAR(50)</td>
+                <td>NOT NULL</td>
+                <td>Đã giao/Đang thực hiện/Hoàn thành</td>
+            </tr>
+            <tr>
+                <td class="table-center">10</td>
+                <td>do_uu_tien</td>
+                <td>INTEGER</td>
+                <td>DEFAULT 1</td>
+                <td>Mức độ ưu tiên (1-5)</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h4>2.4.4.4. Bảng BAOCAOCONGVIEC:</h4>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 8%">STT</th>
+                <th style="width: 25%">Thuộc tính</th>
+                <th style="width: 20%">Kiểu dữ liệu</th>
+                <th style="width: 22%">Ràng buộc</th>
+                <th style="width: 25%">Diễn giải</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="table-center">1</td>
+                <td>ma_baocao</td>
+                <td>UUID</td>
+                <td>PRIMARY KEY</td>
+                <td>Mã định danh báo cáo</td>
+            </tr>
+            <tr>
+                <td class="table-center">2</td>
+                <td>ma_congviec</td>
+                <td>UUID</td>
+                <td>FOREIGN KEY</td>
+                <td>Tham chiếu đến CONGVIEC</td>
+            </tr>
+            <tr>
+                <td class="table-center">3</td>
+                <td>thoi_gian_checkin</td>
+                <td>TIMESTAMP</td>
+                <td></td>
+                <td>Thời gian check-in tại địa điểm</td>
+            </tr>
+            <tr>
+                <td class="table-center">4</td>
+                <td>thoi_gian_checkout</td>
+                <td>TIMESTAMP</td>
+                <td></td>
+                <td>Thời gian check-out</td>
+            </tr>
+            <tr>
+                <td class="table-center">5</td>
+                <td>toa_do_checkin</td>
+                <td>POINT</td>
+                <td></td>
+                <td>Tọa độ GPS khi check-in</td>
+            </tr>
+            <tr>
+                <td class="table-center">6</td>
+                <td>noi_dung_thuc_hien</td>
+                <td>TEXT</td>
+                <td></td>
+                <td>Mô tả công việc đã thực hiện</td>
+            </tr>
+            <tr>
+                <td class="table-center">7</td>
+                <td>ket_qua</td>
+                <td>TEXT</td>
+                <td></td>
+                <td>Kết quả đạt được</td>
+            </tr>
+            <tr>
+                <td class="table-center">8</td>
+                <td>ghi_chu</td>
+                <td>TEXT</td>
+                <td></td>
+                <td>Ghi chú thêm, vấn đề phát sinh</td>
+            </tr>
+            <tr>
+                <td class="table-center">9</td>
+                <td>danh_gia_khachhang</td>
+                <td>INTEGER</td>
+                <td>CHECK (1-5)</td>
+                <td>Đánh giá từ khách hàng</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="note">
+        <em>Còn 6 bảng khác: HINHANH_BAOCAO, VATTU, KHO_KTV, VATTU_SUDUNG, CONGTACPHI, THAMSO với cấu trúc tương tự được mô tả theo thiết kế từ file NMCNPM.html</em>
+    </div>
+</div>

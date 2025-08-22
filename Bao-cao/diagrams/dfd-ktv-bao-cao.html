@@ -1,0 +1,331 @@
+<!-- ======================== -->
+<!-- CHÈN MERMAID DFD TẠI ĐÂY (copy đoạn này vào báo cáo khi cần) -->
+<div style="border:2px solid red; padding:12px; margin-bottom:24px; background:#fff0f0; color:#b71c1c; font-weight:bold;">
+<pre style="white-space:pre-wrap; font-size:15px; background:none; border:none; color:#222; font-family:monospace;">
+```mermaid
+%% DFD Level 1: Quy trình KTV Xác nhận và Cập nhật Báo cáo Công việc
+flowchart TD
+    %% External Entities
+    KTV["KỸ THUẬT VIÊN<br/>(KTV)"]
+    LEADER["LEADER<br/>QUẢN LÝ"]
+    GPS["ĐIỆN THOẠI"]
+
+    %% Processes
+    P1["1.0<br/>Nhận thông báo<br/>Công việc"]
+    P2["2.0<br/>Check-in<br/>Hiện trường"]
+    P3["3.0<br/>Thực hiện<br/>Công việc"]
+    P4["4.0<br/>Tạo báo cáo<br/>Hiện trường"]
+    P5["5.0<br/>Check-out và<br/>Gửi báo cáo"]
+
+    %% Data Stores
+    D1["D1 | CÔNG VIỆC"]
+    D2["D2 | VỊ TRÍ GPS"]
+    D3["D3 | HÌNH ẢNH"]
+    D4["D4 | BÁO CÁO"]
+
+    %% Data Flows
+    KTV -- "thông báo CV" --> P1
+    D1 -- "thông tin CV" --> P1
+    P1 -- "xác nhận nhận" --> LEADER
+    P2 -- "vị trí check-in" --> D2
+    P1 -- "bắt đầu CV" --> P2
+    P2 -- "tiến độ CV" --> P3
+    P3 -- "ảnh hiện trường" --> D3
+    P3 -- "hoàn thành CV" --> P4
+    P4 -- "ảnh báo cáo" --> D3
+    P4 -- "báo cáo hoàn thành" --> P5
+    P5 -- "vị trí check-out" --> D2
+    P5 -- "gửi báo cáo" --> LEADER
+    GPS -- "ảnh hiện trường" --> D3
+    P2 -- "check-in" --> GPS
+```
+</pre>
+</div>
+<!-- ======================== -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFD - KTV Báo Cáo Công Việc</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <!-- Mermaid.js -->
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({
+        startOnLoad: true,
+        themeVariables: {
+          fontFamily: 'Times New Roman',
+          fontSize: '16px',
+          edgeLabelBackground: 'transparent',
+          labelBackground: 'transparent',
+          primaryColor: '#fff', /* nền trắng cho node */
+          secondaryColor: '#f5f5f5', /* nền xám nhẹ cho node phụ */
+          borderRadius: '6px',
+          lineColor: '#222', /* viền đen cho node và line */
+          nodeBorder: '#222',
+          clusterBorder: '#222',
+          nodeTextColor: '#222',
+          mainBkg: '#fff',
+          edgeLabelBackground: 'transparent',
+        },
+        theme: 'default',
+      });
+    </script>
+    <style>
+      /* Đảm bảo font Times New Roman cho toàn bộ biểu đồ Mermaid */
+      .mermaid * {
+        font-family: 'Times New Roman', Times, serif !important;
+        font-size: 16px !important;
+      }
+      /* Loại bỏ nền xám của label trên line */
+      .mermaid .edgeLabel {
+        background: rgba(255,255,255,0.68) !important;
+        border-radius: 4px;
+        padding: 0 4px;
+      }
+      /* Node style: viền đen, nền trắng/xám nhẹ */
+      .mermaid .node rect, .mermaid .node polygon, .mermaid .node ellipse {
+        stroke: #222 !important;
+        stroke-width: 1px !important;
+        fill: #fff !important;
+      }
+      .mermaid .node.secondary rect, .mermaid .node.secondary polygon, .mermaid .node.secondary ellipse {
+        fill: #f5f5f5 !important;
+      }
+      /* Text màu đen */
+      .mermaid .node text, .mermaid .edgeLabel tspan {
+        fill: #222 !important;
+      }
+      /* Line style: viền đen */
+      .mermaid .edgePath path {
+        stroke: #222 !important;
+        stroke-width: 1px !important;
+      }
+      /* Tăng chiều rộng container và biểu đồ Mermaid */
+      .dfd-container {
+        max-width: 100vw;
+        width: 100vw;
+        overflow-x: auto;
+      }
+      .mermaid {
+        width: 100%;
+        min-width: 1200px;
+        padding: 0 32px;
+        box-sizing: border-box;
+      }
+      pre.mermaid {
+        width: 100%;
+        min-width: 1200px;
+        padding: 0 32px;
+        box-sizing: border-box;
+      }
+    </style>
+</head>
+<body>
+    <div class="dfd-container">
+        <!-- Biểu đồ Mermaid DFD KTV Báo Cáo Công Việc -->
+        <div style="margin-bottom:32px;">
+            <pre class="mermaid" style="background:#fff; font-size:15px;">
+%% DFD Level 1: Quy trình KTV Xác nhận và Cập nhật Báo cáo Công việc
+flowchart TD
+    %% External Entities
+    KTV["KỸ THUẬT VIÊN<br/>(KTV)"]
+    LEADER["LEADER<br/>QUẢN LÝ"]
+    GPS["ĐIỆN THOẠI"]
+
+    %% Processes
+    P1["1.0<br/>Nhận thông báo<br/>Công việc"]
+    P2["2.0<br/>Check-in<br/>Hiện trường"]
+    P3["3.0<br/>Thực hiện<br/>Công việc"]
+    P4["4.0<br/>Tạo báo cáo<br/>Hiện trường"]
+    P5["5.0<br/>Check-out và<br/>Gửi báo cáo"]
+
+    %% Data Stores
+    D1["D1 | CÔNG VIỆC"]
+    D2["D2 | VỊ TRÍ GPS"]
+    D3["D3 | HÌNH ẢNH"]
+    D4["D4 | BÁO CÁO"]
+
+    %% Data Flows
+    KTV -- "thông báo CV" --> P1
+    D1 -- "thông tin CV" --> P1
+    P1 -- "xác nhận nhận" --> LEADER
+    P2 -- "vị trí check-in" --> D2
+    P1 -- "bắt đầu CV" --> P2
+    P2 -- "tiến độ CV" --> P3
+    P3 -- "ảnh hiện trường" --> D3
+    P3 -- "hoàn thành CV" --> P4
+    P4 -- "ảnh báo cáo" --> D3
+    P4 -- "báo cáo hoàn thành" --> P5
+    P5 -- "vị trí check-out" --> D2
+    P5 -- "báo cáo hoàn thành" --> D4
+    D4 -- "gửi báo cáo" --> LEADER
+    P5 -- "gửi báo cáo" --> LEADER
+    GPS -- "ảnh hiện trường" --> D3
+    P2 -- "check-in" --> GPS
+            </pre>
+        </div>
+        <div class="dfd-title">DFD Level 1: Quy trình KTV Xác nhận và Cập nhật Báo cáo Công việc</div>
+        
+        <div class="dfd-diagram large">
+            <!-- External Entities -->
+            <div class="external-entity" style="top: 50px; left: 50px;">
+                KỸ THUẬT VIÊN<br/>(KTV)
+            </div>
+            
+            <div class="external-entity" style="top: 50px; left: 750px;">
+                LEADER<br/>QUẢN LÝ
+            </div>
+            
+            <div class="external-entity" style="top: 550px; left: 50px;">
+                ĐIỆN THOẠI
+            </div>
+            
+            <!-- Processes -->
+            <div class="process" style="top: 150px; left: 200px;">
+                1.0<br/>Nhận thông báo<br/>Công việc
+            </div>
+            
+            <div class="process" style="top: 150px; left: 450px;">
+                2.0<br/>Check-in<br/>Hiện trường
+            </div>
+            
+            <div class="process" style="top: 300px; left: 200px;">
+                3.0<br/>Thực hiện<br/>Công việc
+            </div>
+            
+            <div class="process" style="top: 300px; left: 450px;">
+                4.0<br/>Tạo báo cáo<br/>Hiện trường
+            </div>
+            
+            <div class="process" style="top: 450px; left: 325px;">
+                5.0<br/>Check-out và<br/>Gửi báo cáo
+            </div>
+            
+            <!-- Data Stores -->
+            <div class="data-store" style="top: 100px; left: 500px;">
+                D1 | CÔNG VIỆC
+            </div>
+            
+            <div class="data-store" style="top: 250px; left: 650px;">
+                D2 | VỊ TRÍ GPS
+            </div>
+            
+            <div class="data-store" style="top: 400px; left: 50px;">
+                D3 | HÌNH ẢNH
+            </div>
+            
+            <div class="data-store" style="top: 500px; left: 500px;">
+                D4 | BÁO CÁO
+            </div>
+            
+            <!-- Data Flow Labels -->
+            <div class="data-flow" style="top: 120px; left: 320px;">thông báo CV</div>
+            <div class="data-flow" style="top: 120px; left: 520px;">thông tin CV</div>
+            <div class="data-flow" style="top: 180px; left: 350px;">xác nhận nhận</div>
+            <div class="data-flow" style="top: 180px; left: 600px;">vị trí check-in</div>
+            <div class="data-flow" style="top: 220px; left: 270px;">bắt đầu CV</div>
+            <div class="data-flow" style="top: 270px; left: 350px;">tiến độ CV</div>
+            <div class="data-flow" style="top: 330px; left: 600px;">ảnh hiện trường</div>
+            <div class="data-flow" style="top: 380px; left: 270px;">hoàn thành CV</div>
+            <div class="data-flow" style="top: 480px; left: 200px;">ảnh báo cáo</div>
+            <div class="data-flow" style="top: 520px; left: 420px;">báo cáo hoàn thành</div>
+            <div class="data-flow" style="top: 430px; left: 500px;">vị trí check-out</div>
+            <div class="data-flow" style="top: 350px; left: 750px;">gửi báo cáo</div>
+            
+            <!-- SVG for drawing arrows -->
+            <svg class="arrow-svg">
+                <defs>
+                    <marker id="arrowhead2" markerWidth="10" markerHeight="7" 
+                            refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#666" />
+                    </marker>
+                </defs>
+                
+                <!-- KTV to Process 1.0 -->
+                <line x1="170" y1="90" x2="220" y2="150" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead2)"/>
+                
+                <!-- Data Store D1 to Process 1.0 -->
+                <line x1="500" y1="130" x2="340" y2="170" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead2)"/>
+                
+                <!-- Process 1.0 to Process 2.0 -->
+                <line x1="340" y1="190" x2="450" y2="190" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead2)"/>
+                
+                <!-- Process 2.0 to Data Store D2 -->
+                <line x1="550" y1="210" x2="650" y2="250" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead2)"/>
+                
+                <!-- Process 2.0 to Process 3.0 -->
+                <line x1="450" y1="230" x2="300" y2="300" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead2)"/>
+                
+                <!-- Process 3.0 to Process 4.0 -->
+                <line x1="340" y1="340" x2="450" y2="340" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead2)"/>
+                
+                <!-- GPS System to Data Store D3 -->
+                <line x1="110" y1="550" x2="130" y2="450" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead2)"/>
+                
+                <!-- Process 4.0 to Data Store D3 -->
+                <line x1="450" y1="380" x2="210" y2="420" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead2)"/>
+                
+                <!-- Process 4.0 to Process 5.0 -->
+                <line x1="480" y1="380" x2="400" y2="450" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead2)"/>
+                
+                <!-- Process 5.0 to Data Store D2 -->
+                <line x1="420" y1="450" x2="650" y2="300" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead2)"/>
+                
+                <!-- Process 5.0 to Data Store D4 -->
+                <line x1="395" y1="490" x2="500" y2="520" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead2)"/>
+                
+                <!-- Data Store D4 to Leader -->
+                <line x1="600" y1="500" x2="750" y2="110" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead2)"/>
+            </svg>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box" style="background: #e3f2fd; border-color: #1976d2;"></div>
+                <span>External Entity (Thực thể bên ngoài)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-circle" style="background: #fff3e0; border-color: #f57c00;"></div>
+                <span>Process (Quy trình xử lý)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-store" style="background: #f3e5f5; border-color: #7b1fa2;"></div>
+                <span>Data Store (Kho dữ liệu)</span>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px; font-size: 14px; line-height: 1.6;">
+            <h3>Mô tả quy trình:</h3>
+            <ol>
+                <li><strong>Nhận thông báo Công việc (1.0):</strong> KTV nhận thông báo công việc từ Leader và lấy thông tin chi tiết từ hệ thống.</li>
+                <li><strong>Check-in Hiện trường (2.0):</strong> KTV xác nhận vị trí và thời gian bắt đầu công việc, lưu GPS location.</li>
+                <li><strong>Thực hiện Công việc (3.0):</strong> KTV thực hiện công việc phun thuốc diệt côn trùng theo kế hoạch.</li>
+                <li><strong>Tạo báo cáo Hiện trường (4.0):</strong> KTV chụp ảnh, ghi chú tình trạng và tạo báo cáo chi tiết.</li>
+                <li><strong>Check-out và Gửi báo cáo (5.0):</strong> KTV hoàn thành công việc, check-out và gửi báo cáo đến Leader.</li>
+            </ol>
+            
+            <h4>Data Stores:</h4>
+            <ul>
+                <li><strong>D1 - CÔNG VIỆC:</strong> Lưu trữ thông tin chi tiết về công việc được giao</li>
+                <li><strong>D2 - VỊ TRÍ GPS:</strong> Lưu trữ tọa độ check-in/check-out và tracking</li>
+                <li><strong>D3 - HÌNH ẢNH:</strong> Lưu trữ ảnh chụp hiện trường và báo cáo</li>
+                <li><strong>D4 - BÁO CÁO:</strong> Lưu trữ báo cáo hoàn thành công việc</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

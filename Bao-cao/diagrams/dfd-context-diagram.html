@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFD - Context Diagram</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+    <div class="dfd-container">
+        <div class="dfd-title">DFD Level 0: Context Diagram - Hệ thống Quản lý Phun thuốc Diệt côn trùng</div>
+        
+        <div class="dfd-diagram large">
+            <!-- Central Process - The System -->
+            <div class="process central-system" style="top: 250px; left: 350px; width: 200px; height: 120px; font-size: 14px;">
+                HỆ THỐNG<br/>QUẢN LÝ<br/>PHUN THUỐC<br/>DIỆT CÔN TRÙNG
+            </div>
+            
+            <!-- External Entities -->
+            <div class="external-entity" style="top: 30px; left: 100px;">
+                KHÁCH HÀNG
+            </div>
+            
+            <div class="external-entity" style="top: 30px; left: 400px;">
+                ADMIN<br/>QUẢN LÝ
+            </div>
+            
+            <div class="external-entity" style="top: 30px; left: 700px;">
+                LEADER<br/>ĐIỀU PHỐI
+            </div>
+            
+            <div class="external-entity" style="top: 150px; left: 50px;">
+                NHÂN VIÊN<br/>CSKH
+            </div>
+            
+            <div class="external-entity" style="top: 150px; left: 800px;">
+                KỸ THUẬT VIÊN<br/>(KTV)
+            </div>
+            
+            <div class="external-entity" style="top: 380px; left: 100px;">
+                NHÀ CUNG CẤP<br/>VẬT TƯ
+            </div>
+            
+            <div class="external-entity" style="top: 380px; left: 400px;">
+                HỆ THỐNG<br/>THANH TOÁN
+            </div>
+            
+            <div class="external-entity" style="top: 380px; left: 700px;">
+                GPS/TRACKING<br/>SERVICE
+            </div>
+            
+            <div class="external-entity" style="top: 520px; left: 350px;">
+                BAN GIÁM ĐỐC
+            </div>
+            
+            <!-- Data Flow Labels -->
+            <div class="data-flow" style="top: 100px; left: 140px;">yêu cầu dịch vụ</div>
+            <div class="data-flow" style="top: 120px; left: 140px;">phản hồi dịch vụ</div>
+            
+            <div class="data-flow" style="top: 80px; left: 460px;">quản lý hệ thống</div>
+            <div class="data-flow" style="top: 100px; left: 460px;">báo cáo tổng hợp</div>
+            
+            <div class="data-flow" style="top: 80px; left: 720px;">kế hoạch công việc</div>
+            <div class="data-flow" style="top: 100px; left: 720px;">báo cáo tiến độ</div>
+            
+            <div class="data-flow" style="top: 200px; left: 180px;">thông tin KH</div>
+            <div class="data-flow" style="top: 220px; left: 180px;">lịch hẹn</div>
+            
+            <div class="data-flow" style="top: 200px; left: 750px;">nhận công việc</div>
+            <div class="data-flow" style="top: 220px; left: 750px;">báo cáo hiện trường</div>
+            
+            <div class="data-flow" style="top: 430px; left: 140px;">đơn hàng vật tư</div>
+            <div class="data-flow" style="top: 450px; left: 140px;">hóa đơn</div>
+            
+            <div class="data-flow" style="top: 430px; left: 460px;">thông tin thanh toán</div>
+            <div class="data-flow" style="top: 450px; left: 460px;">xác nhận TT</div>
+            
+            <div class="data-flow" style="top: 430px; left: 720px;">vị trí GPS</div>
+            <div class="data-flow" style="top: 450px; left: 720px;">tracking data</div>
+            
+            <div class="data-flow" style="top: 480px; left: 400px;">báo cáo điều hành</div>
+            <div class="data-flow" style="top: 500px; left: 400px;">chỉ đạo</div>
+            
+            <!-- SVG for drawing arrows -->
+            <svg class="arrow-svg">
+                <defs>
+                    <marker id="arrowhead4" markerWidth="10" markerHeight="7" 
+                            refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#666" />
+                    </marker>
+                </defs>
+                
+                <!-- Customer flows -->
+                <line x1="160" y1="90" x2="350" y2="250" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead4)"/>
+                <line x1="350" y1="270" x2="180" y2="110" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead4)"/>
+                
+                <!-- Admin flows -->
+                <line x1="460" y1="90" x2="420" y2="250" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead4)"/>
+                <line x1="440" y1="250" x2="480" y2="110" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead4)"/>
+                
+                <!-- Leader flows -->
+                <line x1="700" y1="90" x2="530" y2="250" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead4)"/>
+                <line x1="550" y1="270" x2="720" y2="110" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead4)"/>
+                
+                <!-- CSKH flows -->
+                <line x1="170" y1="190" x2="350" y2="280" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead4)"/>
+                <line x1="370" y1="300" x2="190" y2="210" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead4)"/>
+                
+                <!-- KTV flows -->
+                <line x1="800" y1="190" x2="550" y2="280" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead4)"/>
+                <line x1="530" y1="300" x2="820" y2="210" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead4)"/>
+                
+                <!-- Supplier flows -->
+                <line x1="180" y1="420" x2="380" y2="370" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead4)"/>
+                <line x1="400" y1="390" x2="200" y2="440" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead4)"/>
+                
+                <!-- Payment flows -->
+                <line x1="460" y1="420" x2="450" y2="370" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead4)"/>
+                <line x1="470" y1="370" x2="480" y2="420" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead4)"/>
+                
+                <!-- GPS flows -->
+                <line x1="720" y1="420" x2="520" y2="370" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead4)"/>
+                <line x1="500" y1="350" x2="740" y2="440" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead4)"/>
+                
+                <!-- Management flows -->
+                <line x1="420" y1="520" x2="430" y2="370" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead4)"/>
+                <line x1="450" y1="370" x2="440" y2="520" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead4)"/>
+            </svg>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box" style="background: #e3f2fd; border-color: #1976d2;"></div>
+                <span>External Entity (Thực thể bên ngoài)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-circle" style="background: #fff3e0; border-color: #f57c00;"></div>
+                <span>System Process (Hệ thống chính)</span>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px; font-size: 14px; line-height: 1.6;">
+            <h3>Mô tả tương tác hệ thống:</h3>
+            
+            <h4>Input vào hệ thống:</h4>
+            <ul>
+                <li><strong>Từ Khách hàng:</strong> Yêu cầu dịch vụ diệt côn trùng, thông tin liên hệ</li>
+                <li><strong>Từ CSKH:</strong> Thông tin khách hàng đã xử lý, lịch hẹn dịch vụ</li>
+                <li><strong>Từ Admin:</strong> Cấu hình hệ thống, quản lý người dùng</li>
+                <li><strong>Từ Leader:</strong> Phân công công việc, kế hoạch thực hiện</li>
+                <li><strong>Từ KTV:</strong> Báo cáo hiện trường, xác nhận hoàn thành công việc</li>
+                <li><strong>Từ Nhà cung cấp:</strong> Thông tin vật tư, hóa đơn giao hàng</li>
+                <li><strong>Từ Hệ thống thanh toán:</strong> Xác nhận giao dịch, thông tin thanh toán</li>
+                <li><strong>Từ GPS Service:</strong> Dữ liệu vị trí, tracking thời gian thực</li>
+                <li><strong>Từ Ban Giám đốc:</strong> Chỉ đạo điều hành, yêu cầu báo cáo</li>
+            </ul>
+            
+            <h4>Output từ hệ thống:</h4>
+            <ul>
+                <li><strong>Đến Khách hàng:</strong> Xác nhận dịch vụ, thông báo lịch hẹn, báo cáo hoàn thành</li>
+                <li><strong>Đến CSKH:</strong> Danh sách khách hàng, lịch làm việc</li>
+                <li><strong>Đến Admin:</strong> Báo cáo tổng hợp hệ thống, thống kê sử dụng</li>
+                <li><strong>Đến Leader:</strong> Báo cáo tiến độ công việc, thống kê KTV</li>
+                <li><strong>Đến KTV:</strong> Thông báo công việc mới, thông tin khách hàng</li>
+                <li><strong>Đến Nhà cung cấp:</strong> Đơn hàng vật tư, yêu cầu giao hàng</li>
+                <li><strong>Đến Hệ thống thanh toán:</strong> Yêu cầu thanh toán, thông tin hóa đơn</li>
+                <li><strong>Đến GPS Service:</strong> Yêu cầu tracking, cập nhật vị trí</li>
+                <li><strong>Đến Ban Giám đốc:</strong> Báo cáo điều hành, dashboard tổng quan</li>
+            </ul>
+            
+            <h4>Đặc điểm của Context Diagram:</h4>
+            <ul>
+                <li>Cung cấp cái nhìn tổng quan về toàn bộ hệ thống từ góc độ người dùng bên ngoài</li>
+                <li>Không hiển thị chi tiết nội bộ, chỉ tập trung vào tương tác với môi trường bên ngoài</li>
+                <li>Là cơ sở để phân rã thành các DFD level thấp hơn</li>
+                <li>Giúp xác định ranh giới (boundary) của hệ thống cần phát triển</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

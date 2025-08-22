@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFD - Quản Lý Kho</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+    <div class="dfd-container">
+        <div class="dfd-title">DFD Level 1: Quy trình Quản lý Kho và Vật tư</div>
+        
+        <div class="dfd-diagram large">
+            <!-- External Entities -->
+            <div class="external-entity" style="top: 30px; left: 50px;">
+                ADMIN<br/>QUẢN LÝ
+            </div>
+            
+            <div class="external-entity" style="top: 30px; left: 750px;">
+                NHÀ CUNG CẤP<br/>(SUPPLIER)
+            </div>
+            
+            <div class="external-entity" style="top: 550px; left: 50px;">
+                KỸ THUẬT VIÊN<br/>(KTV)
+            </div>
+            
+            <div class="external-entity" style="top: 550px; left: 750px;">
+                HỆ THỐNG<br/>BÁO CÁO
+            </div>
+            
+            <!-- Processes -->
+            <div class="process" style="top: 120px; left: 200px;">
+                1.0<br/>Quản lý<br/>Danh mục Kho
+            </div>
+            
+            <div class="process" style="top: 120px; left: 450px;">
+                2.0<br/>Nhập kho<br/>Vật tư
+            </div>
+            
+            <div class="process" style="top: 120px; left: 650px;">
+                3.0<br/>Cập nhật<br/>Tồn kho
+            </div>
+            
+            <div class="process" style="top: 300px; left: 150px;">
+                4.0<br/>Xuất kho<br/>cho KTV
+            </div>
+            
+            <div class="process" style="top: 300px; left: 400px;">
+                5.0<br/>Kiểm tra<br/>Tồn kho
+            </div>
+            
+            <div class="process" style="top: 300px; left: 650px;">
+                6.0<br/>Tạo báo cáo<br/>Kho
+            </div>
+            
+            <div class="process" style="top: 450px; left: 325px;">
+                7.0<br/>Cảnh báo<br/>Hết hàng
+            </div>
+            
+            <!-- Data Stores -->
+            <div class="data-store" style="top: 200px; left: 300px;">
+                D1 | DANH MỤC KHO
+            </div>
+            
+            <div class="data-store" style="top: 250px; left: 500px;">
+                D2 | TỒN KHO
+            </div>
+            
+            <div class="data-store" style="top: 380px; left: 100px;">
+                D3 | XUẤT NHẬP KHO
+            </div>
+            
+            <div class="data-store" style="top: 380px; left: 500px;">
+                D4 | BÁO CÁO KHO
+            </div>
+            
+            <div class="data-store" style="top: 520px; left: 300px;">
+                D5 | CẢNH BÁO
+            </div>
+            
+            <!-- Data Flow Labels -->
+            <div class="data-flow" style="top: 90px; left: 150px;">quản lý kho</div>
+            <div class="data-flow" style="top: 90px; left: 550px;">đơn hàng nhập</div>
+            <div class="data-flow" style="top: 150px; left: 350px;">thêm/sửa danh mục</div>
+            <div class="data-flow" style="top: 150px; left: 550px;">cập nhật số lượng</div>
+            <div class="data-flow" style="top: 190px; left: 750px;">thông tin nhập kho</div>
+            <div class="data-flow" style="top: 240px; left: 250px;">yêu cầu xuất kho</div>
+            <div class="data-flow" style="top: 280px; left: 550px;">kiểm tra tồn kho</div>
+            <div class="data-flow" style="top: 330px; left: 150px;">xuất kho</div>
+            <div class="data-flow" style="top: 330px; left: 450px;">tạo báo cáo</div>
+            <div class="data-flow" style="top: 360px; left: 750px;">gửi báo cáo</div>
+            <div class="data-flow" style="top: 420px; left: 250px;">thiếu hàng</div>
+            <div class="data-flow" style="top: 480px; left: 150px;">thông báo cảnh báo</div>
+            <div class="data-flow" style="top: 580px; left: 250px;">yêu cầu vật tư</div>
+            
+            <!-- SVG for drawing arrows -->
+            <svg class="arrow-svg">
+                <defs>
+                    <marker id="arrowhead3" markerWidth="10" markerHeight="7" 
+                            refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#666" />
+                    </marker>
+                </defs>
+                
+                <!-- Admin to Process 1.0 -->
+                <line x1="170" y1="70" x2="220" y2="120" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead3)"/>
+                
+                <!-- Supplier to Process 2.0 -->
+                <line x1="750" y1="90" x2="550" y2="140" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead3)"/>
+                
+                <!-- Process 1.0 to Data Store D1 -->
+                <line x1="270" y1="200" x2="320" y2="220" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead3)"/>
+                
+                <!-- Process 2.0 to Process 3.0 -->
+                <line x1="550" y1="160" x2="650" y2="160" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead3)"/>
+                
+                <!-- Process 3.0 to Data Store D2 -->
+                <line x1="680" y1="200" x2="620" y2="250" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead3)"/>
+                
+                <!-- KTV to Process 4.0 -->
+                <line x1="170" y1="550" x2="200" y2="380" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead3)"/>
+                
+                <!-- Data Store D2 to Process 4.0 -->
+                <line x1="500" y1="280" x2="250" y2="320" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead3)"/>
+                
+                <!-- Process 4.0 to Data Store D3 -->
+                <line x1="200" y1="380" x2="220" y2="400" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead3)"/>
+                
+                <!-- Data Store D2 to Process 5.0 -->
+                <line x1="500" y1="270" x2="450" y2="300" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead3)"/>
+                
+                <!-- Process 5.0 to Process 6.0 -->
+                <line x1="540" y1="340" x2="650" y2="340" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead3)"/>
+                
+                <!-- Process 6.0 to Data Store D4 -->
+                <line x1="650" y1="380" x2="600" y2="400" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead3)"/>
+                
+                <!-- Data Store D4 to Report System -->
+                <line x1="660" y1="420" x2="750" y2="550" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead3)"/>
+                
+                <!-- Process 5.0 to Process 7.0 -->
+                <line x1="450" y1="380" x2="400" y2="450" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead3)"/>
+                
+                <!-- Process 7.0 to Data Store D5 -->
+                <line x1="370" y1="490" x2="380" y2="520" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead3)"/>
+                
+                <!-- Data Store D5 to Admin -->
+                <line x1="300" y1="520" x2="130" y2="110" 
+                      stroke="#666" stroke-width="2" marker-end="url(#arrowhead3)"/>
+            </svg>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box" style="background: #e3f2fd; border-color: #1976d2;"></div>
+                <span>External Entity (Thực thể bên ngoài)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-circle" style="background: #fff3e0; border-color: #f57c00;"></div>
+                <span>Process (Quy trình xử lý)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-store" style="background: #f3e5f5; border-color: #7b1fa2;"></div>
+                <span>Data Store (Kho dữ liệu)</span>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px; font-size: 14px; line-height: 1.6;">
+            <h3>Mô tả quy trình:</h3>
+            <ol>
+                <li><strong>Quản lý Danh mục Kho (1.0):</strong> Admin tạo, sửa, xóa các loại vật tư trong danh mục kho.</li>
+                <li><strong>Nhập kho Vật tư (2.0):</strong> Tiếp nhận hàng hóa từ nhà cung cấp và ghi nhận vào hệ thống.</li>
+                <li><strong>Cập nhật Tồn kho (3.0):</strong> Cập nhật số lượng tồn kho sau khi nhập/xuất hàng.</li>
+                <li><strong>Xuất kho cho KTV (4.0):</strong> Cấp phát vật tư cho kỹ thuật viên theo yêu cầu công việc.</li>
+                <li><strong>Kiểm tra Tồn kho (5.0):</strong> Theo dõi và kiểm tra tình trạng tồn kho hiện tại.</li>
+                <li><strong>Tạo báo cáo Kho (6.0):</strong> Lập báo cáo xuất nhập tồn, thống kê sử dụng vật tư.</li>
+                <li><strong>Cảnh báo Hết hàng (7.0):</strong> Phát hiện và thông báo khi vật tư sắp hết hoặc dưới ngưỡng tối thiểu.</li>
+            </ol>
+            
+            <h4>Data Stores:</h4>
+            <ul>
+                <li><strong>D1 - DANH MỤC KHO:</strong> Lưu trữ thông tin các loại vật tư, thuốc trừ sâu</li>
+                <li><strong>D2 - TỒN KHO:</strong> Lưu trữ số lượng tồn kho hiện tại của từng vật tư</li>
+                <li><strong>D3 - XUẤT NHẬP KHO:</strong> Lưu trữ lịch sử các giao dịch xuất nhập kho</li>
+                <li><strong>D4 - BÁO CÁO KHO:</strong> Lưu trữ các báo cáo thống kê kho</li>
+                <li><strong>D5 - CẢNH BÁO:</strong> Lưu trữ các cảnh báo hết hàng và ngưỡng tối thiểu</li>
+            </ul>
+            
+            <h4>External Entities:</h4>
+            <ul>
+                <li><strong>ADMIN QUẢN LÝ:</strong> Người quản lý kho, có quyền quản lý toàn bộ hệ thống kho</li>
+                <li><strong>NHÀ CUNG CẤP:</strong> Đối tác cung cấp vật tư, thuốc trừ sâu</li>
+                <li><strong>KỸ THUẬT VIÊN:</strong> Người nhận vật tư để thực hiện công việc</li>
+                <li><strong>HỆ THỐNG BÁO CÁO:</strong> Module xuất báo cáo tự động</li>
+            </ul>
+        </div>
+    </div>
+    <!-- Mermaid DFD Diagram -->
+    <div style="margin-top:40px;">
+        <h3>Sơ đồ DFD (Mermaid):</h3>
+        <pre class="mermaid">
+            graph TD
+            ADMIN[ADMIN Quản lý] -->|Quản lý kho| P1[1.0 Quản lý Danh mục Kho]
+            SUPPLIER[Nhà cung cấp] -->|Đơn hàng nhập| P2[2.0 Nhập kho Vật tư]
+            P1 -->|Thêm/sửa danh mục| D1[D1 Danh mục kho]
+            P2 -->|Cập nhật số lượng| P3[3.0 Cập nhật Tồn kho]
+            P3 -->|Cập nhật tồn kho| D2[D2 Tồn kho]
+            KTV[Kỹ thuật viên] -->|Yêu cầu vật tư| P4[4.0 Xuất kho cho KTV]
+            D2 -->|Kiểm tra tồn kho| P4
+            P4 -->|Xuất kho| D3[D3 Xuất nhập kho]
+            D2 -->|Kiểm tra tồn kho| P5[5.0 Kiểm tra Tồn kho]
+            P5 -->|Tạo báo cáo| P6[6.0 Tạo báo cáo Kho]
+            P6 -->|Lưu báo cáo| D4[D4 Báo cáo kho]
+            D4 -->|Gửi báo cáo| REPORT[Hệ thống báo cáo]
+            P5 -->|Thiếu hàng| P7[7.0 Cảnh báo hết hàng]
+            P7 -->|Lưu cảnh báo| D5[D5 Cảnh báo]
+            D5 -->|Thông báo cảnh báo| ADMIN
+        </pre>
+        <p style="font-size:13px;color:#555;margin-top:8px;">Sử dụng <a href="https://mermaid-js.github.io/mermaid-live-editor/" target="_blank">Mermaid Live Editor</a> để xem hoặc chỉnh sửa sơ đồ.</p>
+    </div>
+</body>
+</html>

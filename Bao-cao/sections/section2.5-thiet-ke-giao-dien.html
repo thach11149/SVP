@@ -1,0 +1,98 @@
+<div class="subsection">
+    <h2>2.5. Thiết kế giao diện</h2>
+    
+    <h3>2.5.1. Sơ đồ liên kết các màn hình</h3>
+    <p>Hệ thống được thiết kế với 2 luồng giao diện chính:</p>
+    
+    <h4>2.5.1.1. Sơ đồ liên kết cho Phần mềm Quản lý (Web App cho Quản lý, Admin, CSKH)</h4>
+    <p>Luồng giao diện cho Leader, CSKH, Admin:</p>
+    <ul>
+        <li><strong>Đăng nhập</strong> → <strong>Dashboard</strong> → Các module chính</li>
+        <li><strong>Quản lý Khách hàng:</strong> Danh sách → Thêm/Sửa → Chi tiết</li>
+        <li><strong>Lập kế hoạch:</strong> Lịch → Tạo công việc → Phân công KTV</li>
+        <li><strong>Báo cáo:</strong> Tổng quan → Chi tiết theo KTV/Khách hàng</li>
+        <li><strong>Quản lý Kho:</strong> Tồn kho → Nhập/Xuất → Báo cáo</li>
+    </ul>
+    
+    <h4>2.5.1.2. Sơ đồ liên kết cho Ứng dụng Nhân viên Kỹ thuật (Web App cho KTV)</h4>
+    <p>Luồng giao diện tối ưu cho KTV:</p>
+    <ul>
+        <li><strong>Đăng nhập</strong> → <strong>Danh sách công việc</strong></li>
+        <li><strong>Chi tiết công việc</strong> → <strong>Check-in</strong> → <strong>Thực hiện</strong> → <strong>Báo cáo</strong> → <strong>Check-out</strong></li>
+        <li><strong>Lịch sử công việc</strong> và <strong>Thống kê cá nhân</strong></li>
+    </ul>
+    
+    <h3>2.5.2. Danh sách các màn hình</h3>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 10%">STT</th>
+                <th style="width: 25%">Màn hình</th>
+                <th style="width: 30%">Loại màn hình</th>
+                <th style="width: 35%">Chức năng</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="table-center">1</td>
+                <td>Màn hình Đăng nhập</td>
+                <td>Authentication</td>
+                <td>Xác thực người dùng và phân quyền theo vai trò</td>
+            </tr>
+            <tr>
+                <td class="table-center">2</td>
+                <td>Dashboard Quản lý</td>
+                <td>Management Overview</td>
+                <td>Tổng quan hệ thống cho Leader/Admin</td>
+            </tr>
+            <tr>
+                <td class="table-center">3</td>
+                <td>Quản lý Khách hàng</td>
+                <td>CRUD Interface</td>
+                <td>Thêm, sửa, xóa, tìm kiếm thông tin khách hàng</td>
+            </tr>
+            <tr>
+                <td class="table-center">4</td>
+                <td>Lập kế hoạch và Phân công</td>
+                <td>Planning Interface</td>
+                <td>Tạo công việc mới và phân công KTV</td>
+            </tr>
+            <tr>
+                <td class="table-center">5</td>
+                <td>Lịch làm việc</td>
+                <td>Calendar View</td>
+                <td>Hiển thị lịch công việc theo ngày/tuần/tháng</td>
+            </tr>
+            <tr>
+                <td class="table-center">6</td>
+                <td>Danh sách Công việc KTV</td>
+                <td>Job List View</td>
+                <td>Hiển thị công việc được giao cho KTV</td>
+            </tr>
+            <tr>
+                <td class="table-center">7</td>
+                <td>Chi tiết Công việc</td>
+                <td>Detail View</td>
+                <td>Thông tin chi tiết công việc và checklist</td>
+            </tr>
+            <tr>
+                <td class="table-center">8</td>
+                <td>Báo cáo Hiện trường</td>
+                <td>Report Form</td>
+                <td>KTV báo cáo kết quả thực hiện</td>
+            </tr>
+            <tr>
+                <td class="table-center">9</td>
+                <td>Quản lý Kho Vật tư</td>
+                <td>Inventory Management</td>
+                <td>Quản lý nhập, xuất, tồn kho vật tư</td>
+            </tr>
+            <tr>
+                <td class="table-center">10</td>
+                <td>Báo cáo và Thống kê</td>
+                <td>Analytics Dashboard</td>
+                <td>Báo cáo tổng hợp và phân tích dữ liệu</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,237 @@
+<div class="subsection">
+    <h3>2.5.3. Mô tả các màn hình</h3>
+    
+    <h4>2.5.3.1. Màn hình Lập kế hoạch và Phân công (Phần mềm Quản lý):</h4>
+    <h5>a. Giao diện</h5>
+    <p>Màn hình chính cho Leader lập kế hoạch và phân công công việc cho KTV, bao gồm:</p>
+    <ul>
+        <li>Form tạo công việc mới với thông tin khách hàng, mô tả, thời gian</li>
+        <li>Dropdown chọn KTV phù hợp dựa trên vị trí và kỹ năng</li>
+        <li>Lịch hiển thị công việc đã lên kế hoạch</li>
+        <li>Bản đồ hiển thị vị trí khách hàng và KTV</li>
+    </ul>
+    
+    <h5>b. Mô tả các đối tượng trên màn hình:</h5>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 8%">STT</th>
+                <th style="width: 25%">Tên</th>
+                <th style="width: 15%">Kiểu</th>
+                <th style="width: 30%">Ràng buộc</th>
+                <th style="width: 22%">Chức năng</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="table-center">1</td>
+                <td>cmbKhachHang</td>
+                <td>ComboBox</td>
+                <td>Required, từ danh sách có sẵn</td>
+                <td>Chọn khách hàng cho công việc</td>
+            </tr>
+            <tr>
+                <td class="table-center">2</td>
+                <td>txtTieuDe</td>
+                <td>TextInput</td>
+                <td>Required, max 255 chars</td>
+                <td>Nhập tiêu đề công việc</td>
+            </tr>
+            <tr>
+                <td class="table-center">3</td>
+                <td>txtMoTa</td>
+                <td>TextArea</td>
+                <td>Optional, max 1000 chars</td>
+                <td>Mô tả chi tiết công việc</td>
+            </tr>
+            <tr>
+                <td class="table-center">4</td>
+                <td>datePicker</td>
+                <td>DatePicker</td>
+                <td>Required, >= hôm nay</td>
+                <td>Chọn ngày thực hiện</td>
+            </tr>
+            <tr>
+                <td class="table-center">5</td>
+                <td>cmbKTV</td>
+                <td>ComboBox</td>
+                <td>Required, KTV active</td>
+                <td>Phân công KTV thực hiện</td>
+            </tr>
+            <tr>
+                <td class="table-center">6</td>
+                <td>cmbDoUuTien</td>
+                <td>ComboBox</td>
+                <td>1-5, default 3</td>
+                <td>Đặt mức độ ưu tiên</td>
+            </tr>
+            <tr>
+                <td class="table-center">7</td>
+                <td>btnTao</td>
+                <td>Button</td>
+                <td>Enable khi form hợp lệ</td>
+                <td>Tạo công việc mới</td>
+            </tr>
+            <tr>
+                <td class="table-center">8</td>
+                <td>calendarView</td>
+                <td>Calendar</td>
+                <td>Read-only</td>
+                <td>Hiển thị lịch đã lên kế hoạch</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h5>c. Danh sách biến cố và xử lý tương ứng trên màn hình:</h5>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 10%">STT</th>
+                <th style="width: 40%">Biến cố</th>
+                <th style="width: 50%">Xử lý</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="table-center">1</td>
+                <td>Click btnTao</td>
+                <td>Validate form → Lưu vào DB → Gửi thông báo cho KTV → Refresh calendar</td>
+            </tr>
+            <tr>
+                <td class="table-center">2</td>
+                <td>Change cmbKhachHang</td>
+                <td>Load địa chỉ khách hàng → Tự động suggest KTV gần nhất</td>
+            </tr>
+            <tr>
+                <td class="table-center">3</td>
+                <td>Calendar date click</td>
+                <td>Hiển thị danh sách công việc trong ngày → Cho phép chỉnh sửa</td>
+            </tr>
+            <tr>
+                <td class="table-center">4</td>
+                <td>Form validation</td>
+                <td>Real-time validation và hiển thị lỗi cho từng trường</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h4>2.5.3.2. Màn hình Báo cáo Công tác Hiện trường (Ứng dụng KTV):</h4>
+    <h5>a. Giao diện</h5>
+    <p>Màn hình tối ưu cho thiết bị di động, cho phép KTV báo cáo kết quả công việc:</p>
+    <ul>
+        <li>Form báo cáo với các trường thông tin cần thiết</li>
+        <li>Chức năng chụp ảnh và đính kèm hình ảnh</li>
+        <li>Checklist các công việc cần thực hiện</li>
+        <li>Ghi nhận vật tư đã sử dụng</li>
+        <li>Chức năng check-in/check-out với GPS</li>
+    </ul>
+    
+    <h5>b. Mô tả các đối tượng trên màn hình:</h5>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 8%">STT</th>
+                <th style="width: 25%">Tên</th>
+                <th style="width: 15%">Kiểu</th>
+                <th style="width: 30%">Ràng buộc</th>
+                <th style="width: 22%">Chức năng</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="table-center">1</td>
+                <td>btnCheckIn</td>
+                <td>Button</td>
+                <td>Chỉ active khi có GPS</td>
+                <td>Check-in tại địa điểm</td>
+            </tr>
+            <tr>
+                <td class="table-center">2</td>
+                <td>checklistItems</td>
+                <td>CheckboxList</td>
+                <td>Dynamic theo loại công việc</td>
+                <td>Danh sách công việc cần thực hiện</td>
+            </tr>
+            <tr>
+                <td class="table-center">3</td>
+                <td>txtNoiDung</td>
+                <td>TextArea</td>
+                <td>Required, min 50 chars</td>
+                <td>Mô tả công việc đã thực hiện</td>
+            </tr>
+            <tr>
+                <td class="table-center">4</td>
+                <td>txtKetQua</td>
+                <td>TextArea</td>
+                <td>Required</td>
+                <td>Ghi nhận kết quả đạt được</td>
+            </tr>
+            <tr>
+                <td class="table-center">5</td>
+                <td>imageUpload</td>
+                <td>FileUpload</td>
+                <td>Max 5 files, jpg/png</td>
+                <td>Đính kèm hình ảnh hiện trường</td>
+            </tr>
+            <tr>
+                <td class="table-center">6</td>
+                <td>vattuList</td>
+                <td>ItemList</td>
+                <td>Từ kho KTV</td>
+                <td>Ghi nhận vật tư sử dụng</td>
+            </tr>
+            <tr>
+                <td class="table-center">7</td>
+                <td>txtGhiChu</td>
+                <td>TextArea</td>
+                <td>Optional</td>
+                <td>Ghi chú thêm, vấn đề phát sinh</td>
+            </tr>
+            <tr>
+                <td class="table-center">8</td>
+                <td>btnCheckOut</td>
+                <td>Button</td>
+                <td>Enable sau khi hoàn thành form</td>
+                <td>Hoàn thành và check-out</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h5>c. Danh sách biến cố và xử lý tương ứng:</h5>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 10%">STT</th>
+                <th style="width: 40%">Biến cố</th>
+                <th style="width: 50%">Xử lý</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="table-center">1</td>
+                <td>Click btnCheckIn</td>
+                <td>Lấy tọa độ GPS → Ghi nhận thời gian → Cập nhật trạng thái "Đang thực hiện"</td>
+            </tr>
+            <tr>
+                <td class="table-center">2</td>
+                <td>Upload hình ảnh</td>
+                <td>Resize và compress → Upload lên cloud storage → Lưu URL vào DB</td>
+            </tr>
+            <tr>
+                <td class="table-center">3</td>
+                <td>Chọn vật tư sử dụng</td>
+                <td>Cập nhật số lượng trong kho KTV → Tính toán chi phí</td>
+            </tr>
+            <tr>
+                <td class="table-center">4</td>
+                <td>Click btnCheckOut</td>
+                <td>Validate form → Lưu báo cáo → Cập nhật trạng thái "Hoàn thành" → Gửi thông báo</td>
+            </tr>
+            <tr>
+                <td class="table-center">5</td>
+                <td>Mất kết nối internet</td>
+                <td>Lưu dữ liệu local → Sync khi có kết nối → Hiển thị trạng thái offline</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

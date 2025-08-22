@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFD - Leader Giao Việc</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        .dfd-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: 'Times New Roman', serif;
+            font-size: 14px;
+        }
+        
+        .dfd-title {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333333;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #ffffff;
+            border: 1px solid #cccccc;
+            border-radius: 5px;
+        }
+        
+        .mermaid-diagram {
+            background: white;
+            border: 1px solid #dddddd;
+            border-radius: 5px;
+            padding: 30px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+        
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+            padding: 20px;
+            background: #fafafa;
+            border: 1px solid #dddddd;
+            border-radius: 5px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #333333;
+        }
+        
+        .legend-shape {
+            width: 30px;
+            height: 20px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+        
+        .external { background: #ffffff; border: 1px solid #333333; }
+        .process { background: #f9f9f9; border: 1px solid #333333; border-radius: 50%; }
+        .datastore { background: #f5f5f5; border: 1px solid #666666; }
+        
+        .description {
+            background: white;
+            padding: 25px;
+            border: 1px solid #dddddd;
+            border-radius: 5px;
+            margin-top: 30px;
+        }
+        
+        .description h3 {
+            color: #333333;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border-bottom: 1px solid #cccccc;
+            padding-bottom: 10px;
+        }
+        
+        .description ol li {
+            margin-bottom: 12px;
+            line-height: 1.6;
+            padding-left: 10px;
+            color: #333333;
+            font-size: 14px;
+        }
+        
+        .description strong {
+            color: #333333;
+            font-size: 14px;
+        }
+        
+        .description code {
+            background: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 3px;
+            border: 1px solid #dddddd;
+            font-family: 'Times New Roman', serif;
+            font-size: 14px;
+        }
+        
+        /* Custom Mermaid styling for arrows and lines */
+        .mermaid .edge-thickness-normal {
+            stroke-width: 1px !important;
+        }
+        
+        .mermaid .edge-pattern-solid {
+            stroke-width: 1px !important;
+        }
+        
+        .mermaid .arrowheadPath {
+            fill: none !important;
+            stroke: #333333 !important;
+            stroke-width: 1px !important;
+            transform: scale(0.4) !important;
+            marker-end: none !important;
+        }
+        
+        .mermaid .edgePath {
+            stroke: #333333 !important;
+            stroke-width: 1px !important;
+            fill: none !important;
+            marker-end: url(#chevron-arrow) !important;
+            z-index: 10 !important;
+        }
+        
+        .mermaid .edgeLabel {
+            background-color: #ffffff !important;
+            font-family: 'Times New Roman', serif !important;
+            font-size: 14px !important;
+            color: #333333 !important;
+            z-index: 15 !important;
+        }
+        
+        .mermaid svg {
+            width: 100% !important;
+            min-width: 1000px !important;
+        }
+        
+        .mermaid .node {
+            min-width: 120px !important;
+            z-index: 5 !important;
+        }
+        
+        /* Custom chevron arrow marker */
+        .mermaid svg defs {
+            display: block !important;
+        }
+        
+        /* Force arrows to be on top */
+        .mermaid g.edgePaths {
+            z-index: 20 !important;
+        }
+        
+        .mermaid g.nodes {
+            z-index: 5 !important;
+        }
+
+        @media (max-width: 768px) {
+            .dfd-container {
+                padding: 10px;
+            }
+            
+            .mermaid-diagram {
+                padding: 15px;
+            }
+            
+            .legend {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dfd-container">
+        <div class="dfd-title">
+            DFD Level 1: Quy trình Leader Giao Việc cho KTV<br/>
+            <span style="font-size: 14px; opacity: 0.7; font-weight: normal;">(Admin Dashboard - Job Assignment Flow)</span>
+        </div>
+        
+        <div class="mermaid-diagram">
+            <div class="mermaid">
+                flowchart TD
+                    %% External Entities - positioned wider
+                    Leader["LEADER<br/>QUẢN LÝ"]
+                    Customer["KHÁCH HÀNG"]
+                    KTV["KỸ THUẬT VIÊN<br/>KTV"]
+                    
+                    %% Processes - positioned in center with spacing
+                    P1(("1.0<br/>Quản lý<br/>Khách hàng"))
+                    P2(("2.0<br/>Lập Kế hoạch<br/>Công việc"))
+                    P3(("3.0<br/>Phân công<br/>KTV"))
+                    P4(("4.0<br/>Tạo Checklist<br/>& Vật tư"))
+                    P5(("5.0<br/>Đồng bộ<br/>Real-time"))
+                    
+                    %% Data Stores - spread horizontally
+                    D1[("D1 | customers<br/>Thông tin KH")]
+                    D2[("D2 | jobs<br/>Công việc")]
+                    D3[("D3 | technicians<br/>Kỹ thuật viên")]
+                    D4[("D4 | job_assignments<br/>Phân công")]
+                    D5[("D5 | materials<br/>Vật tư")]
+                    D6[("D6 | checklist<br/>Checklist")]
+                    
+                    %% Data Flows with explicit positioning
+                    Customer -->|"Yêu cầu dịch vụ"| P1
+                    Leader -->|"Nhập thông tin<br/>khách hàng"| P1
+                    P1 -->|"Lưu thông tin<br/>khách hàng"| D1
+                    
+                    Leader -->|"Tạo lịch<br/>làm việc"| P2
+                    D1 -->|"Đọc thông tin<br/>khách hàng"| P2
+                    P2 -->|"Lưu công việc<br/>mới"| D2
+                    
+                    Leader -->|"Chọn KTV"| P3
+                    D2 -->|"Đọc thông tin<br/>công việc"| P3
+                    D3 -->|"Danh sách KTV<br/>available"| P3
+                    P3 -->|"Lưu phân công"| D4
+                    
+                    Leader -->|"Tạo checklist"| P4
+                    D5 -->|"Danh sách<br/>vật tư"| P4
+                    D6 -->|"Template<br/>checklist"| P4
+                    P4 -->|"Link với job"| D2
+                    
+                    D4 -->|"Thông tin<br/>phân công"| P5
+                    D2 -->|"Chi tiết<br/>công việc"| P5
+                    P5 -->|"Notification"| KTV
+                    
+                    %% Positioning hints for wider layout (invisible lines)
+                    Leader -.- D1
+                    Customer -.- D3
+                    KTV -.- D6
+                    D1 -.- D2
+                    D2 -.- D3
+                    D3 -.- D4
+                    D4 -.- D5
+                    D5 -.- D6
+                    
+                    %% Styling
+                    classDef external fill:#ffffff,stroke:#333333,stroke-width:1px,color:#333333
+                    classDef process fill:#f9f9f9,stroke:#333333,stroke-width:1px,color:#333333
+                    classDef datastore fill:#f5f5f5,stroke:#666666,stroke-width:1px,color:#333333
+                    classDef invisible stroke:none,fill:none,opacity:0
+                    
+                    %% Apply styles
+                    class Leader,Customer,KTV external
+                    class P1,P2,P3,P4,P5 process
+                    class D1,D2,D3,D4,D5,D6 datastore
+            </div>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-shape external"></div>
+                <span><strong>External Entity</strong> - Thực thể bên ngoài (Leader, Customer, KTV)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-shape process"></div>
+                <span><strong>Process</strong> - Quy trình xử lý dữ liệu trong Admin Dashboard</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-shape datastore"></div>
+                <span><strong>Data Store</strong> - Bảng dữ liệu trong Supabase Database</span>
+            </div>
+        </div>
+        
+        <div class="description">
+            <h3>Mô tả chi tiết quy trình:</h3>
+            <ol>
+                <li>
+                    <strong>Quản lý Khách hàng (1.0):</strong> Leader/CSKH nhận yêu cầu từ khách hàng và nhập thông tin vào hệ thống. 
+                    Dữ liệu được lưu vào bảng <code>customers</code> với địa chỉ chi tiết theo API địa giới hành chính VN.
+                </li>
+                <li>
+                    <strong>Lập Kế hoạch Công việc (2.0):</strong> Leader tạo công việc mới với ngày giờ cụ thể, chọn loại dịch vụ 
+                    (Định kỳ/1 lần/SOS), liên kết với khách hàng. Lưu vào bảng <code>jobs</code>.
+                </li>
+                <li>
+                    <strong>Phân công KTV (3.0):</strong> Leader chọn một hoặc nhiều KTV thực hiện, chỉ định Team Lead nếu là công việc nhóm. 
+                    Tạo records trong bảng <code>job_assignments</code> với roles (lead/member).
+                </li>
+                <li>
+                    <strong>Tạo Checklist & Vật tư (4.0):</strong> Leader chọn checklist từ template hoặc tạo mới, 
+                    chọn vật tư/hóa chất cần thiết với số lượng. Link với job thông qua <code>job_materials</code> và <code>job_checklist_items</code>.
+                </li>
+                <li>
+                    <strong>Đồng bộ Real-time (5.0):</strong> Hệ thống tự động đồng bộ dữ liệu qua Supabase Realtime, 
+                    gửi notification đến Technician App để KTV nhận được công việc mới ngay lập tức.
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            flowchart: {
+                htmlLabels: true,
+                curve: 'stepAfter',
+                useMaxWidth: false,
+                rankdir: 'TD',
+                nodeSpacing: 150,
+                rankSpacing: 100
+            },
+            themeVariables: {
+                primaryColor: '#ffffff',
+                primaryTextColor: '#333333',
+                primaryBorderColor: '#333333',
+                lineColor: '#333333',
+                secondaryColor: '#f9f9f9',
+                tertiaryColor: '#f5f5f5',
+                background: '#ffffff',
+                mainBkg: '#ffffff',
+                secondBkg: '#f9f9f9',
+                tertiaryBkg: '#f5f5f5',
+                fontFamily: 'Times New Roman',
+                fontSize: '14px',
+                edgeLabelBackground: '#ffffff',
+                arrowheadColor: '#333333'
+            }
+        });
+        
+        // Add custom chevron arrow after Mermaid loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                const svgs = document.querySelectorAll('.mermaid svg');
+                svgs.forEach(svg => {
+                    // Create custom chevron marker
+                    let defs = svg.querySelector('defs');
+                    if (!defs) {
+                        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                        svg.appendChild(defs);
+                    }
+                    
+                    const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+                    marker.setAttribute('id', 'chevron-arrow');
+                    marker.setAttribute('markerWidth', '6');
+                    marker.setAttribute('markerHeight', '4');
+                    marker.setAttribute('refX', '3');
+                    marker.setAttribute('refY', '2');
+                    marker.setAttribute('orient', 'auto');
+                    marker.setAttribute('markerUnits', 'strokeWidth');
+                    
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.setAttribute('d', 'M 0,0 L 3,2 L 0,4');
+                    path.setAttribute('stroke', '#333333');
+                    path.setAttribute('stroke-width', '1');
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke-linejoin', 'round');
+                    path.setAttribute('stroke-linecap', 'round');
+                    
+                    marker.appendChild(path);
+                    defs.appendChild(marker);
+                    
+                    // Remove existing arrowheads first
+                    const existingArrows = svg.querySelectorAll('.arrowheadPath');
+                    existingArrows.forEach(arrow => arrow.remove());
+                    
+                    // Apply marker to all edges and ensure proper layering
+                    const edges = svg.querySelectorAll('.edgePath path');
+                    edges.forEach((edge, index) => {
+                        edge.setAttribute('marker-end', 'url(#chevron-arrow)');
+                        edge.removeAttribute('marker-start');
+                        // Ensure edges are rendered above nodes
+                        edge.style.zIndex = '20';
+                        const parentGroup = edge.closest('g');
+                        if (parentGroup) {
+                            parentGroup.style.zIndex = '20';
+                        }
+                    });
+                    
+                    // Ensure nodes are below edges
+                    const nodes = svg.querySelectorAll('.nodes .node');
+                    nodes.forEach(node => {
+                        node.style.zIndex = '5';
+                    });
+                    
+                    // Hide invisible dotted lines arrows
+                    const invisibleEdges = svg.querySelectorAll('.edge-pattern-dotted path');
+                    invisibleEdges.forEach(edge => {
+                        edge.removeAttribute('marker-end');
+                        edge.removeAttribute('marker-start');
+                        edge.style.opacity = '0';
+                    });
+                });
+            }, 800);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wireframe - Admin Dashboard</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        /* Wireframe specific styles */
+        .wireframe-container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            font-family: Arial, sans-serif;
+            background: white;
+            padding: 20px;
+        }
+        
+        .wireframe-canvas {
+            position: relative;
+            width: 100%;
+            height: 800px;
+            background: #ffffff;
+            border: 3px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .wireframe-element {
+            position: absolute;
+            border: 2px solid #666;
+            background: #f8f9fa;
+            box-sizing: border-box;
+        }
+        
+        .header-section {
+            background: #e9ecef;
+            border-bottom: 3px solid #666;
+        }
+        
+        .sidebar-section {
+            background: #dee2e6;
+            border-right: 3px solid #666;
+        }
+        
+        .content-section {
+            background: #ffffff;
+        }
+        
+        .widget-box {
+            background: #f8f9fa;
+            border: 2px dashed #adb5bd;
+            border-radius: 4px;
+        }
+        
+        .chart-placeholder {
+            background: #e9ecef;
+            border: 2px solid #6c757d;
+            position: relative;
+        }
+        
+        .table-placeholder {
+            background: #ffffff;
+            border: 2px solid #6c757d;
+        }
+        
+        .wireframe-text {
+            font-size: 12px;
+            color: #495057;
+            font-weight: bold;
+            text-align: center;
+            padding: 8px;
+            line-height: 1.2;
+        }
+        
+        .wireframe-label {
+            font-size: 10px;
+            color: #6c757d;
+            text-align: center;
+            padding: 4px;
+        }
+        
+        .button-placeholder {
+            background: #6c757d;
+            color: white;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .nav-item {
+            background: #ced4da;
+            margin: 2px 0;
+            border-radius: 2px;
+            text-align: left;
+            font-size: 10px;
+            padding: 6px 8px;
+            border: 1px solid #adb5bd;
+        }
+        
+        .metric-box {
+            background: #ffffff;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .metric-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .metric-label {
+            font-size: 9px;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+        
+        .chart-lines {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+        }
+        
+        .chart-line {
+            stroke: #6c757d;
+            stroke-width: 1;
+            fill: none;
+        }
+        
+        .table-row {
+            height: 16px;
+            border-bottom: 1px solid #dee2e6;
+            margin: 2px 0;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="wireframe-container">
+        <div class="dfd-title">Wireframe: Admin Dashboard - Hệ thống Quản lý Phun thuốc Diệt côn trùng</div>
+        
+        <div class="wireframe-canvas">
+            <!-- Header Section -->
+            <div class="wireframe-element header-section" style="top: 0; left: 0; width: 100%; height: 80px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; height: 100%; padding: 0 20px;">
+                    <div class="wireframe-text">🏢 PEST CONTROL MANAGEMENT</div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div class="button-placeholder" style="width: 60px; height: 25px; font-size: 9px;">🔍 Search</div>
+                        <div class="button-placeholder" style="width: 80px; height: 25px; font-size: 9px;">🔔 Notifications</div>
+                        <div class="button-placeholder" style="width: 70px; height: 25px; font-size: 9px;">👤 Admin</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar Navigation -->
+            <div class="wireframe-element sidebar-section" style="top: 80px; left: 0; width: 200px; height: 720px;">
+                <div class="wireframe-text" style="border-bottom: 2px solid #adb5bd; margin-bottom: 10px;">📋 MENU</div>
+                <div style="padding: 10px;">
+                    <div class="nav-item">📊 Dashboard</div>
+                    <div class="nav-item">👥 Quản lý User</div>
+                    <div class="nav-item">🏠 Khách hàng</div>
+                    <div class="nav-item">📋 Công việc</div>
+                    <div class="nav-item">👨‍🔧 Kỹ thuật viên</div>
+                    <div class="nav-item">📦 Quản lý Kho</div>
+                    <div class="nav-item">💰 Tài chính</div>
+                    <div class="nav-item">📈 Báo cáo</div>
+                    <div class="nav-item">⚙️ Cài đặt</div>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="wireframe-element content-section" style="top: 80px; left: 200px; width: calc(100% - 200px); height: 720px;">
+                
+                <!-- Top Metrics Row -->
+                <div style="display: flex; gap: 15px; padding: 20px; justify-content: space-between;">
+                    <div class="metric-box" style="width: 160px; height: 80px;">
+                        <div class="metric-number">156</div>
+                        <div class="metric-label">TỔNG KHÁCH HÀNG</div>
+                    </div>
+                    <div class="metric-box" style="width: 160px; height: 80px;">
+                        <div class="metric-number">23</div>
+                        <div class="metric-label">CÔNG VIỆC HÔM NAY</div>
+                    </div>
+                    <div class="metric-box" style="width: 160px; height: 80px;">
+                        <div class="metric-number">8</div>
+                        <div class="metric-label">KTV ĐANG LÀM VIỆC</div>
+                    </div>
+                    <div class="metric-box" style="width: 160px; height: 80px;">
+                        <div class="metric-number">₫12.5M</div>
+                        <div class="metric-label">DOANH THU THÁNG</div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div style="display: flex; gap: 20px; padding: 0 20px; margin-bottom: 20px;">
+                    <div class="chart-placeholder" style="width: 60%; height: 250px; border-radius: 6px;">
+                        <div class="wireframe-text" style="background: #6c757d; color: white; margin: 0; border-radius: 4px 4px 0 0;">📈 DOANH THU 12 THÁNG QUA</div>
+                        <div class="chart-lines">
+                            <svg width="100%" height="100%">
+                                <path d="M 20 150 L 80 120 L 140 100 L 200 90 L 260 110 L 320 80 L 380 70" class="chart-line"/>
+                                <path d="M 20 180 L 80 160 L 140 140 L 200 130 L 260 150 L 320 120 L 380 110" class="chart-line"/>
+                            </svg>
+                        </div>
+                        <div class="wireframe-label">Tháng 1 → Tháng 12</div>
+                    </div>
+                    <div class="chart-placeholder" style="width: 38%; height: 250px; border-radius: 6px;">
+                        <div class="wireframe-text" style="background: #6c757d; color: white; margin: 0; border-radius: 4px 4px 0 0;">🥧 LOẠI DỊCH VỤ</div>
+                        <div style="text-align: center; padding-top: 40px;">
+                            <div style="width: 120px; height: 120px; border: 3px solid #6c757d; border-radius: 50%; margin: 0 auto; position: relative;">
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 10px;">
+                                    🐜 40%<br/>🪳 35%<br/>🐀 25%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities & Quick Actions -->
+                <div style="display: flex; gap: 20px; padding: 0 20px;">
+                    <div class="widget-box" style="width: 60%; height: 280px; border-radius: 6px;">
+                        <div class="wireframe-text" style="background: #e9ecef; margin: 0; border-radius: 4px 4px 0 0; border-bottom: 2px solid #adb5bd;">📋 HOẠT ĐỘNG GæN ĐÂY</div>
+                        <div style="padding: 10px;">
+                            <div class="table-row" style="display: flex; align-items: center; font-size: 10px; padding: 0 8px;">
+                                <span style="width: 60px;">09:30</span>
+                                <span style="flex: 1;">KTV Minh đã hoàn thành công việc tại Q.1</span>
+                                <span style="width: 60px; color: #28a745;">✅ Xong</span>
+                            </div>
+                            <div class="table-row" style="display: flex; align-items: center; font-size: 10px; padding: 0 8px;">
+                                <span style="width: 60px;">09:15</span>
+                                <span style="flex: 1;">Khách hàng mới đăng ký - Quận 3</span>
+                                <span style="width: 60px; color: #007bff;">📝 Mới</span>
+                            </div>
+                            <div class="table-row" style="display: flex; align-items: center; font-size: 10px; padding: 0 8px;">
+                                <span style="width: 60px;">08:45</span>
+                                <span style="flex: 1;">Cảnh báo: Thuốc diệt kiến sắp hết</span>
+                                <span style="width: 60px; color: #ffc107;">⚠️ Cảnh báo</span>
+                            </div>
+                            <div class="table-row" style="display: flex; align-items: center; font-size: 10px; padding: 0 8px;">
+                                <span style="width: 60px;">08:30</span>
+                                <span style="flex: 1;">KTV Lan bắt đầu công việc tại Q.7</span>
+                                <span style="width: 60px; color: #17a2b8;">🔄 Đang</span>
+                            </div>
+                            <div class="table-row" style="display: flex; align-items: center; font-size: 10px; padding: 0 8px;">
+                                <span style="width: 60px;">08:00</span>
+                                <span style="flex: 1;">Nhập kho: 50 chai thuốc diệt gián</span>
+                                <span style="width: 60px; color: #6f42c1;">📦 Kho</span>
+                            </div>
+                        </div>
+                        <div style="text-align: center; padding: 10px;">
+                            <div class="button-placeholder" style="width: 120px; height: 25px; margin: 0 auto;">Xem tất cả</div>
+                        </div>
+                    </div>
+
+                    <div class="widget-box" style="width: 38%; height: 280px; border-radius: 6px;">
+                        <div class="wireframe-text" style="background: #e9ecef; margin: 0; border-radius: 4px 4px 0 0; border-bottom: 2px solid #adb5bd;">⚡ THAO TÁC NHANH</div>
+                        <div style="padding: 15px; display: flex; flex-direction: column; gap: 12px;">
+                            <div class="button-placeholder" style="height: 35px; background: #007bff;">➕ Thêm Khách hàng mới</div>
+                            <div class="button-placeholder" style="height: 35px; background: #28a745;">📋 Tạo Công việc mới</div>
+                            <div class="button-placeholder" style="height: 35px; background: #17a2b8;">👨‍🔧 Phân công KTV</div>
+                            <div class="button-placeholder" style="height: 35px; background: #ffc107; color: #212529;">📦 Quản lý Kho</div>
+                            <div class="button-placeholder" style="height: 35px; background: #6f42c1;">📊 Xuất Báo cáo</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status indicators -->
+            <div style="position: absolute; top: 10px; right: 20px; display: flex; gap: 10px; font-size: 10px;">
+                <span style="color: #28a745;">● Online: 8 KTV</span>
+                <span style="color: #ffc107;">● Pending: 5 Jobs</span>
+                <span style="color: #dc3545;">● Alerts: 2</span>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px; font-size: 14px; line-height: 1.6;">
+            <h3>Thông số kỹ thuật Wireframe:</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <div>
+                    <h4>🖥️ Layout Structure:</h4>
+                    <ul>
+                        <li><strong>Header (80px):</strong> Logo, search, notifications, user menu</li>
+                        <li><strong>Sidebar (200px):</strong> Navigation menu với 9 modules chính</li>
+                        <li><strong>Content Area:</strong> Dashboard widgets, charts, và quick actions</li>
+                        <li><strong>Responsive:</strong> Collapse sidebar trên mobile</li>
+                    </ul>
+                    
+                    <h4>📊 Dashboard Components:</h4>
+                    <ul>
+                        <li><strong>KPI Metrics:</strong> 4 chỉ số quan trọng (customers, jobs, KTV, revenue)</li>
+                        <li><strong>Revenue Chart:</strong> Line chart 12 tháng với multiple series</li>
+                        <li><strong>Service Mix:</strong> Pie chart phân bố loại dịch vụ</li>
+                        <li><strong>Activity Feed:</strong> Real-time updates với status colors</li>
+                        <li><strong>Quick Actions:</strong> 5 shortcuts cho tác vụ thường dùng</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4>🎨 Visual Design Principles:</h4>
+                    <ul>
+                        <li><strong>Grid System:</strong> 12-column layout cho consistency</li>
+                        <li><strong>Color Coding:</strong> Status-based colors (success, warning, danger)</li>
+                        <li><strong>Typography:</strong> Clear hierarchy với font sizes 9px-18px</li>
+                        <li><strong>Whitespace:</strong> Adequate spacing cho readability</li>
+                        <li><strong>Icons:</strong> Intuitive symbols cho quick recognition</li>
+                    </ul>
+                    
+                    <h4>⚡ Interactive Features:</h4>
+                    <ul>
+                        <li><strong>Real-time Data:</strong> Auto-refresh metrics mỗi 30s</li>
+                        <li><strong>Drill-down:</strong> Click vào chart để xem chi tiết</li>
+                        <li><strong>Search:</strong> Global search với autocomplete</li>
+                        <li><strong>Notifications:</strong> Toast messages cho system alerts</li>
+                        <li><strong>Filters:</strong> Date range picker cho charts</li>
+                    </ul>
+                    
+                    <h4>📱 Responsive Considerations:</h4>
+                    <ul>
+                        <li><strong>Tablet (768px):</strong> Collapse sidebar, stack metrics 2x2</li>
+                        <li><strong>Mobile (480px):</strong> Single column, hamburger menu</li>
+                        <li><strong>Touch targets:</strong> Minimum 44px cho mobile</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

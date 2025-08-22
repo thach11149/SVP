@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Flow - Technician Work</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        /* Screen Flow specific styles */
+        .flow-container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            font-family: Arial, sans-serif;
+            background: white;
+            padding: 20px;
+        }
+        
+        .flow-diagram {
+            position: relative;
+            width: 100%;
+            height: 950px;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            overflow: visible;
+        }
+        
+        .mobile-screen {
+            position: absolute;
+            width: 160px;
+            background: white;
+            border: 3px solid #2c3e50;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        
+        .mobile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 10px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        .mobile-content {
+            padding: 8px;
+            font-size: 10px;
+            line-height: 1.3;
+            min-height: 120px;
+        }
+        
+        .mobile-actions {
+            background: #f8f9fa;
+            padding: 6px;
+            border-top: 1px solid #e9ecef;
+            font-size: 9px;
+            text-align: center;
+        }
+        
+        .mobile-button {
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 15px;
+            margin: 2px;
+            display: inline-block;
+            font-size: 8px;
+            font-weight: bold;
+        }
+        
+        .mobile-button.secondary {
+            background: #6c757d;
+        }
+        
+        .mobile-button.danger {
+            background: #dc3545;
+        }
+        
+        .mobile-button.warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .start-mobile {
+            border-color: #28a745;
+        }
+        
+        .start-mobile .mobile-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .working-mobile {
+            border-color: #ffc107;
+        }
+        
+        .working-mobile .mobile-header {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+        }
+        
+        .end-mobile {
+            border-color: #dc3545;
+        }
+        
+        .end-mobile .mobile-header {
+            background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+        }
+        
+        .flow-arrow {
+            stroke: #495057;
+            stroke-width: 2;
+            fill: none;
+            marker-end: url(#arrowhead-mobile);
+        }
+        
+        .flow-label {
+            position: absolute;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 9px;
+            color: #856404;
+            font-weight: bold;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+        
+        .status-pending { background: #ffc107; }
+        .status-active { background: #28a745; }
+        .status-completed { background: #6f42c1; }
+    </style>
+</head>
+<body>
+    <div class="flow-container">
+        <div class="dfd-title">Mobile App Flow: Quy trình Công việc của Kỹ thuật viên (KTV)</div>
+        
+        <div class="flow-diagram">
+            <!-- Start: Login Mobile -->
+            <div class="mobile-screen start-mobile" style="top: 50px; left: 100px;">
+                <div class="mobile-header">🔐 Đăng nhập KTV</div>
+                <div class="mobile-content">
+                    • Logo công ty<br/>
+                    • Nhập SĐT/Email<br/>
+                    • Nhập mật khẩu<br/>
+                    • Switch "Ghi nhớ"<br/>
+                    • Biometric login<br/>
+                    • Link "Quên MK"
+                </div>
+                <div class="mobile-actions">
+                    <span class="mobile-button">Đăng nhập</span><br/>
+                    <span class="mobile-button secondary">Quên MK</span>
+                </div>
+            </div>
+
+            <!-- Dashboard KTV -->
+            <div class="mobile-screen" style="top: 50px; left: 320px;">
+                <div class="mobile-header">📱 Dashboard KTV</div>
+                <div class="mobile-content">
+                    • Xin chào [Tên KTV]<br/>
+                    • Công việc hôm nay: 3<br/>
+                    • <span class="status-indicator status-pending"></span>Chờ: 1<br/>
+                    • <span class="status-indicator status-active"></span>Đang làm: 1<br/>
+                    • <span class="status-indicator status-completed"></span>Hoàn thành: 1<br/>
+                    • Thông báo mới (2)<br/>
+                    • GPS Status: ON
+                </div>
+                <div class="mobile-actions">
+                    <span class="mobile-button">Xem công việc</span><br/>
+                    <span class="mobile-button secondary">Thông báo</span>
+                </div>
+            </div>
+
+            <!-- Danh sách Công việc -->
+            <div class="mobile-screen" style="top: 300px; left: 100px;">
+                <div class="mobile-header">📋 Danh sách CV</div>
+                <div class="mobile-content">
+                    <strong>Hôm nay - 15/08</strong><br/>
+                    • 08:00 - Nhà anh Minh<br/>
+                    &nbsp;&nbsp;📍 Q.1, TP.HCM<br/>
+                    &nbsp;&nbsp;🐜 Diệt kiến<br/>
+                    • 10:30 - Quán cafe<br/>
+                    &nbsp;&nbsp;📍 Q.3, TP.HCM<br/>
+                    &nbsp;&nbsp;🪳 Diệt gián
+                </div>
+                <div class="mobile-actions">
+                    <span class="mobile-button">Chi tiết</span>
+                    <span class="mobile-button secondary">Bản đồ</span>
+                </div>
+            </div>
+
+            <!-- Chi tiết Công việc -->
+            <div class="mobile-screen" style="top: 300px; left: 320px;">
+                <div class="mobile-header">📄 Chi tiết Công việc</div>
+                <div class="mobile-content">
+                    <strong>Diệt kiến - Nhà riêng</strong><br/>
+                    👤 KH: Anh Minh<br/>
+                    📞 0901234567<br/>
+                    📍 123 Nguyễn Văn A<br/>
+                    Q.1, TP.HCM<br/>
+                    ⏰ 08:00 - 10:00<br/>
+                    📝 Diệt kiến trong bếp<br/>
+                    và phòng ăn
+                </div>
+                <div class="mobile-actions">
+                    <span class="mobile-button">Check-in</span>
+                    <span class="mobile-button secondary">Gọi KH</span>
+                    <span class="mobile-button secondary">Chỉ đường</span>
+                </div>
+            </div>
+
+            <!-- Check-in Location -->
+            <div class="mobile-screen working-mobile" style="top: 550px; left: 100px;">
+                <div class="mobile-header">📍 Check-in Hiện trường</div>
+                <div class="mobile-content">
+                    • Đang định vị GPS...<br/>
+                    • Vị trí: 123 Nguyễn Văn A<br/>
+                    • Độ chính xác: 5m<br/>
+                    • Thời gian: 08:05<br/>
+                    • Chụp ảnh hiện trường<br/>
+                    • Ghi chú trước khi làm
+                </div>
+                <div class="mobile-actions">
+                    <span class="mobile-button">📷 Chụp ảnh</span><br/>
+                    <span class="mobile-button">✅ Xác nhận</span>
+                </div>
+            </div>
+
+            <!-- Thực hiện Công việc -->
+            <div class="mobile-screen working-mobile" style="top: 550px; left: 320px;">
+                <div class="mobile-header">🔧 Đang thực hiện</div>
+                <div class="mobile-content">
+                    • Thời gian bắt đầu: 08:05<br/>
+                    • Thời gian hiện tại: 08:45<br/>
+                    • Timer: 00:40:15<br/>
+                    • Vật tư sử dụng:<br/>
+                    &nbsp;&nbsp;- Thuốc diệt kiến: 200ml<br/>
+                    &nbsp;&nbsp;- Bẫy kiến: 5 cái<br/>
+                    • GPS tracking: ON
+                </div>
+                <div class="mobile-actions">
+                    <span class="mobile-button">⏸️ Tạm dừng</span>
+                    <span class="mobile-button secondary">📦 Vật tư</span>
+                    <span class="mobile-button warning">🆘 SOS</span>
+                </div>
+            </div>
+
+            <!-- Báo cáo Hiện trường -->
+            <div class="mobile-screen" style="top: 750px; left: 200px;">
+                <div class="mobile-header">📝 Báo cáo CV</div>
+                <div class="mobile-content">
+                    • Tình trạng: Hoàn thành<br/>
+                    • Diện tích xử lý: 50m²<br/>
+                    • Vật tư đã dùng<br/>
+                    • Chụp ảnh kết quả<br/>
+                    • Ghi chú cho KH<br/>
+                    • Đánh giá mức độ<br/>
+                    • Lịch hẹn tiếp theo
+                </div>
+                <div class="mobile-actions">
+                    <span class="mobile-button">📷 Ảnh KQ</span>
+                    <span class="mobile-button">💬 Ghi chú</span>
+                </div>
+            </div>
+
+            <!-- Check-out -->
+            <div class="mobile-screen end-mobile" style="top: 50px; left: 550px;">
+                <div class="mobile-header">✅ Check-out</div>
+                <div class="mobile-content">
+                    • Thời gian KT: 09:30<br/>
+                    • Tổng thời gian: 1h25p<br/>
+                    • Vị trí check-out<br/>
+                    • Xác nhận hoàn thành<br/>
+                    • Đánh giá tự động<br/>
+                    • Chữ ký số KH<br/>
+                    • Sync dữ liệu
+                </div>
+                <div class="mobile-actions">
+                    <span class="mobile-button">📤 Gửi BC</span>
+                    <span class="mobile-button secondary">✍️ Ký số</span>
+                </div>
+            </div>
+
+            <!-- Quản lý Vật tư -->
+            <div class="mobile-screen" style="top: 300px; left: 550px;">
+                <div class="mobile-header">📦 Vật tư di động</div>
+                <div class="mobile-content">
+                    <strong>Kho di động:</strong><br/>
+                    • Thuốc diệt kiến: 500ml<br/>
+                    • Thuốc diệt gián: 300ml<br/>
+                    • Bẫy côn trùng: 20 cái<br/>
+                    • Máy phun: 1 cái<br/>
+                    <strong>Đã sử dụng hôm nay:</strong><br/>
+                    • Thuốc diệt kiến: 200ml
+                </div>
+                <div class="mobile-actions">
+                    <span class="mobile-button">📝 Ghi nhận</span>
+                    <span class="mobile-button secondary">📞 Yêu cầu bổ sung</span>
+                </div>
+            </div>
+
+            <!-- Báo cáo Cuối ngày -->
+            <div class="mobile-screen end-mobile" style="top: 550px; left: 550px;">
+                <div class="mobile-header">📊 Báo cáo Cuối ngày</div>
+                <div class="mobile-content">
+                    • Tổng CV hoàn thành: 3<br/>
+                    • Thời gian làm: 6h30p<br/>
+                    • Quãng đường: 45km<br/>
+                    • Vật tư tiêu hao<br/>
+                    • Đánh giá từ KH<br/>
+                    • Ghi chú đặc biệt<br/>
+                    • Chi phí phát sinh
+                </div>
+                <div class="mobile-actions">
+                    <span class="mobile-button">📤 Gửi BC</span>
+                    <span class="mobile-button secondary">💰 Chi phí</span>
+                </div>
+            </div>
+
+            <!-- Emergency/SOS -->
+            <div class="mobile-screen" style="top: 750px; left: 450px;">
+                <div class="mobile-header" style="background: #dc3545;">🆘 Khẩn cấp</div>
+                <div class="mobile-content">
+                    • Gọi Leader: 090xxx<br/>
+                    • Gọi 115 (Cấp cứu)<br/>
+                    • Gọi 113 (Công an)<br/>
+                    • Chia sẻ vị trí GPS<br/>
+                    • Ghi âm tình huống<br/>
+                    • Camera khẩn cấp
+                </div>
+                <div class="mobile-actions">
+                    <span class="mobile-button danger">📞 Gọi ngay</span>
+                    <span class="mobile-button secondary">📍 Chia sẻ VT</span>
+                </div>
+            </div>
+
+            <!-- SVG for mobile flow arrows -->
+            <svg class="arrow-svg">
+                <defs>
+                    <marker id="arrowhead-mobile" markerWidth="8" markerHeight="6" 
+                            refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#495057" />
+                    </marker>
+                </defs>
+                
+                <!-- Login to Dashboard -->
+                <line x1="260" y1="130" x2="320" y2="130" class="flow-arrow"/>
+                
+                <!-- Dashboard to Job List -->
+                <line x1="350" y1="250" x2="200" y2="300" class="flow-arrow"/>
+                
+                <!-- Job List to Job Detail -->
+                <line x1="260" y1="380" x2="320" y2="380" class="flow-arrow"/>
+                
+                <!-- Job Detail to Check-in -->
+                <line x1="350" y1="480" x2="200" y2="550" class="flow-arrow"/>
+                
+                <!-- Check-in to Working -->
+                <line x1="260" y1="630" x2="320" y2="630" class="flow-arrow"/>
+                
+                <!-- Working to Report -->
+                <line x1="380" y1="720" x2="280" y2="750" class="flow-arrow"/>
+                
+                <!-- Report to Check-out -->
+                <line x1="360" y1="800" x2="550" y2="200" class="flow-arrow"/>
+                
+                <!-- Dashboard to Inventory -->
+                <line x1="480" y1="130" x2="550" y2="130" class="flow-arrow"/>
+                
+                <!-- Working to Emergency -->
+                <line x1="400" y1="720" x2="500" y2="750" class="flow-arrow"/>
+                
+                <!-- Check-out to End Report -->
+                <line x1="630" y1="250" x2="630" y2="550" class="flow-arrow"/>
+            </svg>
+
+            <!-- Flow Labels -->
+            <div class="flow-label" style="top: 110px; left: 280px;">Đăng nhập<br/>thành công</div>
+            <div class="flow-label" style="top: 270px; left: 250px;">Xem CV<br/>hôm nay</div>
+            <div class="flow-label" style="top: 360px; left: 280px;">Chọn CV<br/>chi tiết</div>
+            <div class="flow-label" style="top: 510px; left: 250px;">Đến hiện<br/>trường</div>
+            <div class="flow-label" style="top: 610px; left: 280px;">Bắt đầu<br/>làm việc</div>
+            <div class="flow-label" style="top: 730px; left: 320px;">Hoàn thành<br/>làm báo cáo</div>
+            <div class="flow-label" style="top: 350px; left: 400px;">Check-out<br/>gửi BC</div>
+            <div class="flow-label" style="top: 110px; left: 510px;">Quản lý<br/>vật tư</div>
+            <div class="flow-label" style="top: 730px; left: 420px;">Tình huống<br/>khẩn cấp</div>
+            <div class="flow-label" style="top: 350px; left: 590px;">Báo cáo<br/>cuối ngày</div>
+        </div>
+        
+        <div style="margin-top: 30px; font-size: 14px; line-height: 1.6;">
+            <h3>Đặc điểm Mobile App Flow cho KTV:</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <div>
+                    <h4>📱 Mobile-First Design:</h4>
+                    <ul>
+                        <li><strong>Offline capability:</strong> Làm việc khi không có mạng</li>
+                        <li><strong>GPS tracking:</strong> Tự động theo dõi vị trí</li>
+                        <li><strong>Camera integration:</strong> Chụp ảnh trực tiếp</li>
+                        <li><strong>Voice notes:</strong> Ghi âm ghi chú nhanh</li>
+                        <li><strong>Push notifications:</strong> Thông báo công việc mới</li>
+                    </ul>
+                    
+                    <h4>🔄 Workflow States:</h4>
+                    <ul>
+                        <li><strong>Chờ xử lý:</strong> CV được giao nhưng chưa bắt đầu</li>
+                        <li><strong>Đang thực hiện:</strong> Check-in và đang làm việc</li>
+                        <li><strong>Tạm dừng:</strong> Nghỉ giải lao hoặc chờ KH</li>
+                        <li><strong>Hoàn thành:</strong> Check-out và gửi báo cáo</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4>⚡ Key Features:</h4>
+                    <ul>
+                        <li><strong>Real-time sync:</strong> Đồng bộ dữ liệu tức thì</li>
+                        <li><strong>Barcode scanner:</strong> Quét mã vật tư</li>
+                        <li><strong>Digital signature:</strong> Chữ ký số khách hàng</li>
+                        <li><strong>Time tracking:</strong> Tự động tính thời gian làm việc</li>
+                        <li><strong>Emergency button:</strong> SOS cho tình huống khẩn cấp</li>
+                    </ul>
+                    
+                    <h4>🎯 UX Principles:</h4>
+                    <ul>
+                        <li><strong>One-hand operation:</strong> Dễ sử dụng bằng một tay</li>
+                        <li><strong>Large touch targets:</strong> Nút bấm to, dễ nhấn</li>
+                        <li><strong>Quick actions:</strong> Swipe gestures cho các tác vụ nhanh</li>
+                        <li><strong>Visual feedback:</strong> Hiệu ứng rõ ràng khi thao tác</li>
+                        <li><strong>Minimal typing:</strong> Giảm thiểu việc phải gõ phím</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

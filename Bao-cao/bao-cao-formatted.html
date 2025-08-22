@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo Đồ án Môn học - Nhập môn Công nghệ Phần mềm</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 60px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            border-bottom: 3px solid #0066cc;
+            padding-bottom: 30px;
+        }
+        
+        .university {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .faculty {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .separator {
+            font-size: 16px;
+            margin: 15px 0;
+            color: #666;
+        }
+        
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-transform: uppercase;
+            color: #0066cc;
+            letter-spacing: 1px;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0066cc;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+        
+        h1 {
+            color: #0066cc;
+            font-size: 16px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #0066cc;
+            padding-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        h2 {
+            color: #0066cc;
+            font-size: 14px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            margin-left: 20px;
+            font-weight: bold;
+        }
+        
+        h3 {
+            color: #333;
+            font-size: 13px;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            margin-left: 40px;
+            font-weight: bold;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 12px;
+        }
+        
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #0066cc;
+            color: white;
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        td {
+            padding: 10px 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        
+        .table-center {
+            text-align: center;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tr:hover {
+            background-color: #e8f4fd;
+        }
+        
+        .section {
+            margin: 30px 0;
+        }
+        
+        .subsection {
+            margin: 20px 0;
+            margin-left: 20px;
+        }
+        
+        .highlight {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .note {
+            background-color: #d1ecf1;
+            padding: 15px;
+            border-left: 4px solid #17a2b8;
+            margin: 20px 0;
+            font-style: italic;
+            border-radius: 4px;
+        }
+        
+        .algorithm {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        
+        .assignment-table {
+            margin: 20px 0;
+        }
+        
+        .assignment-table td {
+            text-align: center;
+            font-size: 11px;
+        }
+        
+        .assignment-table .task-column {
+            text-align: left;
+            font-weight: 500;
+            padding-left: 15px;
+        }
+        
+        .completion-row {
+            background-color: #e8f5e8 !important;
+            font-weight: bold;
+        }
+        
+        .completion-row td {
+            font-weight: bold;
+            color: #0066cc;
+        }
+        
+        .x-mark {
+            font-weight: bold;
+            color: #28a745;
+            font-size: 14px;
+        }
+        
+        .timeline {
+            background-color: #f1f3f4;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+            color: #0066cc;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            text-align: right;
+            font-style: italic;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+        
+        li {
+            margin: 8px 0;
+        }
+        
+        p {
+            margin: 10px 0;
+            text-align: justify;
+        }
+        
+        @media print {
+            body {
+                background-color: white;
+                padding: 20px;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 0;
+            }
+            
+            .header {
+                border-bottom: 2px solid #0066cc;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="university">TRƯỜNG ĐẠI HỌC CÔNG NGHỆ THÔNG TIN</div>
+            <div class="faculty">KHOA CÔNG NGHỆ PHẦN MỀM</div>
+            <div class="separator">-------------------</div>
+            <div class="title">BÁO CÁO ĐỒ ÁN MÔN HỌC</div>
+            <div class="subtitle">NHẬP MÔN CÔNG NGHỆ PHẦN MỀM</div>
+        </div>
+
+        <div class="section">
+            <h1>1. Hình thức trình bày</h1>
+            <div class="note">
+                Theo file "Hinh thuc trinh bay luan van.doc"
+            </div>
+        </div>
+
+        <div class="section">
+            <h1>2. Nội dung báo cáo</h1>
+            
+            <div class="subsection">
+                <h2>2.1. Giới thiệu bài toán cần giải quyết</h2>
+                <p>Mô tả quy trình thực hiện các công việc chính</p>
+            </div>
+            
+            <div class="subsection">
+                <h2>2.2. Xác định và mô hình hóa yêu cầu phần mềm</h2>
+                <h3>• Phân loại các yêu cầu phần mềm</h3>
+                <h3>• Bảng trách nhiệm cho từng loại yêu cầu</h3>
+                <h3>• Sơ đồ luồng dữ liệu cho từng yêu cầu</h3>
+                <div class="note">
+                    <em>Bao gồm: biểu mẫu và quy định kèm theo, sơ đồ, mô tả các luồng dữ liệu và thuật toán</em>
+                </div>
+            </div>
+            
+            <div class="subsection">
+                <h2>2.3. Thiết kế hệ thống</h2>
+                <h3>• Kiến trúc hệ thống</h3>
+                <h3>• Mô tả các thành phần trong hệ thống</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 10%">STT</th>
+                            <th style="width: 35%">Thành phần</th>
+                            <th style="width: 55%">Diễn giải</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="table-center">1</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="table-center">2</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="subsection">
+                <h2>2.4. Thiết kế dữ liệu</h2>
+                
+                <div class="algorithm">
+                    <h3>Thuật toán lập sơ đồ logic:</h3>
+                    <ul>
+                        <li><strong>Bước 1:</strong> Xét yêu cầu phần mềm thứ nhất
+                            <ol>
+                                <li>Thiết kế dữ liệu với tính đúng đắn</li>
+                                <li>Thiết kế dữ liệu với tính tiến hóa</li>
+                            </ol>
+                        </li>
+                        <li><strong>Bước 2:</strong> Xét yêu cầu phần mềm thứ hai
+                            <ol>
+                                <li>Thiết kế dữ liệu với tính đúng đắn</li>
+                                <li>Thiết kế dữ liệu với tính tiến hóa</li>
+                            </ol>
+                        </li>
+                        <li>...</li>
+                        <li><strong>Sơ đồ logic hoàn chỉnh</strong></li>
+                    </ul>
+                </div>
+                
+                <h3>• Danh sách các bảng dữ liệu (table) trong sơ đồ:</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 10%">STT</th>
+                            <th style="width: 35%">Tên bảng dữ liệu</th>
+                            <th style="width: 55%">Diễn giải</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="table-center">1</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="table-center">2</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>• Mô tả từng bảng dữ liệu:</h3>
+                <h3>Bảng A:</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 8%">STT</th>
+                            <th style="width: 25%">Thuộc tính</th>
+                            <th style="width: 20%">Kiểu dữ liệu</th>
+                            <th style="width: 22%">Ràng buộc</th>
+                            <th style="width: 25%">Diễn giải</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="table-center">1</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="table-center">2</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="subsection">
+                <h2>2.5. Thiết kế giao diện</h2>
+                <h3>• Sơ đồ liên kết các màn hình</h3>
+                <h3>• Danh sách các màn hình:</h3>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 10%">STT</th>
+                            <th style="width: 25%">Màn hình</th>
+                            <th style="width: 30%">Loại màn hình</th>
+                            <th style="width: 35%">Chức năng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="table-center">1</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="table-center">2</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3>• Mô tả các màn hình:</h3>
+                <h3>Màn hình A:</h3>
+                
+                <ol>
+                    <li><strong>Giao diện</strong></li>
+                    <li><strong>Mô tả các đối tượng trên màn hình:</strong></li>
+                </ol>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 8%">STT</th>
+                            <th style="width: 25%">Tên</th>
+                            <th style="width: 15%">Kiểu</th>
+                            <th style="width: 30%">Ràng buộc</th>
+                            <th style="width: 22%">Chức năng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="table-center">1</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="table-center">2</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <ol start="3">
+                    <li><strong>Danh sách biến cố và xử lý tương ứng trên màn hình:</strong></li>
+                </ol>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 10%">STT</th>
+                            <th style="width: 40%">Biến cố</th>
+                            <th style="width: 50%">Xử lý</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="table-center">1</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="table-center">2</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="subsection">
+                <h2>2.6. Cài đặt và thử nghiệm</h2>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 10%">STT</th>
+                            <th style="width: 30%">Chức năng</th>
+                            <th style="width: 35%">Mức độ hoàn thành (%)</th>
+                            <th style="width: 25%">Ghi chú</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="table-center">1</td>
+                            <td></td>
+                            <td class="table-center"></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td class="table-center">2</td>
+                            <td></td>
+                            <td class="table-center"></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="subsection">
+                <h2>2.7. Nhận xét và kết luận</h2>
+            </div>
+            
+            <div class="subsection">
+                <h2>2.8. Hướng phát triển</h2>
+            </div>
+            
+            <div class="subsection">
+                <h2>2.9. Phụ lục (nếu có)</h2>
+            </div>
+            
+            <div class="subsection">
+                <h2>2.10. Tài liệu tham khảo</h2>
+            </div>
+            
+            <div class="subsection">
+                <h2>2.11. Bảng phân công công việc</h2>
+                
+                <table class="assignment-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 32%">Công việc</th>
+                            <th style="width: 12%">MSSV 1</th>
+                            <th style="width: 12%">MSSV 2</th>
+                            <th style="width: 12%">MSSV 3</th>
+                            <th style="width: 16%">MSSV 4</th>
+                            <th style="width: 16%">MSSV 5</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="task-column">Giới thiệu các bài toán cần giải quyết và mô tả quy trình thực hiện các công việc chính</td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                        </tr>
+                        <tr>
+                            <td class="task-column">Xác định và mô hình hóa yêu cầu phần mềm</td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"></td>
+                        </tr>
+                        <tr>
+                            <td class="task-column">Thiết kế hệ thống</td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                        </tr>
+                        <tr>
+                            <td class="task-column">Thiết kế dữ liệu</td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                        </tr>
+                        <tr>
+                            <td class="task-column">Thiết kế giao diện</td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                        </tr>
+                        <tr>
+                            <td class="task-column">Cài đặt</td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                        </tr>
+                        <tr>
+                            <td class="task-column">Kiểm chứng</td>
+                            <td class="table-center"></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"></td>
+                            <td class="table-center"><span class="x-mark">x</span></td>
+                            <td class="table-center"></td>
+                        </tr>
+                        <tr class="completion-row">
+                            <td class="task-column">Mức độ hoàn thành (%)</td>
+                            <td class="table-center">100</td>
+                            <td class="table-center">90</td>
+                            <td class="table-center">80</td>
+                            <td class="table-center">100</td>
+                            <td class="table-center">90</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section">
+            <h1>3. Thời gian thực hiện</h1>
+            <div class="timeline">
+                8 tuần
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><em>Báo cáo được hoàn thành theo yêu cầu môn học Nhập môn Công nghệ Phần mềm</em></p>
+        </div>
+    </div>
+</body>
+</html>

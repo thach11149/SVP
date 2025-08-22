@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Architecture Overview</title>
+    <link rel="stylesheet" href="../assets/styles.css">
+    <style>
+        /* Architecture specific styles */
+        .arch-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            font-family: Arial, sans-serif;
+            background: white;
+            padding: 20px;
+        }
+        
+        .arch-diagram {
+            position: relative;
+            width: 100%;
+            height: 800px;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            overflow: visible;
+        }
+        
+        .layer {
+            position: absolute;
+            border: 2px solid;
+            border-radius: 12px;
+            padding: 15px;
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .presentation-layer {
+            border-color: #3498db;
+            background: linear-gradient(135deg, #ebf4ff 0%, #dbeafe 100%);
+        }
+        
+        .business-layer {
+            border-color: #2ecc71;
+            background: linear-gradient(135deg, #f0fff4 0%, #dcfce7 100%);
+        }
+        
+        .data-layer {
+            border-color: #e74c3c;
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        }
+        
+        .external-service {
+            border-color: #f39c12;
+            background: linear-gradient(135deg, #fefbf3 0%, #fef3c7 100%);
+        }
+        
+        .layer-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .component {
+            background: white;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin: 5px 0;
+            font-size: 12px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .admin-component { border-left: 4px solid #3498db; }
+        .mobile-component { border-left: 4px solid #9b59b6; }
+        .api-component { border-left: 4px solid #2ecc71; }
+        .service-component { border-left: 4px solid #f39c12; }
+        .db-component { border-left: 4px solid #e74c3c; }
+        .external-component { border-left: 4px solid #95a5a6; }
+        
+        .connection-arrow {
+            stroke: #7f8c8d;
+            stroke-width: 2;
+            fill: none;
+            marker-end: url(#arrowhead-arch);
+        }
+        
+        .bidirectional {
+            stroke-dasharray: 5,5;
+        }
+        
+        .data-flow-label {
+            position: absolute;
+            background: white;
+            padding: 2px 6px;
+            border: 1px solid #7f8c8d;
+            border-radius: 3px;
+            font-size: 10px;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="arch-container">
+        <div class="dfd-title">Kiến trúc Hệ thống 3 Tầng - Quản lý Phun thuốc Diệt côn trùng</div>
+        
+        <div class="arch-diagram">
+            <!-- Presentation Layer -->
+            <div class="layer presentation-layer" style="top: 50px; left: 50px; width: 1000px; height: 150px;">
+                <div class="layer-title">PRESENTATION LAYER (Tầng Giao diện)</div>
+                <div style="display: flex; justify-content: space-around; margin-top: 10px;">
+                    <div>
+                        <div class="component admin-component">Admin Dashboard<br/>(React Web App)</div>
+                        <div class="component admin-component">CSKH Portal<br/>(React Web App)</div>
+                        <div class="component admin-component">Leader Dashboard<br/>(React Web App)</div>
+                    </div>
+                    <div>
+                        <div class="component mobile-component">KTV Mobile App<br/>(React Native)</div>
+                        <div class="component mobile-component">Customer App<br/>(React Native)</div>
+                    </div>
+                    <div>
+                        <div class="component admin-component">Reporting Portal<br/>(React + Chart.js)</div>
+                        <div class="component admin-component">Real-time Dashboard<br/>(React + WebSocket)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Business Logic Layer -->
+            <div class="layer business-layer" style="top: 280px; left: 50px; width: 1000px; height: 220px;">
+                <div class="layer-title">BUSINESS LOGIC LAYER (Tầng Xử lý nghiệp vụ)</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 10px;">
+                    <div>
+                        <div class="component api-component">Authentication API<br/>(Node.js + JWT)</div>
+                        <div class="component api-component">User Management API</div>
+                        <div class="component api-component">Customer Management API</div>
+                    </div>
+                    <div>
+                        <div class="component api-component">Job Management API</div>
+                        <div class="component api-component">Schedule Management API</div>
+                        <div class="component api-component">Report Generation API</div>
+                    </div>
+                    <div>
+                        <div class="component api-component">Inventory Management API</div>
+                        <div class="component api-component">Expense Tracking API</div>
+                        <div class="component api-component">Notification Service</div>
+                    </div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <div class="component service-component" style="text-align: center;">
+                        <strong>API Gateway</strong> (Express.js + Middleware)<br/>
+                        Rate Limiting • Authentication • Request Routing • Response Formatting
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Layer -->
+            <div class="layer data-layer" style="top: 580px; left: 50px; width: 1000px; height: 120px;">
+                <div class="layer-title">DATA LAYER (Tầng Dữ liệu)</div>
+                <div style="display: flex; justify-content: space-around; margin-top: 10px;">
+                    <div class="component db-component">PostgreSQL<br/>Primary Database<br/>(Users, Jobs, Inventory)</div>
+                    <div class="component db-component">Redis Cache<br/>Session Storage<br/>Real-time Data</div>
+                    <div class="component db-component">File Storage<br/>AWS S3 / Local<br/>Images & Documents</div>
+                    <div class="component db-component">Analytics DB<br/>Time-series Data<br/>Performance Metrics</div>
+                </div>
+            </div>
+
+            <!-- External Services -->
+            <div class="layer external-service" style="top: 50px; left: 1100px; width: 200px; height: 650px;">
+                <div class="layer-title">EXTERNAL SERVICES</div>
+                <div style="margin-top: 20px;">
+                    <div class="component external-component">Google Maps API<br/>GPS Tracking</div>
+                    <div class="component external-component">SMS Gateway<br/>Notifications</div>
+                    <div class="component external-component">Email Service<br/>SendGrid/SES</div>
+                    <div class="component external-component">Push Notification<br/>Firebase FCM</div>
+                    <div class="component external-component">Payment Gateway<br/>VNPay/Momo</div>
+                    <div class="component external-component">Weather API<br/>Work Conditions</div>
+                    <div class="component external-component">Backup Service<br/>AWS S3/Drive</div>
+                </div>
+            </div>
+
+            <!-- SVG for connections -->
+            <svg class="arrow-svg">
+                <defs>
+                    <marker id="arrowhead-arch" markerWidth="10" markerHeight="7" 
+                            refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#7f8c8d" />
+                    </marker>
+                </defs>
+                
+                <!-- Presentation to Business Layer -->
+                <line x1="200" y1="200" x2="200" y2="280" class="connection-arrow bidirectional"/>
+                <line x1="400" y1="200" x2="400" y2="280" class="connection-arrow bidirectional"/>
+                <line x1="600" y1="200" x2="600" y2="280" class="connection-arrow bidirectional"/>
+                <line x1="800" y1="200" x2="800" y2="280" class="connection-arrow bidirectional"/>
+                
+                <!-- Business to Data Layer -->
+                <line x1="200" y1="500" x2="200" y2="580" class="connection-arrow bidirectional"/>
+                <line x1="400" y1="500" x2="400" y2="580" class="connection-arrow bidirectional"/>
+                <line x1="600" y1="500" x2="600" y2="580" class="connection-arrow bidirectional"/>
+                <line x1="800" y1="500" x2="800" y2="580" class="connection-arrow bidirectional"/>
+                
+                <!-- Business to External Services -->
+                <line x1="1050" y1="350" x2="1100" y2="350" class="connection-arrow"/>
+                <line x1="1050" y1="380" x2="1100" y2="380" class="connection-arrow"/>
+                <line x1="1050" y1="410" x2="1100" y2="410" class="connection-arrow"/>
+            </svg>
+
+            <!-- Data Flow Labels -->
+            <div class="data-flow-label" style="top: 230px; left: 170px;">HTTP/HTTPS<br/>REST API</div>
+            <div class="data-flow-label" style="top: 230px; left: 370px;">WebSocket<br/>Real-time</div>
+            <div class="data-flow-label" style="top: 230px; left: 570px;">GraphQL<br/>Mobile API</div>
+            <div class="data-flow-label" style="top: 530px; left: 170px;">SQL Queries<br/>Transactions</div>
+            <div class="data-flow-label" style="top: 530px; left: 570px;">File Upload<br/>Storage</div>
+            <div class="data-flow-label" style="top: 320px; left: 1060px;">API Calls</div>
+        </div>
+        
+        <div style="margin-top: 30px; font-size: 14px; line-height: 1.6;">
+            <h3>Đặc điểm kiến trúc 3 tầng:</h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <div>
+                    <h4>🎨 Presentation Layer (Tầng Giao diện):</h4>
+                    <ul>
+                        <li><strong>Web Applications:</strong> React.js cho dashboard admin, CSKH, Leader</li>
+                        <li><strong>Mobile Applications:</strong> React Native cho KTV và Customer</li>
+                        <li><strong>Real-time Dashboard:</strong> WebSocket cho cập nhật trực tiếp</li>
+                        <li><strong>Responsive Design:</strong> Tương thích đa thiết bị</li>
+                    </ul>
+                    
+                    <h4>⚙️ Business Logic Layer (Tầng Xử lý):</h4>
+                    <ul>
+                        <li><strong>API Gateway:</strong> Quản lý routing, authentication, rate limiting</li>
+                        <li><strong>Microservices:</strong> Các API service độc lập theo domain</li>
+                        <li><strong>Authentication:</strong> JWT-based security</li>
+                        <li><strong>Business Rules:</strong> Validation, workflow, notifications</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4>🗄️ Data Layer (Tầng Dữ liệu):</h4>
+                    <ul>
+                        <li><strong>PostgreSQL:</strong> Cơ sở dữ liệu chính, ACID compliance</li>
+                        <li><strong>Redis:</strong> Cache, session storage, real-time data</li>
+                        <li><strong>File Storage:</strong> AWS S3/Local cho ảnh, documents</li>
+                        <li><strong>Analytics:</strong> Time-series data cho báo cáo</li>
+                    </ul>
+                    
+                    <h4>🌐 External Services:</h4>
+                    <ul>
+                        <li><strong>Google Maps:</strong> GPS tracking, route optimization</li>
+                        <li><strong>Notification Services:</strong> SMS, Email, Push notifications</li>
+                        <li><strong>Payment Integration:</strong> VNPay, Momo</li>
+                        <li><strong>Weather API:</strong> Điều kiện thời tiết cho công việc</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <h4>✅ Ưu điểm của kiến trúc này:</h4>
+            <ul>
+                <li><strong>Tách biệt rõ ràng:</strong> Mỗi tầng có trách nhiệm riêng biệt</li>
+                <li><strong>Dễ bảo trì:</strong> Thay đổi một tầng không ảnh hưởng tầng khác</li>
+                <li><strong>Scalability:</strong> Có thể scale từng tầng độc lập</li>
+                <li><strong>Security:</strong> Nhiều lớp bảo mật, API Gateway làm entry point</li>
+                <li><strong>Testability:</strong> Dễ dàng unit test và integration test</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
