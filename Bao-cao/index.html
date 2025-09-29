@@ -46,6 +46,16 @@
         
         <!-- Section 3: Thời gian -->
         <div id="section3-content"></div>
+
+        <!-- =============================== -->
+        <!-- CHÚ Ý: VỊ TRÍ CHÈN DFD QUẢN LÝ CÔNG TÁC PHÍ -->
+        <div id="dfd-cong-tac-phi-container" style="border:2px solid #e74c3c; margin:32px 0; padding:16px;">
+            <div style="font-weight:bold; color:#e74c3c; font-size:18px; text-align:center;">
+                CHÚ Ý: DFD CHO CHỨC NĂNG 'QUẢN LÝ CÔNG TÁC PHÍ' SẼ ĐƯỢC CHÈN TẠI ĐÂY
+            </div>
+            <!-- Biểu đồ sẽ được load tự động bằng JS -->
+        </div>
+        <!-- =============================== -->
     </div>
 
     <script>
@@ -110,6 +120,8 @@
                 loadDFD('dfd-leader-container', 'diagrams/dfd-leader-giao-viec.html');
                 loadDFD('dfd-ktv-container', 'diagrams/dfd-ktv-bao-cao.html');
                 loadDFD('dfd-quan-ly-kho-container', 'diagrams/dfd-quan-ly-kho.html');
+                // CHÚ Ý: TỰ ĐỘNG CHÈN DFD QUẢN LÝ CÔNG TÁC PHÍ
+                loadDFD('dfd-cong-tac-phi-container', 'diagrams/dfd-cong-tac-phi.html');
             }, 1000);
         });
     </script>
