@@ -6,7 +6,11 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
 import { Edit, Delete, Work } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import CustomerForm from './AddCustomerForm'; // Đổi tên import cho đúng
+import EditCustomerForm from './EditCustomerForm';
 import AlertMessage from './AlertMessage'; // Thêm import
+import provincesData from '../data/provinces.json';
+import districtsData from '../data/districts.json';
+import wardsData from '../data/wards.json';
 
 export default function CustomerList() {
   const navigate = useNavigate();
@@ -16,9 +20,6 @@ export default function CustomerList() {
   const [editingCustomer, setEditingCustomer] = useState(null); // State để lưu khách hàng đang được sửa
   const [alert, setAlert] = useState({ open: false, message: '', severity: 'info', confirm: false, onConfirm: null });
   const [deleteDialog, setDeleteDialog] = useState({ open: false, customerId: null });
-  const [provinces, setProvinces] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [wards, setWards] = useState([]);
 
   const fetchCustomers = useCallback(async () => {
     try {
@@ -32,38 +33,6 @@ export default function CustomerList() {
       setLoading(false);
     }
   }, []);
-
-  async function fetchProvinces() {
-    // Xóa hoặc comment đoạn fetch từ Supabase cho provinces
-    // Chỉ dùng fetch('https://provinces.open-api.vn/api/p/') để lấy danh sách tỉnh/thành
-    const response = await fetch('https://provinces.open-api.vn/api/p/');
-    const data = await response.json();
-    setProvinces(data);
-  }
-
-  async function fetchDistricts(provinceCode) {
-    const { data, error } = await supabase
-      .from('vn_districts')
-      .select('id, name, code')
-      .eq('province_code', provinceCode);
-    if (error) {
-      console.error('Lỗi khi lấy danh sách quận huyện:', error);
-    } else {
-      setDistricts(data);
-    }
-  }
-
-  async function fetchWards(districtCode) {
-    const { data, error } = await supabase
-      .from('vn_wards')
-      .select('id, name, code')
-      .eq('district_code', districtCode);
-    if (error) {
-      console.error('Lỗi khi lấy danh sách phường xã:', error);
-    } else {
-      setWards(data);
-    }
-  }
 
   // Hiển thị thông báo
   const showAlert = (message, severity = 'info') => {
@@ -97,14 +66,14 @@ export default function CustomerList() {
 
   // Xử lý khi nhấn nút "Thêm mới"
   const handleAddNew = () => {
-    setEditingCustomer(null); // Đảm bảo không có khách hàng nào đang được sửa
+    setEditingCustomer(null);
     setOpenDialog(true);
   };
 
   // Xử lý khi nhấn nút "Sửa"
   const handleEdit = (customer) => {
-    setEditingCustomer(customer); // Lưu thông tin khách hàng cần sửa vào state
-    setOpenDialog(true); // Mở dialog
+    setEditingCustomer(customer);
+    setOpenDialog(true);
   };
 
   // Xử lý khi đóng dialog
@@ -124,23 +93,23 @@ export default function CustomerList() {
     }
   };
 
-  const handleProvinceChange = (provinceCode) => {
-    fetchDistricts(provinceCode);
-  };
-
-  const handleDistrictChange = (districtCode) => {
-    fetchWards(districtCode);
-  };
-
   // Xử lý khi nhấn nút "Thêm công việc"
   const handleAddJob = (customer) => {
     // Chuyển đến trang lập kế hoạch với customer_id trong URL params
     navigate(`/lap-ke-hoach-cong-viec?customer_id=${customer.id}&customer_name=${encodeURIComponent(customer.name)}`);
   };
 
+  // Hàm lấy tên địa chỉ từ code
+  const getAddressString = (customer) => {
+    const provinceName = provincesData.find(p => p.code === customer.province)?.name || customer.province_name || '';
+    const districtName = districtsData.find(d => d.code === customer.district)?.name || customer.district_name || '';
+    const wardName = wardsData.find(w => w.code === customer.ward)?.name || customer.ward_name || '';
+    return [customer.address, wardName, districtName, provinceName].filter(Boolean).join(', ');
+  };
+
   useEffect(() => {
     fetchCustomers();
-    fetchProvinces();
+    // Không cần fetchProvinces nữa
   }, [fetchCustomers]);
 
   if (loading) return <Typography>Đang tải dữ liệu...</Typography>;
@@ -152,18 +121,24 @@ export default function CustomerList() {
         <Button variant="contained" onClick={handleAddNew}>Thêm Khách Hàng Mới</Button>
       </Box>
 
-      <CustomerForm
-        open={openDialog}
-        onClose={handleCloseDialog}
-        onSave={handleSave}
-        customerToEdit={editingCustomer}
-        showAlert={showAlert}
-        provinces={provinces}
-        districts={districts}
-        wards={wards}
-        onProvinceChange={handleProvinceChange}
-        onDistrictChange={handleDistrictChange}
-      />
+      {/* Hiển thị form thêm hoặc sửa */}
+      {editingCustomer ? (
+        <EditCustomerForm
+          open={openDialog}
+          onClose={handleCloseDialog}
+          onSave={handleSave}
+          customerToEdit={editingCustomer}
+          showAlert={showAlert}
+        />
+      ) : (
+        <CustomerForm
+          open={openDialog}
+          onClose={handleCloseDialog}
+          onSave={handleSave}
+          showAlert={showAlert}
+          provinces={provincesData}
+        />
+      )}
 
       <AlertMessage
         type={alert.severity}
@@ -203,14 +178,7 @@ export default function CustomerList() {
               <TableRow key={customer.id}>
                 <TableCell>{customer.customer_code}</TableCell>
                 <TableCell>{customer.name}</TableCell>
-                <TableCell>
-                  {[
-                    customer.address,
-                    customer.ward_name,
-                    customer.district_name,
-                    customer.province_name
-                  ].filter(Boolean).join(', ')}
-                </TableCell>
+                <TableCell>{getAddressString(customer)}</TableCell>
                 <TableCell>{customer.primary_contact_phone}</TableCell>
                 <TableCell>{customer.primary_contact_name}</TableCell>
                 <TableCell>

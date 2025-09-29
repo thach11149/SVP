@@ -1,18 +1,17 @@
-// src/components/AddCustomerForm.js
+// src/components/EditCustomerForm.js
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import styles from './AddCustomerForm.module.css';
 import {
   Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, Box,
-  Radio, RadioGroup, FormControlLabel, Checkbox, Grid, Typography, MenuItem
+  Radio, RadioGroup, FormControlLabel, Grid, Typography, MenuItem
 } from '@mui/material';
 import provincesData from '../data/provinces.json';
 import districtsData from '../data/districts.json';
 import wardsData from '../data/wards.json';
 
-// Đổi tên component cho rõ nghĩa hơn: Form này giờ dùng cho cả Thêm và Sửa
-export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
+export default function EditCustomerForm({ open, onClose, onSave, customerToEdit, showAlert }) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     customer_type: 'company',
@@ -33,147 +32,110 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
     notes: '',
     google_map_code: ''
   });
-  const [copyContact, setCopyContact] = useState(false);
   // Dữ liệu địa chỉ
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
 
-  // Lấy danh sách tỉnh/thành phố khi mở form
   useEffect(() => {
     if (open) {
       setProvinces(provincesData);
-      setFormData({
-        customer_type: 'company',
-        customer_code: '',
-        name: '',
-        tax_code: '',
-        primary_contact_name: '',
-        primary_contact_position: '',
-        primary_contact_phone: '',
-        primary_contact_email: '',
-        address: '',
-        ward: '',
-        district: '',
-        province: '',
-        site_contact_name: '',
-        site_contact_position: '',
-        site_contact_phone: '',
-        notes: '',
-        google_map_code: ''
-      });
-      setDistricts([]);
-      setWards([]);
     }
   }, [open]);
 
-  // Lấy danh sách quận/huyện khi chọn tỉnh/thành phố
   useEffect(() => {
-    if (formData.province) {
-      setDistricts(districtsData.filter(d => d.province_code === formData.province));
-      setFormData(prev => ({ ...prev, district: '', ward: '' }));
-      setWards([]);
-    }
-  }, [formData.province]);
-
-  // Lấy danh sách phường/xã khi chọn quận/huyện
-  useEffect(() => {
-    if (formData.district) {
-      setWards(wardsData.filter(w => w.district_code === formData.district));
-    }
-  }, [formData.district]);
-
-  // Tự động sinh mã khách hàng theo loại, dựa trên mã lớn nhất hiện có
-  useEffect(() => {
-    if (open) {
-      const fetchLatestCode = async () => {
-        const prefix = formData.customer_type === 'company' ? 'DN' : 'CN';
-        const { data } = await supabase
-          .from('customers')
-          .select('customer_code')
-          .like('customer_code', `${prefix}%`)
-          .order('customer_code', { ascending: false })
-          .limit(1);
-
-        let nextCode = `${prefix}0001`;
-        if (data && data.length > 0) {
-          const lastCode = data[0].customer_code;
-          const num = parseInt(lastCode.replace(prefix, ''), 10) + 1;
-          nextCode = `${prefix}${num.toString().padStart(4, '0')}`;
-        }
-        setFormData(prev => ({
-          ...prev,
-          customer_code: nextCode
-        }));
-      };
-      fetchLatestCode();
-    }
-  }, [formData.customer_type, open]);
-
-  // Copy thông tin liên hệ chính sang hiện trường
-  useEffect(() => {
-    if (copyContact) {
-      setFormData(prev => ({
-        ...prev,
-        site_contact_name: prev.primary_contact_name,
-        site_contact_position: prev.primary_contact_position,
-        site_contact_phone: prev.primary_contact_phone
-      }));
-    }
-  }, [copyContact, formData.primary_contact_name, formData.primary_contact_position, formData.primary_contact_phone]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === 'province') {
-      setFormData(prev => ({
-        ...prev,
-        province: value,
-        district: '',
-        ward: ''
-      }));
-      return;
-    }
-    if (name === 'district') {
-      setFormData(prev => ({
-        ...prev,
-        district: value,
-        ward: ''
-      }));
-      return;
-    }
-    if (name === 'ward') {
-      setFormData(prev => ({
-        ...prev,
-        ward: value
-      }));
-      return;
-    }
+    if (!customerToEdit || !open || provinces.length === 0) return;
+    setIsEditing(true);
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      customer_type: customerToEdit.customer_type,
+      customer_code: customerToEdit.customer_code,
+      name: customerToEdit.name,
+      tax_code: customerToEdit.tax_code,
+      primary_contact_name: customerToEdit.primary_contact_name,
+      primary_contact_position: customerToEdit.primary_contact_position,
+      primary_contact_phone: customerToEdit.primary_contact_phone,
+      primary_contact_email: customerToEdit.primary_contact_email,
+      address: customerToEdit.address,
+      site_contact_name: customerToEdit.site_contact_name,
+      site_contact_position: customerToEdit.site_contact_position,
+      site_contact_phone: customerToEdit.site_contact_phone,
+      notes: customerToEdit.notes,
+      google_map_code: customerToEdit.google_map_code,
+      province: '',
+      district: '',
+      ward: ''
     }));
-  };
+    setTimeout(() => {
+      setFormData(prev => ({ ...prev, province: customerToEdit.province }));
+    }, 0);
+  }, [customerToEdit, open, provinces.length]);
 
-  const handleViewMap = () => {
-    // Ghép địa chỉ đầy đủ
-    const addressFull = [
-      formData.address,
-      wards.find(w => w.code === formData.ward)?.name,
-      districts.find(d => d.code === formData.district)?.name,
-      provinces.find(p => p.code === formData.province)?.name
-    ].filter(Boolean).join(', ');
-    if (addressFull.trim()) {
-      const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addressFull)}`;
-      window.open(mapUrl, '_blank');
+  useEffect(() => {
+    if (formData.province) {
+      const filteredDistricts = districtsData.filter(d => d.province_code === formData.province);
+      setDistricts(filteredDistricts);
+      if (!isEditing) {
+        const validDistrict = filteredDistricts.find(d => d.code === formData.district);
+        if (!validDistrict) {
+          setFormData(prev => ({ ...prev, district: '', ward: '' }));
+          setWards([]);
+        }
+      }
     } else {
-      showAlert && showAlert('Vui lòng nhập đầy đủ địa chỉ.', 'warning');
+      setDistricts([]);
+      setWards([]);
     }
-  };
+  }, [formData.province, formData.district, isEditing]);
+
+  useEffect(() => {
+    if (
+      customerToEdit &&
+      open &&
+      formData.province === customerToEdit.province &&
+      districts.length > 0 &&
+      !formData.district
+    ) {
+      setFormData(prev => ({ ...prev, district: customerToEdit.district }));
+    }
+  }, [customerToEdit, open, formData.province, districts.length, formData.district]);
+
+  useEffect(() => {
+    if (formData.district) {
+      const filteredWards = wardsData.filter(w => w.district_code === formData.district);
+      setWards(filteredWards);
+      if (!isEditing) {
+        const validWard = filteredWards.find(w => w.code === formData.ward);
+        if (!validWard) {
+          setFormData(prev => ({ ...prev, ward: '' }));
+        }
+      }
+    } else {
+      setWards([]);
+    }
+  }, [formData.district, formData.ward, isEditing]);
+
+  useEffect(() => {
+    if (
+      customerToEdit &&
+      open &&
+      formData.district === customerToEdit.district &&
+      wards.length > 0 &&
+      !formData.ward
+    ) {
+      setFormData(prev => ({ ...prev, ward: customerToEdit.ward }));
+      setIsEditing(false);
+    }
+  }, [customerToEdit, open, formData.district, wards.length, formData.ward]);
+
+
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    // Lấy tên địa chỉ từ code
     const provinceText = provinces.find(p => p.code === formData.province)?.name || '';
     const districtText = districts.find(d => d.code === formData.district)?.name || '';
     const wardText = wards.find(w => w.code === formData.ward)?.name || '';
@@ -183,33 +145,17 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
       district_name: districtText,
       ward_name: wardText
     };
-
-    console.log('Dữ liệu được lưu:', dataToSave);
-
-    // Kiểm tra trùng mã khách hàng trước khi thêm mới
-    const { data: existed } = await supabase
-      .from('customers')
-      .select('id')
-      .eq('customer_code', formData.customer_code)
-      .single();
-    if (existed) {
-      showAlert && showAlert('Mã khách hàng đã tồn tại!', 'error');
-      setLoading(false);
-      return;
-    }
-
     try {
-      let savedData;
       const { data, error } = await supabase
         .from('customers')
-        .insert([dataToSave])
+        .update(dataToSave)
+        .eq('id', customerToEdit.id)
         .select()
         .single();
       if (error) throw error;
-      savedData = data;
-      showAlert && showAlert('Thêm khách hàng thành công!', 'success');
-      onSave && onSave(savedData);
-      onClose && onClose();
+      showAlert && showAlert('Cập nhật khách hàng thành công!', 'success');
+      onSave(data);
+      onClose();
     } catch (error) {
       showAlert && showAlert('Lỗi: ' + error.message, 'error');
     } finally {
@@ -221,8 +167,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      {/* Tiêu đề thay đổi tùy theo chế độ */}
-      <DialogTitle>{'Tạo Mới Hồ Sơ Khách Hàng'}</DialogTitle>
+      <DialogTitle>Sửa thông tin Khách hàng</DialogTitle>
       <Box component="form" onSubmit={handleSubmit}>
         <DialogContent sx={{ px: 0 }}>
           {/* Section 1: Thông tin chung */}
@@ -237,7 +182,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
                   row
                   name="customer_type"
                   value={formData.customer_type}
-                  onChange={handleChange}
+                  onChange={e => setFormData(prev => ({ ...prev, customer_type: e.target.value }))}
                   sx={{ gap: 2 }}
                 >
                   <FormControlLabel value="company" control={<Radio />} label="Doanh nghiệp" />
@@ -263,7 +208,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
                     label="Tên khách hàng / Tên công ty"
                     name="name"
                     value={formData.name}
-                    onChange={handleChange}
+                    onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     required
                     fullWidth
                     variant="standard"
@@ -274,7 +219,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
                     label="Mã số thuế"
                     name="tax_code"
                     value={formData.tax_code}
-                    onChange={handleChange}
+                    onChange={e => setFormData(prev => ({ ...prev, tax_code: e.target.value }))}
                     required={formData.customer_type === 'company'}
                     disabled={formData.customer_type !== 'company'}
                     fullWidth
@@ -295,7 +240,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
                   label="Họ tên người liên hệ"
                   name="primary_contact_name"
                   value={formData.primary_contact_name}
-                  onChange={handleChange}
+                  onChange={e => setFormData(prev => ({ ...prev, primary_contact_name: e.target.value }))}
                   required
                   fullWidth
                   variant="standard"
@@ -306,7 +251,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
                   label="Chức vụ"
                   name="primary_contact_position"
                   value={formData.primary_contact_position}
-                  onChange={handleChange}
+                  onChange={e => setFormData(prev => ({ ...prev, primary_contact_position: e.target.value }))}
                   fullWidth
                   variant="standard"
                 />
@@ -316,7 +261,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
                   label="Số điện thoại"
                   name="primary_contact_phone"
                   value={formData.primary_contact_phone}
-                  onChange={handleChange}
+                  onChange={e => setFormData(prev => ({ ...prev, primary_contact_phone: e.target.value }))}
                   required
                   fullWidth
                   variant="standard"
@@ -328,7 +273,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
                   label="Email (Gửi báo cáo)"
                   name="primary_contact_email"
                   value={formData.primary_contact_email}
-                  onChange={handleChange}
+                  onChange={e => setFormData(prev => ({ ...prev, primary_contact_email: e.target.value }))}
                   required
                   fullWidth
                   variant="standard"
@@ -346,7 +291,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
                 label="Số nhà, tên đường"
                 name="address"
                 value={formData.address}
-                onChange={handleChange}
+                onChange={e => setFormData(prev => ({ ...prev, address: e.target.value }))}
                 required
                 className={styles.addressField}
               />
@@ -413,20 +358,13 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
                 ))}
               </TextField>
             </div>
-            <Button
-              onClick={handleViewMap}
-              sx={{ mt: 1, mb: 2 }}
-              variant="outlined"
-              color="primary"
-            >
-              📍 Xem trên Google Maps
-            </Button>
+
             <Box mb={2}>
               <TextField
                 label="Mã số vị trí Google Maps (Lat,Lng)"
                 name="google_map_code"
                 value={formData.google_map_code}
-                onChange={handleChange}
+                onChange={e => setFormData(prev => ({ ...prev, google_map_code: e.target.value }))}
                 fullWidth
                 variant="standard"
                 helperText={
@@ -443,25 +381,14 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
                 }
               />
             </Box>
-            <Box mt={2}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={copyContact}
-                    onChange={e => setCopyContact(e.target.checked)}
-                    name="copyContact"
-                  />
-                }
-                label="Sử dụng thông tin người liên hệ chính cho địa điểm này"
-              />
-            </Box>
+
             <Grid container spacing={2} mt={1}>
               <Grid item xs={12} md={6}>
                 <TextField
                   label="Tên người liên hệ tại hiện trường"
                   name="site_contact_name"
                   value={formData.site_contact_name}
-                  onChange={handleChange}
+                  onChange={e => setFormData(prev => ({ ...prev, site_contact_name: e.target.value }))}
                   required
                   fullWidth
                   variant="standard"
@@ -472,7 +399,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
                   label="Chức vụ (tại hiện trường)"
                   name="site_contact_position"
                   value={formData.site_contact_position}
-                  onChange={handleChange}
+                  onChange={e => setFormData(prev => ({ ...prev, site_contact_position: e.target.value }))}
                   required={formData.customer_type === 'company'}
                   fullWidth
                   variant="standard"
@@ -483,7 +410,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
                   label="Số điện thoại (tại hiện trường)"
                   name="site_contact_phone"
                   value={formData.site_contact_phone}
-                  onChange={handleChange}
+                  onChange={e => setFormData(prev => ({ ...prev, site_contact_phone: e.target.value }))}
                   required
                   fullWidth
                   variant="standard"
@@ -500,7 +427,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
               label="Ghi chú"
               name="notes"
               value={formData.notes}
-              onChange={handleChange}
+              onChange={e => setFormData(prev => ({ ...prev, notes: e.target.value }))}
               fullWidth
               multiline
               rows={3}
