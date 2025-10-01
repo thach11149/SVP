@@ -45,32 +45,44 @@ export default function EditCustomerForm({ open, onClose, onSave, customerToEdit
   }, [open]);
 
   useEffect(() => {
-    if (!customerToEdit || !open || provinces.length === 0) return;
-    setIsEditing(true);
-    setFormData(prev => ({
-      ...prev,
-      customer_type: customerToEdit.customer_type,
-      customer_code: customerToEdit.customer_code,
-      name: customerToEdit.name,
-      tax_code: customerToEdit.tax_code,
-      primary_contact_name: customerToEdit.primary_contact_name,
-      primary_contact_position: customerToEdit.primary_contact_position,
-      primary_contact_phone: customerToEdit.primary_contact_phone,
-      primary_contact_email: customerToEdit.primary_contact_email,
-      address: customerToEdit.address,
-      site_contact_name: customerToEdit.site_contact_name,
-      site_contact_position: customerToEdit.site_contact_position,
-      site_contact_phone: customerToEdit.site_contact_phone,
-      notes: customerToEdit.notes,
-      google_map_code: customerToEdit.google_map_code,
-      province: '',
-      district: '',
-      ward: ''
-    }));
-    setTimeout(() => {
-      setFormData(prev => ({ ...prev, province: customerToEdit.province }));
-    }, 0);
-  }, [customerToEdit, open, provinces.length]);
+    if (customerToEdit?.id && open) {
+      const fetchCustomer = async () => {
+        const { data, error } = await supabase
+          .from('customers')
+          .select('*')
+          .eq('id', customerToEdit.id)
+          .single();
+        if (data && !error) {
+          setFormData({
+            customer_type: data.customer_type,
+            customer_code: data.customer_code,
+            name: data.name,
+            tax_code: data.tax_code,
+            primary_contact_name: data.primary_contact_name,
+            primary_contact_position: data.primary_contact_position,
+            primary_contact_phone: data.primary_contact_phone,
+            primary_contact_email: data.primary_contact_email,
+            address: data.address,
+            site_contact_name: data.site_contact_name,
+            site_contact_position: data.site_contact_position,
+            site_contact_phone: data.site_contact_phone,
+            notes: data.notes,
+            google_map_code: data.google_map_code,
+            province: data.province,  // Đã là number
+            district: data.district,  // Đã là number
+            ward: data.ward  // Đã là number
+          });
+          // Set districts và wards ngay lập tức để tránh lỗi MUI out-of-range
+          const filteredDistricts = districtsData.filter(d => d.province_code === data.province);
+          setDistricts(filteredDistricts);
+          const filteredWards = wardsData.filter(w => w.district_code === data.district);
+          setWards(filteredWards);
+          setIsEditing(true);  // Đánh dấu đang edit để tránh reset
+        }
+      };
+      fetchCustomer();
+    }
+  }, [customerToEdit?.id, open]);
 
   useEffect(() => {
     if (formData.province) {

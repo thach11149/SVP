@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-import { CssBaseline, Box } from '@mui/material';
+import { CssBaseline, Box, CircularProgress } from '@mui/material';  // Thêm CircularProgress cho loading
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 import LoginPage from './pages/LoginPage';
@@ -17,20 +17,32 @@ import Sidebar from './components/Sidebar';
 
 function App() {
   const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);  // Thêm loading
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      setLoading(false);  // Set loading false sau khi get session
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      setLoading(false);  // Set loading false khi auth state change
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Hiển thị loading spinner khi đang load session
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <>

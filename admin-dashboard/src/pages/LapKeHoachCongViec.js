@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Paper, TextField, Select, MenuItem, FormControl, InputLabel,
-  RadioGroup, FormControlLabel, Radio, Checkbox, Button, Grid, Divider, Snackbar, Alert
+  RadioGroup, FormControlLabel, Radio, Checkbox, Button, Grid, Divider, Snackbar, Alert,
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow
 } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
@@ -10,7 +11,8 @@ import ChecklistPopup from '../components/ChecklistPopup';
 export default function LapKeHoachCongViec({ session }) {
   const [searchParams] = useSearchParams();
   const preselectedCustomerId = searchParams.get('customer_id');
-  const preselectedCustomerName = searchParams.get('customer_name');
+  // Comment để tránh lỗi ESLint no-unused-vars
+  // const preselectedCustomerName = searchParams.get('customer_name');
   
   const [customer, setCustomer] = useState(preselectedCustomerId || '');
   const [serviceType, setServiceType] = useState('Định kỳ');
@@ -322,11 +324,12 @@ export default function LapKeHoachCongViec({ session }) {
           <Typography color="text.secondary" mt={1}>
             Điền thông tin chi tiết để tạo và giao việc cho nhân viên kỹ thuật.
           </Typography>
-          {preselectedCustomerName && (
+          {/* Comment dòng này để không hiển thị */}
+          {/* {preselectedCustomerName && (
             <Typography color="primary" fontWeight={500} mt={1}>
               📋 Tạo công việc cho khách hàng: {decodeURIComponent(preselectedCustomerName)}
             </Typography>
-          )}
+          )} */}
         </Box>
 
         <form onSubmit={handleSubmit}>
@@ -493,56 +496,75 @@ export default function LapKeHoachCongViec({ session }) {
                   Nhóm 3b: Vật tư/Hóa chất cần chuẩn bị
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
-                <Box>
-                  {materialsList.map(mat => {
-                    const selected = selectedMaterials.find(m => m.material_id === mat.id);
-                    return (
-                      <Box key={mat.id} sx={{ mb: 2, p: 2, border: '1px solid #e0e0e0', borderRadius: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Checkbox
-                          checked={!!selected}
-                          onChange={e => {
-                            if (e.target.checked) {
-                              setSelectedMaterials([...selectedMaterials, {
-                                material_id: mat.id,
-                                name: mat.name,
-                                unit: mat.unit,
-                                category: mat.category,
-                                required_quantity: 1,
-                                notes: ''
-                              }]);
-                            } else {
-                              setSelectedMaterials(selectedMaterials.filter(m => m.material_id !== mat.id));
-                            }
-                          }}
-                        />
-                        <Typography sx={{ minWidth: 120 }}>{mat.name}</Typography>
-                        <TextField
-                          label="Số lượng"
-                          type="number"
-                          size="small"
-                          sx={{ width: 80 }}
-                          value={selected?.required_quantity || ''}
-                          disabled={!selected}
-                          onChange={e => {
-                            const val = parseFloat(e.target.value) || 0;
-                            setSelectedMaterials(selectedMaterials.map(m => m.material_id === mat.id ? { ...m, required_quantity: val } : m));
-                          }}
-                        />
-                        <Typography sx={{ minWidth: 60 }}>{mat.unit}</Typography>
-                        <TextField
-                          label="Ghi chú"
-                          size="small"
-                          sx={{ width: 120 }}
-                          value={selected?.notes || ''}
-                          disabled={!selected}
-                          onChange={e => {
-                            setSelectedMaterials(selectedMaterials.map(m => m.material_id === mat.id ? { ...m, notes: e.target.value } : m));
-                          }}
-                        />
-                      </Box>
-                    );
-                  })}
-                </Box>
+                <TableContainer component={Paper} variant="outlined">
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell padding="checkbox">Chọn</TableCell>
+                        <TableCell>Tên vật tư</TableCell>
+                        <TableCell align="center">Số lượng</TableCell>
+                        <TableCell align="center">Đơn vị</TableCell>
+                        <TableCell>Ghi chú</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {materialsList.map(mat => {
+                        const selected = selectedMaterials.find(m => m.material_id === mat.id);
+                        return (
+                          <TableRow key={mat.id}>
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                checked={!!selected}
+                                onChange={e => {
+                                  if (e.target.checked) {
+                                    setSelectedMaterials([...selectedMaterials, {
+                                      material_id: mat.id,
+                                      name: mat.name,
+                                      unit: mat.unit,
+                                      category: mat.category,
+                                      required_quantity: 1,
+                                      notes: ''
+                                    }]);
+                                  } else {
+                                    setSelectedMaterials(selectedMaterials.filter(m => m.material_id !== mat.id));
+                                  }
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>{mat.name}</TableCell>
+                            <TableCell align="center">
+                              <TextField
+                                label="Số lượng"
+                                type="number"
+                                size="small"
+                                sx={{ width: 80 }}
+                                value={selected?.required_quantity || ''}
+                                disabled={!selected}
+                                onChange={e => {
+                                  const val = parseFloat(e.target.value) || 0;
+                                  setSelectedMaterials(selectedMaterials.map(m => m.material_id === mat.id ? { ...m, required_quantity: val } : m));
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell align="center">{mat.unit}</TableCell>
+                            <TableCell>
+                              <TextField
+                                label="Ghi chú"
+                                size="small"
+                                fullWidth
+                                value={selected?.notes || ''}
+                                disabled={!selected}
+                                onChange={e => {
+                                  setSelectedMaterials(selectedMaterials.map(m => m.material_id === mat.id ? { ...m, notes: e.target.value } : m));
+                                }}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
               </Paper>
               {/* Nhóm 4: Phân công Nhân viên */}
               <Paper variant="outlined" sx={{ p: 3 }}>

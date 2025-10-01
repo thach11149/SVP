@@ -167,255 +167,226 @@ export default function JobDetailDialog({
       <DialogContent>
         {selectedJob && (
           <Box sx={{ pt: 2 }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Mã công việc:
-                </Typography>
-                <Typography variant="body1" sx={{ mb: 2 }}>
-                  {selectedJob.id}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Trạng thái:
-                </Typography>
-                <Chip 
-                  label={selectedJob.status} 
-                  size="small"
-                  color={getStatusColor(selectedJob.status)}
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Nội dung công việc:
-                </Typography>
-                <Typography variant="body1" sx={{ mb: 2 }}>
-                  {selectedJob.job_content}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Khách hàng:
-                </Typography>
-                <Typography variant="body1">
-                  {selectedJob.customers?.name || 'N/A'}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
-                  Mã KH: {selectedJob.customers?.customer_code || 'N/A'}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Loại dịch vụ:
-                </Typography>
-                <Chip 
-                  label={selectedJob.service_type} 
-                  size="small"
-                  color={selectedJob.service_type === 'SOS' ? 'error' : 'default'}
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Ngày thực hiện:
-                </Typography>
-                <Typography variant="body1" sx={{ mb: 2 }}>
-                  {formatDate(selectedJob.scheduled_date)}
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2 }}>
-                  Người thực hiện:
-                </Typography>
-                {getTechniciansDetails(selectedJob).length === 0 ? (
-                  <Typography variant="body1" sx={{ mb: 2, fontStyle: 'italic', color: 'text.secondary' }}>
-                    Chưa phân công
-                  </Typography>
-                ) : (
-                  <Box sx={{ mb: 2 }}>
-                    {getTechniciansDetails(selectedJob).map((tech, index) => (
-                      <Paper 
-                        key={tech.id} 
-                        variant="outlined" 
-                        sx={{ p: 2, mb: 1, bgcolor: tech.isTeamLead ? 'primary.50' : 'background.paper' }}
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                          <Typography variant="body1" fontWeight={500}>
-                            {tech.name} ({tech.tech_code})
-                          </Typography>
-                          {tech.isTeamLead && (
-                            <Chip 
-                              label="Team Lead" 
-                              size="small" 
-                              color="primary" 
-                              sx={{ fontSize: '0.75rem' }}
-                            />
-                          )}
-                        </Box>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                          📧 Email: {tech.email}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                          📱 SĐT: {tech.phone}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          💼 Chức vụ: {tech.position}
-                        </Typography>
-                      </Paper>
-                    ))}
-                  </Box>
-                )}
-              </Grid>
-              {selectedJob.notes && (
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" color="text.secondary">
-                    Ghi chú:
-                  </Typography>
-                  <Typography variant="body1" sx={{ mb: 2 }}>
-                    {selectedJob.notes}
-                  </Typography>
-                </Grid>
-              )}
-              <Grid item xs={12}>
-                <Typography variant="subtitle2" color="text.secondary">
-                  Ngày tạo:
-                </Typography>
-                <Typography variant="body1" sx={{ mb: 2 }}>
-                  {formatDate(selectedJob.created_at)}
-                </Typography>
-              </Grid>
-              
-              {/* Job Images Section */}
-              <Grid item xs={12}>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="subtitle1" fontWeight={600} color="primary" gutterBottom>
-                  📷 Hình ảnh Công việc ({jobImages.length} ảnh)
-                </Typography>
-                
-                {loadingImages ? (
-                  <Box sx={{ textAlign: 'center', py: 2 }}>
-                    <Typography variant="body2" color="text.secondary">
-                      Đang tải hình ảnh...
-                    </Typography>
-                  </Box>
-                ) : jobImages.length > 0 ? (
-                  <Paper variant="outlined" sx={{ p: 2, mt: 2 }}>
-                    <ImageList sx={{ width: '100%', height: 'auto' }} cols={3} rowHeight={200}>
-                      {jobImages.map((image, index) => (
-                        <ImageListItem key={image.id} sx={{ borderRadius: 1, overflow: 'hidden' }}>
-                          <img
-                            src={image.image_url}
-                            alt={`Ảnh công việc ${index + 1}`}
-                            loading="lazy"
-                            style={{
-                              width: '100%',
-                              height: '200px',
-                              objectFit: 'cover',
-                              cursor: 'pointer'
-                            }}
-                            onClick={() => window.open(image.image_url, '_blank')}
-                          />
-                          <ImageListItemBar
-                            title={`Ảnh #${index + 1}`}
-                            subtitle={
-                              <Typography variant="caption">
-                                {new Date(image.reportDate).toLocaleDateString('vi-VN')}
-                                {image.reportNotes && ` - ${image.reportNotes.substring(0, 30)}...`}
-                              </Typography>
-                            }
-                            sx={{
-                              background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
-                            }}
-                          />
-                        </ImageListItem>
-                      ))}
-                    </ImageList>
-                  </Paper>
-                ) : (
-                  <Paper variant="outlined" sx={{ p: 2, bgcolor: 'grey.50', mt: 2 }}>
-                    <Box sx={{ textAlign: 'center', py: 2 }}>
-                      <Image sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
-                      <Typography variant="body2" color="text.secondary">
-                        Công việc này chưa có hình ảnh nào được upload
+            {/* Thông tin cơ bản - dạng bảng responsive */}
+            <TableContainer component={Paper} variant="outlined" sx={{ mb: 3, overflowX: 'auto' }}>
+              <Table size="small" sx={{ display: { xs: 'block', sm: 'table' } }}>
+                <TableBody>
+                  <TableRow sx={{ display: { xs: 'block', sm: 'table-row' } }}>
+                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, fontWeight: 600, width: { xs: '100%', sm: '25%' } }}>Mã công việc</TableCell>
+                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, width: { xs: '100%', sm: '25%' } }}>{selectedJob.id}</TableCell>
+                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, fontWeight: 600, width: { xs: '100%', sm: '25%' } }}>Trạng thái</TableCell>
+                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, width: { xs: '100%', sm: '25%' } }}>
+                      <Chip 
+                        label={selectedJob.status} 
+                        size="small"
+                        color={getStatusColor(selectedJob.status)}
+                      />
+                    </TableCell>
+                  </TableRow>
+                  <TableRow sx={{ display: { xs: 'block', sm: 'table-row' } }}>
+                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, fontWeight: 600, width: { xs: '100%', sm: 'auto' } }}>Loại dịch vụ</TableCell>
+                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, width: { xs: '100%', sm: 'auto' } }}>
+                      <Chip 
+                        label={selectedJob.service_type} 
+                        size="small"
+                        color={selectedJob.service_type === 'SOS' ? 'error' : 'default'}
+                      />
+                    </TableCell>
+                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, fontWeight: 600, width: { xs: '100%', sm: 'auto' } }}>Ngày tạo</TableCell>
+                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, width: { xs: '100%', sm: 'auto' } }}>{formatDate(selectedJob.created_at)}</TableCell>
+                  </TableRow>
+                  <TableRow sx={{ display: { xs: 'block', sm: 'table-row' } }}>
+                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, fontWeight: 600, width: '100%' }}>Khách hàng</TableCell>
+                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, width: '100%' }} colSpan={3}>
+                      <Typography variant="body2">
+                        {selectedJob.customers?.name || 'N/A'}
                       </Typography>
-                    </Box>
-                  </Paper>
-                )}
-              </Grid>
-              
-              {/* Checklist Section */}
-              {selectedJob.checklist && selectedJob.checklist.length > 0 && (
-                <Grid item xs={12}>
-                  <Divider sx={{ my: 2 }} />
-                  <Typography variant="subtitle1" fontWeight={600} color="primary" gutterBottom>
-                    📋 Checklist Công việc ({getChecklistDetails(selectedJob.checklist).length} mục)
-                  </Typography>
-                  
-                  {/* Checklist Table */}
-                  <Box sx={{ width: '80%', mx: 'auto' }}>
-                    <Paper variant="outlined" sx={{ mt: 2 }}>
-                      <TableContainer>
-                        <Table size="small">
-                          <TableHead>
-                            <TableRow sx={{ bgcolor: '#f5f5f5' }}>
-                              <TableCell sx={{ fontWeight: 600, width: '40%' }}>Tên công việc</TableCell>
-                              <TableCell sx={{ fontWeight: 600, width: '15%', textAlign: 'center' }}>Số lượng</TableCell>
-                              <TableCell sx={{ fontWeight: 600, width: '15%', textAlign: 'center' }}>Đơn vị tính</TableCell>
-                              <TableCell sx={{ fontWeight: 600, width: '30%' }}>Ghi chú</TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
-                            {getChecklistDetails(selectedJob.checklist).map((item, index) => (
-                              <TableRow key={index} hover>
-                                <TableCell>
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <CheckCircle color="primary" fontSize="small" />
-                                    <Typography variant="body2" fontWeight={500}>
-                                      {item.label}
-                                    </Typography>
-                                  </Box>
-                                </TableCell>
-                                <TableCell align="center">
-                                  <Typography variant="body2" fontWeight={600} color="primary">
-                                    {item.quantity}
-                                  </Typography>
-                                </TableCell>
-                                <TableCell align="center">
-                                  <Chip 
-                                    label={item.unit} 
-                                    size="small" 
-                                    variant="outlined"
-                                    sx={{ fontSize: '0.75rem' }}
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <Typography variant="body2" color="text.secondary">
-                                    {item.notes || '-'}
-                                  </Typography>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </TableContainer>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                        Địa chỉ: {selectedJob.customers?.address || 'N/A'}, {selectedJob.customers?.ward_name || ''}, {selectedJob.customers?.district_name || ''}, {selectedJob.customers?.province_name || ''}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow sx={{ display: { xs: 'block', sm: 'table-row' } }}>
+                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, fontWeight: 600, width: '100%' }}>Liên hệ</TableCell>
+                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, width: '100%' }} colSpan={3}>
+                      <Typography variant="body2">
+                        {selectedJob.customers?.primary_contact_name || 'N/A'}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                        {selectedJob.customers?.primary_contact_phone || 'N/A'}
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                  <TableRow sx={{ display: { xs: 'block', sm: 'table-row' } }}>
+                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, fontWeight: 600, width: '100%' }}>Nội dung công việc</TableCell>
+                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, width: '100%' }} colSpan={3}>{selectedJob.job_content}</TableCell>
+                  </TableRow>
+                  <TableRow sx={{ display: { xs: 'block', sm: 'table-row' } }}>
+                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, fontWeight: 600, width: '100%' }}>Ngày thực hiện</TableCell>
+                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, width: '100%' }} colSpan={3}>{formatDate(selectedJob.scheduled_date)}</TableCell>
+                  </TableRow>
+                  {selectedJob.notes && (
+                    <TableRow sx={{ display: { xs: 'block', sm: 'table-row' } }}>
+                      <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, fontWeight: 600, width: '100%' }}>Ghi chú</TableCell>
+                      <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, width: '100%' }} colSpan={3}>{selectedJob.notes}</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            {/* Người thực hiện */}
+            <Divider sx={{ my: 3 }} />
+            <Typography variant="subtitle1" fontWeight={600} color="primary" gutterBottom>
+              👥 Người thực hiện
+            </Typography>
+            {getTechniciansDetails(selectedJob).length === 0 ? (
+              <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
+                Chưa phân công
+              </Typography>
+            ) : (
+              <Grid container spacing={2}>
+                {getTechniciansDetails(selectedJob).map((tech) => (
+                  <Grid item xs={12} sm={6} key={tech.id}>
+                    <Paper variant="outlined" sx={{ p: 2, bgcolor: tech.isTeamLead ? 'primary.50' : 'background.paper' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant="body1" fontWeight={500}>
+                          {tech.name} ({tech.tech_code})
+                        </Typography>
+                        {tech.isTeamLead && (
+                          <Chip label="Team Lead" size="small" color="primary" />
+                        )}
+                      </Box>
+                      <Typography variant="body2" color="text.secondary">
+                        📧 {tech.email} | 📱 {tech.phone} | 💼 {tech.position}
+                      </Typography>
                     </Paper>
-                  </Box>
-                </Grid>
-              )}
-              
-              {(!selectedJob.checklist || selectedJob.checklist.length === 0) && (
-                <Grid item xs={12}>
-                  <Divider sx={{ my: 2 }} />
-                  <Paper variant="outlined" sx={{ p: 2, bgcolor: 'grey.50' }}>
-                    <Typography variant="body2" color="text.secondary" align="center">
-                      📋 Công việc này chưa có checklist được thiết lập
-                    </Typography>
-                  </Paper>
-                </Grid>
-              )}
-            </Grid>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+
+            {/* Job Images Section */}
+            <Divider sx={{ my: 3 }} />
+            <Typography variant="subtitle1" fontWeight={600} color="primary" gutterBottom>
+              📷 Hình ảnh Công việc ({jobImages.length} ảnh)
+            </Typography>
+            {loadingImages ? (
+              <Box sx={{ textAlign: 'center', py: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Đang tải hình ảnh...
+                </Typography>
+              </Box>
+            ) : jobImages.length > 0 ? (
+              <Paper variant="outlined" sx={{ p: 2 }}>
+                <ImageList sx={{ width: '100%', height: 'auto' }} cols={3} rowHeight={200}>
+                  {jobImages.map((image, index) => (
+                    <ImageListItem key={image.id} sx={{ borderRadius: 1, overflow: 'hidden' }}>
+                      <img
+                        src={image.image_url}
+                        alt={`Ảnh công việc ${index + 1}`}
+                        loading="lazy"
+                        style={{
+                          width: '100%',
+                          height: '200px',
+                          objectFit: 'cover',
+                          cursor: 'pointer'
+                        }}
+                        onClick={() => window.open(image.image_url, '_blank')}
+                      />
+                      <ImageListItemBar
+                        title={`Ảnh #${index + 1}`}
+                        subtitle={
+                          <Typography variant="caption">
+                            {new Date(image.reportDate).toLocaleDateString('vi-VN')}
+                            {image.reportNotes && ` - ${image.reportNotes.substring(0, 30)}...`}
+                          </Typography>
+                        }
+                        sx={{
+                          background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0) 100%)',
+                        }}
+                      />
+                    </ImageListItem>
+                  ))}
+                </ImageList>
+              </Paper>
+            ) : (
+              <Paper variant="outlined" sx={{ p: 2, bgcolor: 'grey.50' }}>
+                <Box sx={{ textAlign: 'center', py: 2 }}>
+                  <Image sx={{ fontSize: 48, color: 'text.secondary', mb: 1 }} />
+                  <Typography variant="body2" color="text.secondary">
+                    Công việc này chưa có hình ảnh nào được upload
+                  </Typography>
+                </Box>
+              </Paper>
+            )}
+
+            {/* Checklist Section */}
+            {selectedJob.checklist && selectedJob.checklist.length > 0 && (
+              <>
+                <Divider sx={{ my: 3 }} />
+                <Typography variant="subtitle1" fontWeight={600} color="primary" gutterBottom>
+                  📋 Checklist Công việc ({getChecklistDetails(selectedJob.checklist).length} mục)
+                </Typography>
+                <Paper variant="outlined">
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow sx={{ bgcolor: '#f5f5f5' }}>
+                          <TableCell sx={{ fontWeight: 600 }}>Tên công việc</TableCell>
+                          <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Số lượng</TableCell>
+                          <TableCell sx={{ fontWeight: 600, textAlign: 'center' }}>Đơn vị tính</TableCell>
+                          <TableCell sx={{ fontWeight: 600 }}>Ghi chú</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {getChecklistDetails(selectedJob.checklist).map((item, index) => (
+                          <TableRow key={index} hover>
+                            <TableCell>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <CheckCircle color="primary" fontSize="small" />
+                                <Typography variant="body2" fontWeight={500}>
+                                  {item.label}
+                                </Typography>
+                              </Box>
+                            </TableCell>
+                            <TableCell align="center">
+                              <Typography variant="body2" fontWeight={600} color="primary">
+                                {item.quantity}
+                              </Typography>
+                            </TableCell>
+                            <TableCell align="center">
+                              <Chip 
+                                label={item.unit} 
+                                size="small" 
+                                variant="outlined"
+                                sx={{ fontSize: '0.75rem' }}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Typography variant="body2" color="text.secondary">
+                                {item.notes || '-'}
+                              </Typography>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Paper>
+              </>
+            )}
+
+            {(!selectedJob.checklist || selectedJob.checklist.length === 0) && (
+              <>
+                <Divider sx={{ my: 3 }} />
+                <Paper variant="outlined" sx={{ p: 2, bgcolor: 'grey.50' }}>
+                  <Typography variant="body2" color="text.secondary" align="center">
+                    📋 Công việc này chưa có checklist được thiết lập
+                  </Typography>
+                </Paper>
+              </>
+            )}
           </Box>
         )}
       </DialogContent>

@@ -50,7 +50,13 @@ export default function DanhSachCongViec({ session }) {
           customers (
             id,
             name,
-            customer_code
+            customer_code,
+            address,
+            ward_name,
+            district_name,
+            province_name,
+            primary_contact_name,
+            primary_contact_phone
           ),
           job_assignments (
             technicians (
