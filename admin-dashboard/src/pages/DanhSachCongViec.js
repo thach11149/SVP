@@ -263,7 +263,7 @@ export default function DanhSachCongViec({ session }) {
 
         {/* Filters */}
         <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={6}>
             <TextField
               fullWidth
               placeholder="Tìm kiếm theo nội dung công việc, tên khách hàng, mã khách hàng..."
@@ -278,7 +278,7 @@ export default function DanhSachCongViec({ session }) {
               }}
             />
           </Grid>
-          <Grid item xs={12} md={2.5}>
+          <Grid item xs={12} md={3}>
             <FormControl fullWidth>
               <InputLabel>Lọc theo trạng thái</InputLabel>
               <Select
@@ -311,7 +311,7 @@ export default function DanhSachCongViec({ session }) {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={2.5}>
+          <Grid item xs={12} md={3}>
             <Button
               variant="contained"
               startIcon={<Add />}

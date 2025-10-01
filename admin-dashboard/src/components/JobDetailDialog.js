@@ -171,11 +171,12 @@ export default function JobDetailDialog({
             <TableContainer component={Paper} variant="outlined" sx={{ mb: 3, overflowX: 'auto' }}>
               <Table size="small" sx={{ display: { xs: 'block', sm: 'table' } }}>
                 <TableBody>
-                  <TableRow sx={{ display: { xs: 'block', sm: 'table-row' } }}>
-                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, fontWeight: 600, width: { xs: '100%', sm: '25%' } }}>Mã công việc</TableCell>
-                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, width: { xs: '100%', sm: '25%' } }}>{selectedJob.id}</TableCell>
-                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, fontWeight: 600, width: { xs: '100%', sm: '25%' } }}>Trạng thái</TableCell>
-                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, width: { xs: '100%', sm: '25%' } }}>
+                  {/* Hàng 1: Mã công việc | Trạng thái | Loại dịch vụ | Ngày tạo */}
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 600, width: '15%' }}>Mã công việc</TableCell>
+                    <TableCell sx={{ width: '35%' }}>{selectedJob.id}</TableCell>
+                    <TableCell sx={{ fontWeight: 600, width: '15%' }}>Trạng thái</TableCell>
+                    <TableCell sx={{ width: '35%' }}>
                       <Chip 
                         label={selectedJob.status} 
                         size="small"
@@ -183,21 +184,22 @@ export default function JobDetailDialog({
                       />
                     </TableCell>
                   </TableRow>
-                  <TableRow sx={{ display: { xs: 'block', sm: 'table-row' } }}>
-                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, fontWeight: 600, width: { xs: '100%', sm: 'auto' } }}>Loại dịch vụ</TableCell>
-                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, width: { xs: '100%', sm: 'auto' } }}>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 600 }}>Loại dịch vụ</TableCell>
+                    <TableCell>
                       <Chip 
                         label={selectedJob.service_type} 
                         size="small"
                         color={selectedJob.service_type === 'SOS' ? 'error' : 'default'}
                       />
                     </TableCell>
-                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, fontWeight: 600, width: { xs: '100%', sm: 'auto' } }}>Ngày tạo</TableCell>
-                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, width: { xs: '100%', sm: 'auto' } }}>{formatDate(selectedJob.created_at)}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Ngày tạo</TableCell>
+                    <TableCell>{formatDate(selectedJob.created_at)}</TableCell>
                   </TableRow>
-                  <TableRow sx={{ display: { xs: 'block', sm: 'table-row' } }}>
-                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, fontWeight: 600, width: '100%' }}>Khách hàng</TableCell>
-                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, width: '100%' }} colSpan={3}>
+                  {/* Hàng 2: Khách hàng | Liên hệ */}
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 600 }}>Khách hàng</TableCell>
+                    <TableCell>
                       <Typography variant="body2">
                         {selectedJob.customers?.name || 'N/A'}
                       </Typography>
@@ -205,10 +207,8 @@ export default function JobDetailDialog({
                         Địa chỉ: {selectedJob.customers?.address || 'N/A'}, {selectedJob.customers?.ward_name || ''}, {selectedJob.customers?.district_name || ''}, {selectedJob.customers?.province_name || ''}
                       </Typography>
                     </TableCell>
-                  </TableRow>
-                  <TableRow sx={{ display: { xs: 'block', sm: 'table-row' } }}>
-                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, fontWeight: 600, width: '100%' }}>Liên hệ</TableCell>
-                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, width: '100%' }} colSpan={3}>
+                    <TableCell sx={{ fontWeight: 600 }}>Liên hệ</TableCell>
+                    <TableCell>
                       <Typography variant="body2">
                         {selectedJob.customers?.primary_contact_name || 'N/A'}
                       </Typography>
@@ -217,18 +217,18 @@ export default function JobDetailDialog({
                       </Typography>
                     </TableCell>
                   </TableRow>
-                  <TableRow sx={{ display: { xs: 'block', sm: 'table-row' } }}>
-                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, fontWeight: 600, width: '100%' }}>Nội dung công việc</TableCell>
-                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, width: '100%' }} colSpan={3}>{selectedJob.job_content}</TableCell>
+                  {/* Hàng 3: Nội dung công việc | Ngày thực hiện */}
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 600 }}>Nội dung công việc</TableCell>
+                    <TableCell colSpan={1}>{selectedJob.job_content}</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Ngày thực hiện</TableCell>
+                    <TableCell colSpan={1}>{formatDate(selectedJob.scheduled_date)}</TableCell>
                   </TableRow>
-                  <TableRow sx={{ display: { xs: 'block', sm: 'table-row' } }}>
-                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, fontWeight: 600, width: '100%' }}>Ngày thực hiện</TableCell>
-                    <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, width: '100%' }} colSpan={3}>{formatDate(selectedJob.scheduled_date)}</TableCell>
-                  </TableRow>
+                  {/* Ghi chú nếu có */}
                   {selectedJob.notes && (
-                    <TableRow sx={{ display: { xs: 'block', sm: 'table-row' } }}>
-                      <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, fontWeight: 600, width: '100%' }}>Ghi chú</TableCell>
-                      <TableCell sx={{ display: { xs: 'block', sm: 'table-cell' }, width: '100%' }} colSpan={3}>{selectedJob.notes}</TableCell>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: 600 }}>Ghi chú</TableCell>
+                      <TableCell colSpan={3}>{selectedJob.notes}</TableCell>
                     </TableRow>
                   )}
                 </TableBody>
