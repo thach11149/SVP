@@ -14,6 +14,7 @@ import LapKeHoachCongViec from './pages/LapKeHoachCongViec';
 import ChecklistCongViec from './pages/ChecklistCongViec';
 import DanhSachCongViec from './pages/DanhSachCongViec';
 import Sidebar from './components/Sidebar';
+import TestPage from './pages/TestPage';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -73,6 +74,7 @@ function App() {
                       <Route path="/lap-ke-hoach-cong-viec" element={<LapKeHoachCongViec session={session} />} />
                       <Route path="/checklist-cong-viec" element={<ChecklistCongViec session={session} />} />
                       <Route path="/danh-sach-cong-viec" element={<DanhSachCongViec session={session} />} />
+                      <Route path="/test" element={<TestPage />} />
                     </Routes>
                   </Box>
                 </Box>

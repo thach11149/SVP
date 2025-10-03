@@ -6,11 +6,12 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 function Sidebar({ session }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -20,7 +21,7 @@ function Sidebar({ session }) {
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Logo/Header */}
-      <Box sx={{ p: 2, textAlign: 'center', bgcolor: 'primary.main', color: 'white' }}>
+      <Box sx={{ p: 2, textAlign: 'center', bgcolor: '#df1e26', color: 'white' }}>
         <Typography variant="h6" component={Link} to="/dashboard" sx={{ textDecoration: 'none', color: 'inherit' }}>
           Sao Việt Pest
         </Typography>
@@ -33,21 +34,21 @@ function Sidebar({ session }) {
       
       {/* Navigation Menu */}
       <List sx={{ flex: 1 }}>
-        <ListItem button component={Link} to="/dashboard">
+        <ListItem button component={Link} to="/dashboard" sx={{ bgcolor: location.pathname === '/dashboard' ? 'rgba(255, 0, 0, 0.1)' : 'transparent' }}>
           <ListItemIcon>
             <DashboardIcon />
           </ListItemIcon>
           <ListItemText primary="Dashboard" />
         </ListItem>
         
-        <ListItem button component={Link} to="/quan-ly-khach-hang">
+        <ListItem button component={Link} to="/quan-ly-khach-hang" sx={{ bgcolor: location.pathname === '/quan-ly-khach-hang' ? 'rgba(255, 0, 0, 0.1)' : 'transparent' }}>
           <ListItemIcon>
             <PeopleIcon />
           </ListItemIcon>
           <ListItemText primary="Quản lý Khách hàng" />
         </ListItem>
         
-        <ListItem button component={Link} to="/lich-lam-viec">
+        <ListItem button component={Link} to="/lich-lam-viec" sx={{ bgcolor: location.pathname === '/lich-lam-viec' ? 'rgba(255, 0, 0, 0.1)' : 'transparent' }}>
           <ListItemIcon>
             <CalendarMonthIcon />
           </ListItemIcon>
@@ -61,18 +62,25 @@ function Sidebar({ session }) {
           <ListItemText primary="Lịch tháng" />
         </ListItem> */}
         
-        <ListItem button component={Link} to="/checklist-cong-viec">
+        <ListItem button component={Link} to="/checklist-cong-viec" sx={{ bgcolor: location.pathname === '/checklist-cong-viec' ? 'rgba(255, 0, 0, 0.1)' : 'transparent' }}>
           <ListItemIcon>
             <ChecklistIcon />
           </ListItemIcon>
           <ListItemText primary="Checklist công việc" />
         </ListItem>
         
-        <ListItem button component={Link} to="/danh-sach-cong-viec">
+        <ListItem button component={Link} to="/danh-sach-cong-viec" sx={{ bgcolor: location.pathname === '/danh-sach-cong-viec' ? 'rgba(255, 0, 0, 0.1)' : 'transparent' }}>
           <ListItemIcon>
             <AssignmentIcon />
           </ListItemIcon>
           <ListItemText primary="Danh sách công việc" />
+        </ListItem>
+        
+        <ListItem button component={Link} to="/test" sx={{ bgcolor: location.pathname === '/test' ? 'rgba(255, 0, 0, 0.1)' : 'transparent' }}>
+          <ListItemIcon>
+            <AssignmentIcon />
+          </ListItemIcon>
+          <ListItemText primary="Test Page" />
         </ListItem>
       </List>
       

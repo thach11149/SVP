@@ -47,7 +47,7 @@ export default function JobList({ session }) {
 
         // Strategy 1: Thử lấy jobs trực tiếp từ jobs table trước (có thể có data)
         console.log('Trying direct jobs query...');
-        const { data: directJobs, /* error: directError */ } = await supabase
+        const { data: directJobs, error: directError } = await supabase
           .from('jobs')
           .select(`
             *,
@@ -60,10 +60,6 @@ export default function JobList({ session }) {
               ward_name,
               district_name,
               province_name
-            ),
-            technicians!jobs_team_lead_id_fkey (
-              id,
-              name
             ),
             job_materials (
               id,
@@ -105,7 +101,6 @@ export default function JobList({ session }) {
             special_requests: job.special_requests || 'Không có',
             contact_person: job.contact_person || job.customers?.primary_contact_name,
             phone_number: job.contact_phone || job.customers?.primary_contact_phone,
-            team_lead_name: job.technicians?.name || 'N/A',
             required_chemicals: job.job_materials?.map(jm => ({
               id: jm.materials.id,
               name: jm.materials.name,
@@ -176,7 +171,7 @@ export default function JobList({ session }) {
 
         // Lấy jobs từ job_assignments
         console.log('Fetching jobs via assignments for technician:', technicianId);
-        const { data: jobsData, /* error: jobsError */ } = await supabase
+        const { data: jobsData, error: jobsError } = await supabase
           .from('job_assignments')
           .select(`
             job_id,
@@ -194,10 +189,6 @@ export default function JobList({ session }) {
                 ward_name,
                 district_name,
                 province_name
-              ),
-              technicians!jobs_team_lead_id_fkey (
-                id,
-                name
               ),
               job_materials (
                 id,
@@ -242,7 +233,6 @@ export default function JobList({ session }) {
               special_requests: job.special_requests || 'Không có',
               contact_person: job.contact_person || job.customers?.primary_contact_name,
               phone_number: job.contact_phone || job.customers?.primary_contact_phone,
-              team_lead_name: job.technicians?.name || 'N/A',
               required_chemicals: job.job_materials?.map(jm => ({
                 id: jm.materials.id,
                 name: jm.materials.name,
@@ -689,14 +679,14 @@ export default function JobList({ session }) {
               <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                 <h4 className="font-medium text-orange-800 mb-2">
                   <i className="fas fa-users mr-1"></i>
-                  Hóa chất team work (Team lead ({jobs.find(job => job.team_lead_id && job.team_size > 1)?.team_lead_name || 'N/A'}) sẽ lấy):
+                  Hóa chất team work (Team lead sẽ lấy):
                 </h4>
                 <ul className="list-disc list-inside text-orange-700 space-y-1 pl-4 text-sm">
                   {Object.values(teamWorkChemicals).map((chem, index) => (
                     <li key={index}>
                       <span className="font-medium">{chem.name}</span>: {chem.quantity} {chem.unit}
                       <span className="text-xs text-orange-600 ml-2">
-                        (Team lead ({jobs.find(job => job.team_lead_id && job.team_size > 1)?.team_lead_name || 'N/A'}) sẽ lấy - bạn có thể nhắc nhở)
+                        (Team lead sẽ lấy - bạn có thể nhắc nhở)
                       </span>
                     </li>
                   ))}
@@ -1021,7 +1011,7 @@ export default function JobList({ session }) {
                     {chem.name}: {chem.quantity} {chem.unit}
                     {currentJob.team_size > 1 && currentJob.team_lead_id !== session.user.id && (
                       <span className="text-sm text-blue-600 ml-2">
-                        (Team lead ({currentJob.team_lead_name}) sẽ lấy)
+                        (Team lead sẽ lấy)
                       </span>
                     )}
                   </li>
@@ -1038,7 +1028,7 @@ export default function JobList({ session }) {
                   {currentJob.team_lead_id === session.user.id ? (
                     <span className="font-medium"> Bạn là team lead, chịu trách nhiệm lấy hóa chất</span>
                   ) : (
-                    <span> Team lead ({currentJob.team_lead_name}) sẽ lấy hóa chất cho cả nhóm</span>
+                    <span> Team lead khác sẽ lấy hóa chất cho cả nhóm</span>
                   )}
                 </p>
               </div>
@@ -1349,7 +1339,7 @@ export default function JobList({ session }) {
                           </td>
                           <td className="py-2 px-4 border-b text-center">
                             <button 
-                              className="bg-red-400 hover:bg-red-500 text-white p-2 rounded-full w-8 h-8 flex items-center justify-center text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="bg-red-400 hover:bg-red-500 text-white p-2 rounded-full w-8 h-8 flex items-center justify-center text-sm transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                               disabled={!isReportEditable}
                               onClick={() => {
                                 const newMaterials = reportData.materials.filter(m => !(m.isCustom && m.name === material.name));

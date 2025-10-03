@@ -5,8 +5,10 @@ import { supabase } from '../supabaseClient';
 import styles from './AddCustomerForm.module.css';
 import {
   Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, Box,
-  Radio, RadioGroup, FormControlLabel, Checkbox, Grid, Typography, MenuItem
+  Radio, RadioGroup, FormControlLabel, Checkbox, Typography, MenuItem
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
+
 import provincesData from '../data/provinces.json';
 import districtsData from '../data/districts.json';
 import wardsData from '../data/wards.json';
@@ -224,14 +226,12 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
       {/* Tiêu đề thay đổi tùy theo chế độ */}
       <DialogTitle>{'Tạo Mới Hồ Sơ Khách Hàng'}</DialogTitle>
       <Box component="form" onSubmit={handleSubmit}>
-        <DialogContent sx={{ px: 0 }}>
+        <DialogContent sx={{ p: 2 }}>  {/* Thay px: 0 thành p: 2 để có padding như TestPage */}
           {/* Section 1: Thông tin chung */}
           <Box mb={3} p={2} border={1} borderRadius={2} borderColor="grey.200">
             <Typography variant="h6" mb={2}>1. Thông Tin Chung</Typography>
-
-            <Grid container spacing={2}>
-              {/* Dòng 1: Loại khách hàng */}
-              <Grid item xs={12}>
+            <Grid container spacing={2} sx={{ width: '100%' }}>  {/* Thêm sx để ép full width */}
+              <Grid size={{ xs: 12, sm: 12, md: 12 }}>
                 <Typography variant="subtitle1">Loại khách hàng</Typography>
                 <RadioGroup
                   row
@@ -244,44 +244,42 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
                   <FormControlLabel value="personal" control={<Radio />} label="Cá nhân" />
                 </RadioGroup>
               </Grid>
-
-              {/* Dòng 2: Mã KH | Tên KH | Mã số thuế */}
-              <Grid container item xs={12} spacing={2}>
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    label="Mã khách hàng"
-                    name="customer_code"
-                    value={formData.customer_code}
-                    InputProps={{ readOnly: true }}
-                    fullWidth
-                    variant="standard"
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    label="Tên khách hàng / Tên công ty"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    fullWidth
-                    variant="standard"
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    label="Mã số thuế"
-                    name="tax_code"
-                    value={formData.tax_code}
-                    onChange={handleChange}
-                    required={formData.customer_type === 'company'}
-                    disabled={formData.customer_type !== 'company'}
-                    fullWidth
-                    variant="standard"
-                    style={formData.customer_type === 'personal' ? { opacity: 0, pointerEvents: 'none' } : {}}
-                  />
-                </Grid>
+            </Grid>
+            <Grid container spacing={2} sx={{ width: '100%' }}>  {/* Thêm sx để ép full width */}
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <TextField
+                  label="Mã khách hàng"
+                  name="customer_code"
+                  value={formData.customer_code}
+                  InputProps={{ readOnly: true }}
+                  fullWidth
+                  variant="standard"
+                  required
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 6 }}>
+                <TextField
+                  label="Tên khách hàng/Công ty"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  fullWidth
+                  variant="standard"
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <TextField
+                  label="Mã số thuế"
+                  name="tax_code"
+                  value={formData.tax_code}
+                  onChange={handleChange}
+                  required={formData.customer_type === 'company'}
+                  disabled={formData.customer_type !== 'company'}
+                  fullWidth
+                  variant="standard"
+                  style={formData.customer_type === 'personal' ? { opacity: 0, pointerEvents: 'none' } : {}}
+                />
               </Grid>
             </Grid>
           </Box>
@@ -290,7 +288,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
           <Box mb={3} p={2} border={1} borderRadius={2} borderColor="grey.200">
             <Typography variant="h6" mb={2}>2. Người Liên Hệ Chính (Hợp đồng, Báo cáo)</Typography>
             <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label="Họ tên người liên hệ"
                   name="primary_contact_name"
@@ -301,7 +299,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
                   variant="standard"
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label="Chức vụ"
                   name="primary_contact_position"
@@ -311,7 +309,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
                   variant="standard"
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label="Số điện thoại"
                   name="primary_contact_phone"
@@ -323,7 +321,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
                   type="tel"
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label="Email (Gửi báo cáo)"
                   name="primary_contact_email"
@@ -456,7 +454,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
               />
             </Box>
             <Grid container spacing={2} mt={1}>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label="Tên người liên hệ tại hiện trường"
                   name="site_contact_name"
@@ -467,7 +465,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
                   variant="standard"
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label="Chức vụ (tại hiện trường)"
                   name="site_contact_position"
@@ -478,7 +476,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
                   variant="standard"
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   label="Số điện thoại (tại hiện trường)"
                   name="site_contact_phone"
