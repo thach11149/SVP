@@ -14,7 +14,7 @@ import districtsData from '../data/districts.json';
 import wardsData from '../data/wards.json';
 
 // Đổi tên component cho rõ nghĩa hơn: Form này giờ dùng cho cả Thêm và Sửa
-export default function AddCustomerForm({ open, onClose, onSave, showAlert, customerToEdit }) {
+export default function AddCustomerForm({ open, onClose, onSave, showAlert }) {
   const [loading, setLoading] = useState(false);  // Thêm state loading
   const [formData, setFormData] = useState({
     customer_type: 'company',
@@ -35,161 +35,63 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert, cust
     notes: '',
     google_map_code: '',
     service_types: [],  // Mảng cho multiple select
-    plan: 'Lịch Định kỳ',  // Mặc định
-    distance_km: '',  // Thêm field mới
-    days_of_week: [],  // Thêm
-    frequency: 'Hàng tuần'  // Thêm
+    plan: 'Lịch Định kỳ'  // Mặc định
   });
   const [copyContact, setCopyContact] = useState(false);
   // Dữ liệu địa chỉ
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
-  const [isEditing, setIsEditing] = useState(false);
 
   // Lấy danh sách tỉnh/thành phố khi mở form
   useEffect(() => {
     if (open) {
       setProvinces(provincesData);
-      if (!customerToEdit) {
-        // Reset cho chế độ thêm mới
-        setFormData({
-          customer_type: 'company',
-          customer_code: '',
-          name: '',
-          tax_code: '',
-          primary_contact_name: '',
-          primary_contact_position: '',
-          primary_contact_phone: '',
-          primary_contact_email: '',
-          address: '',
-          ward: '',
-          district: '',
-          province: '',
-          site_contact_name: '',
-          site_contact_position: '',
-          site_contact_phone: '',
-          notes: '',
-          google_map_code: '',
-          service_types: [],  // Thêm để tránh undefined
-          plan: 'Lịch Định kỳ',  // Thêm để tránh undefined
-          distance_km: ''  // Thêm
-        });
-        setDistricts([]);
-        setWards([]);
-        setIsEditing(false);
-      }
+      setFormData({
+        customer_type: 'company',
+        customer_code: '',
+        name: '',
+        tax_code: '',
+        primary_contact_name: '',
+        primary_contact_position: '',
+        primary_contact_phone: '',
+        primary_contact_email: '',
+        address: '',
+        ward: '',
+        district: '',
+        province: '',
+        site_contact_name: '',
+        site_contact_position: '',
+        site_contact_phone: '',
+        notes: '',
+        google_map_code: '',
+        service_types: [],  // Thêm để tránh undefined
+        plan: 'Lịch Định kỳ'  // Thêm để tránh undefined
+      });
+      setDistricts([]);
+      setWards([]);
     }
-  }, [open, customerToEdit]);
-
-  // Load dữ liệu khi edit
-  useEffect(() => {
-    if (customerToEdit?.id && open) {
-      const fetchCustomer = async () => {
-        const { data, error } = await supabase
-          .from('customers')
-          .select('*')
-          .eq('id', customerToEdit.id)
-          .single();
-        if (data && !error) {
-          setFormData({
-            customer_type: data.customer_type,
-            customer_code: data.customer_code,
-            name: data.name,
-            tax_code: data.tax_code,
-            primary_contact_name: data.primary_contact_name,
-            primary_contact_position: data.primary_contact_position,
-            primary_contact_phone: data.primary_contact_phone,
-            primary_contact_email: data.primary_contact_email,
-            address: data.address,
-            site_contact_name: data.site_contact_name,
-            site_contact_position: data.site_contact_position,
-            site_contact_phone: data.site_contact_phone,
-            notes: data.notes,
-            google_map_code: data.google_map_code,
-            province: data.province,  // Đã là number
-            district: data.district,  // Đã là number
-            ward: data.ward,  // Đã là number
-            service_types: data.service_types || [],  // Thêm
-            plan: data.plan || 'Lịch Định kỳ',  // Thêm
-            distance_km: ''  // Thêm, không có trong DB
-            days_of_week: [],  // Thêm
-            frequency: 'Hàng tuần'  // Thêm
-          });
-          // Set districts và wards ngay lập tức để tránh lỗi MUI out-of-range
-          const filteredDistricts = districtsData.filter(d => d.province_code === data.province);
-          setDistricts(filteredDistricts);
-          const filteredWards = wardsData.filter(w => w.district_code === data.district);
-          setWards(filteredWards);
-          setIsEditing(true);  // Đánh dấu đang edit để tránh reset
-        }
-      };
-      fetchCustomer();
-    }
-  }, [customerToEdit?.id, open]);
+  }, [open]);
 
   // Lấy danh sách quận/huyện khi chọn tỉnh/thành phố
   useEffect(() => {
     if (formData.province) {
-      const filteredDistricts = districtsData.filter(d => d.province_code === formData.province);
-      setDistricts(filteredDistricts);
-      if (!isEditing) {
-        const validDistrict = filteredDistricts.find(d => d.code === formData.district);
-        if (!validDistrict) {
-          setFormData(prev => ({ ...prev, district: '', ward: '' }));
-          setWards([]);
-        }
-      }
-    } else {
-      setDistricts([]);
+      setDistricts(districtsData.filter(d => d.province_code === formData.province));
+      setFormData(prev => ({ ...prev, district: '', ward: '' }));
       setWards([]);
     }
-  }, [formData.province, formData.district, isEditing]);
-
-  useEffect(() => {
-    if (
-      customerToEdit &&
-      open &&
-      formData.province === customerToEdit.province &&
-      districts.length > 0 &&
-      !formData.district
-    ) {
-      setFormData(prev => ({ ...prev, district: customerToEdit.district }));
-    }
-  }, [customerToEdit, open, formData.province, districts.length, formData.district]);
+  }, [formData.province]);
 
   // Lấy danh sách phường/xã khi chọn quận/huyện
   useEffect(() => {
     if (formData.district) {
-      const filteredWards = wardsData.filter(w => w.district_code === formData.district);
-      setWards(filteredWards);
-      if (!isEditing) {
-        const validWard = filteredWards.find(w => w.code === formData.ward);
-        if (!validWard) {
-          setFormData(prev => ({ ...prev, ward: '' }));
-        }
-      }
-    } else {
-      setWards([]);
+      setWards(wardsData.filter(w => w.district_code === formData.district));
     }
-  }, [formData.district, formData.ward, isEditing]);
+  }, [formData.district]);
 
+  // Tự động sinh mã khách hàng theo loại, dựa trên mã lớn nhất hiện có
   useEffect(() => {
-    if (
-      customerToEdit &&
-      open &&
-      formData.district === customerToEdit.district &&
-      wards.length > 0 &&
-      !formData.ward
-    ) {
-      setFormData(prev => ({ ...prev, ward: customerToEdit.ward }));
-      setIsEditing(false);
-    }
-  }, [customerToEdit, open, formData.district, wards.length, formData.ward]);
-
-  // Tự động sinh mã khách hàng theo loại, dựa trên mã lớn nhất hiện có (chỉ cho thêm mới)
-  useEffect(() => {
-    if (open && !isEditing) {
+    if (open) {
       const fetchLatestCode = async () => {
         const prefix = formData.customer_type === 'company' ? 'DN' : 'CN';
         const { data } = await supabase
@@ -212,7 +114,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert, cust
       };
       fetchLatestCode();
     }
-  }, [formData.customer_type, open, isEditing]);
+  }, [formData.customer_type, open]);
 
   // Copy thông tin liên hệ chính sang hiện trường
   useEffect(() => {
@@ -235,16 +137,6 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert, cust
         service_types: checked
           ? [...prev.service_types, value]
           : prev.service_types.filter(type => type !== value)
-      }));
-      return;
-    }
-    if (name === 'days_of_week') {
-      // Xử lý checkbox multiple cho ngày trong tuần
-      setFormData(prev => ({
-        ...prev,
-        days_of_week: checked
-          ? [...prev.days_of_week, value]
-          : prev.days_of_week.filter(day => day !== value)
       }));
       return;
     }
@@ -312,75 +204,30 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert, cust
 
     console.log('Dữ liệu được lưu:', dataToSave);
 
+    // Kiểm tra trùng mã khách hàng trước khi thêm mới
+    const { data: existed } = await supabase
+      .from('customers')
+      .select('id')
+      .eq('customer_code', formData.customer_code)
+      .single();
+    if (existed) {
+      showAlert && showAlert('Mã khách hàng đã tồn tại!', 'error');
+      setLoading(false);  // Bỏ comment
+      return;
+    }
+
     try {
       let savedData;
-      if (isEditing) {
-        // Cập nhật
-        const { data, error } = await supabase
-          .from('customers')
-          .update(dataToSave)
-          .eq('id', customerToEdit.id)
-          .select()
-          .single();
-        if (error) throw error;
-        savedData = data;
-        showAlert && showAlert('Cập nhật khách hàng thành công!', 'success');
-      } else {
-        // Thêm mới
-        // Kiểm tra trùng mã khách hàng trước khi thêm mới
-        const { data: existed } = await supabase
-          .from('customers')
-          .select('id')
-          .eq('customer_code', formData.customer_code)
-          .single();
-        if (existed) {
-          showAlert && showAlert('Mã khách hàng đã tồn tại!', 'error');
-          setLoading(false);  // Bỏ comment
-          return;
-        }
-
-        const { data, error } = await supabase
-          .from('customers')
-          .insert([dataToSave])
-          .select()
-          .single();
-        if (error) throw error;
-        savedData = data;
-        showAlert && showAlert('Thêm khách hàng thành công!', 'success');
-      }
+      const { data, error } = await supabase
+        .from('customers')
+        .insert([dataToSave])
+        .select()
+        .single();
+      if (error) throw error;
+      savedData = data;
+      showAlert && showAlert('Thêm khách hàng thành công!', 'success');
       onSave && onSave(savedData);
       onClose && onClose();
-
-      // Thêm khoảng cách vào bảng distances nếu có
-      if (formData.distance_km && parseFloat(formData.distance_km) > 0) {
-        const distanceData = {
-          diem_di: 'Văn phòng Công ty',
-          diem_den: formData.name,
-          khoang_cach: parseFloat(formData.distance_km),
-          ten_chang: formData.name
-        };
-        const { error: distanceError } = await supabase.from('distances').insert([distanceData]);
-        if (distanceError) {
-          console.error('Lỗi thêm khoảng cách:', distanceError);
-          showAlert && showAlert('Lưu khách hàng thành công nhưng lỗi thêm khoảng cách: ' + distanceError.message, 'warning');
-        }
-      }
-
-      // Thêm kế hoạch dịch vụ vào bảng customer_service_plans nếu là Lịch Định kỳ
-      if (formData.plan === 'Lịch Định kỳ') {
-        const planData = {
-          customer_id: savedData.id,
-          service_types: formData.service_types,
-          plan: formData.plan,
-          days_of_week: formData.days_of_week,
-          frequency: formData.frequency
-        };
-        const { error: planError } = await supabase.from('customer_service_plans').insert([planData]);
-        if (planError) {
-          console.error('Lỗi thêm kế hoạch dịch vụ:', planError);
-          showAlert && showAlert('Lưu khách hàng thành công nhưng lỗi thêm kế hoạch dịch vụ: ' + planError.message, 'warning');
-        }
-      }
     } catch (error) {
       showAlert && showAlert('Lỗi: ' + error.message, 'error');
     } finally {
@@ -393,7 +240,7 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert, cust
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       {/* Tiêu đề thay đổi tùy theo chế độ */}
-      <DialogTitle>{isEditing ? 'Sửa thông tin Khách hàng' : 'Tạo Mới Hồ Sơ Khách Hàng'}</DialogTitle>
+      <DialogTitle>{'Tạo Mới Hồ Sơ Khách Hàng'}</DialogTitle>
       <Box component="form" onSubmit={handleSubmit}>
         <DialogContent sx={{ p: 2 }}>  {/* Thay px: 0 thành p: 2 để có padding như TestPage */}
           {/* Section 1: Thông tin chung */}
@@ -590,18 +437,6 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert, cust
             </Button>
             <Box mb={2}>
               <TextField
-                label="Khoảng cách từ công ty đến địa điểm thực hiện (km)"
-                name="distance_km"
-                value={formData.distance_km}
-                onChange={handleChange}
-                fullWidth
-                variant="standard"
-                type="number"
-                inputProps={{ min: 0, step: 0.1 }}
-              />
-            </Box>
-            <Box mb={2}>
-              <TextField
                 label="Mã số vị trí Google Maps (Lat,Lng)"
                 name="google_map_code"
                 value={formData.google_map_code}
@@ -707,43 +542,6 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert, cust
                 <FormControlLabel value="1 lần" control={<Radio />} label="1 lần" />
               </RadioGroup>
             </Box>
-            {formData.plan === 'Lịch Định kỳ' && (
-              <>
-                <Box mt={2}>
-                  <Typography variant="subtitle1" gutterBottom>Ngày trong tuần</Typography>
-                  <FormGroup row sx={{ gap: 2 }}>
-                    {['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'].map((day) => (
-                      <FormControlLabel
-                        key={day}
-                        control={
-                          <Checkbox
-                            checked={formData.days_of_week.includes(day)}
-                            onChange={handleChange}
-                            name="days_of_week"
-                            value={day}
-                          />
-                        }
-                        label={day}
-                      />
-                    ))}
-                  </FormGroup>
-                </Box>
-                <Box mt={2}>
-                  <Typography variant="subtitle1" gutterBottom>Tần suất</Typography>
-                  <RadioGroup
-                    row
-                    name="frequency"
-                    value={formData.frequency}
-                    onChange={handleChange}
-                    sx={{ gap: 2 }}
-                  >
-                    <FormControlLabel value="Hàng tuần" control={<Radio />} label="Hàng tuần" />
-                    <FormControlLabel value="2 tuần/lần" control={<Radio />} label="2 tuần/lần" />
-                    <FormControlLabel value="Hàng tháng" control={<Radio />} label="Hàng tháng" />
-                  </RadioGroup>
-                </Box>
-              </>
-            )}
           </Box>
 
           {/* Section 5: Thông tin bổ sung */}

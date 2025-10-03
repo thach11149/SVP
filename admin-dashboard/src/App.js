@@ -15,6 +15,7 @@ import ChecklistCongViec from './pages/ChecklistCongViec';
 import DanhSachCongViec from './pages/DanhSachCongViec';
 import Sidebar from './components/Sidebar';
 import TestPage from './pages/TestPage';
+import KhoangCachDiChuyen from './pages/KhoangCachDiChuyen'; // Thêm import
 
 function App() {
   const [session, setSession] = useState(null);
@@ -75,6 +76,7 @@ function App() {
                       <Route path="/checklist-cong-viec" element={<ChecklistCongViec session={session} />} />
                       <Route path="/danh-sach-cong-viec" element={<DanhSachCongViec session={session} />} />
                       <Route path="/test" element={<TestPage />} />
+                      <Route path="/khoang-cach-di-chuyen" element={<KhoangCachDiChuyen />} />  {/* Thêm route */}
                     </Routes>
                   </Box>
                 </Box>

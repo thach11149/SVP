@@ -8,6 +8,8 @@ import ChecklistIcon from '@mui/icons-material/Checklist';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import WorkIcon from '@mui/icons-material/Work'; // Import icon for Dịch Vụ Khách Hàng
+import MapIcon from '@mui/icons-material/Map'; // Import icon for Khoảng cách di chuyển
 
 function Sidebar({ session }) {
   const navigate = useNavigate();
@@ -48,6 +50,13 @@ function Sidebar({ session }) {
           <ListItemText primary="Quản lý Khách hàng" />
         </ListItem>
         
+        <ListItem button component={Link} to="/dich-vu-khach-hang" sx={{ bgcolor: location.pathname === '/dich-vu-khach-hang' ? 'rgba(255, 0, 0, 0.1)' : 'transparent' }}>
+          <ListItemIcon>
+            <WorkIcon />
+          </ListItemIcon>
+          <ListItemText primary="Dịch Vụ Khách Hàng" />
+        </ListItem>
+
         <ListItem button component={Link} to="/lich-lam-viec" sx={{ bgcolor: location.pathname === '/lich-lam-viec' ? 'rgba(255, 0, 0, 0.1)' : 'transparent' }}>
           <ListItemIcon>
             <CalendarMonthIcon />
@@ -62,6 +71,13 @@ function Sidebar({ session }) {
           <ListItemText primary="Lịch tháng" />
         </ListItem> */}
         
+        <ListItem button component={Link} to="/danh-sach-cong-viec" sx={{ bgcolor: location.pathname === '/danh-sach-cong-viec' ? 'rgba(255, 0, 0, 0.1)' : 'transparent' }}>
+          <ListItemIcon>
+            <AssignmentIcon />
+          </ListItemIcon>
+          <ListItemText primary="Danh sách công việc" />
+        </ListItem>
+
         <ListItem button component={Link} to="/checklist-cong-viec" sx={{ bgcolor: location.pathname === '/checklist-cong-viec' ? 'rgba(255, 0, 0, 0.1)' : 'transparent' }}>
           <ListItemIcon>
             <ChecklistIcon />
@@ -69,19 +85,20 @@ function Sidebar({ session }) {
           <ListItemText primary="Checklist công việc" />
         </ListItem>
         
-        <ListItem button component={Link} to="/danh-sach-cong-viec" sx={{ bgcolor: location.pathname === '/danh-sach-cong-viec' ? 'rgba(255, 0, 0, 0.1)' : 'transparent' }}>
+        <ListItem button component={Link} to="/khoang-cach-di-chuyen" sx={{ bgcolor: location.pathname === '/khoang-cach-di-chuyen' ? 'rgba(255, 0, 0, 0.1)' : 'transparent' }}>
           <ListItemIcon>
-            <AssignmentIcon />
+            <MapIcon />
           </ListItemIcon>
-          <ListItemText primary="Danh sách công việc" />
+          <ListItemText primary="Khoảng cách di chuyển" />
         </ListItem>
-        
+
         <ListItem button component={Link} to="/test" sx={{ bgcolor: location.pathname === '/test' ? 'rgba(255, 0, 0, 0.1)' : 'transparent' }}>
           <ListItemIcon>
             <AssignmentIcon />
           </ListItemIcon>
           <ListItemText primary="Test Page" />
         </ListItem>
+
       </List>
       
       <Divider />

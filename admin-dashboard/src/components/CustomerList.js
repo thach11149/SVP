@@ -5,8 +5,7 @@ import { supabase } from '../supabaseClient';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button, Box, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip } from '@mui/material';
 import { Edit, Delete, Work } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import CustomerForm from './AddCustomerForm'; // Đổi tên import cho đúng
-import EditCustomerForm from './EditCustomerForm';
+import CustomerForm from './AddCustomerForm'; // Giữ import này
 import AlertMessage from './AlertMessage'; // Thêm import
 import provincesData from '../data/provinces.json';
 import districtsData from '../data/districts.json';
@@ -17,7 +16,7 @@ export default function CustomerList() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState(null); // State để lưu khách hàng đang được sửa
+  const [customerToEdit, setCustomerToEdit] = useState(null); // Đổi tên state cho rõ ràng
   const [alert, setAlert] = useState({ open: false, message: '', severity: 'info', confirm: false, onConfirm: null });
   const [deleteDialog, setDeleteDialog] = useState({ open: false, customerId: null });
 
@@ -66,30 +65,30 @@ export default function CustomerList() {
 
   // Xử lý khi nhấn nút "Thêm mới"
   const handleAddNew = () => {
-    setEditingCustomer(null);
+    setCustomerToEdit(null);
     setOpenDialog(true);
   };
 
   // Xử lý khi nhấn nút "Sửa"
   const handleEdit = (customer) => {
-    setEditingCustomer(customer);
+    setCustomerToEdit(customer);
     setOpenDialog(true);
   };
 
   // Xử lý khi đóng dialog
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setEditingCustomer(null); // Reset state sửa
+    setCustomerToEdit(null); // Reset state
   };
 
   // Xử lý sau khi lưu form (cả thêm mới và sửa)
   const handleSave = (savedCustomer) => {
-    if (editingCustomer) {
+    if (customerToEdit) {
       setCustomers(customers.map(c => (c.id === savedCustomer.id ? savedCustomer : c)));
       showAlert('Cập nhật khách hàng thành công!', 'success');
     } else {
       setCustomers([savedCustomer, ...customers]);
-      if (showAlert) showAlert('Thêm khách hàng thành công!', 'success');
+      showAlert('Thêm khách hàng thành công!', 'success');
     }
   };
 
@@ -122,23 +121,13 @@ export default function CustomerList() {
       </Box>
 
       {/* Hiển thị form thêm hoặc sửa */}
-      {editingCustomer ? (
-        <EditCustomerForm
-          open={openDialog}
-          onClose={handleCloseDialog}
-          onSave={handleSave}
-          customerToEdit={editingCustomer}
-          showAlert={showAlert}
-        />
-      ) : (
-        <CustomerForm
-          open={openDialog}
-          onClose={handleCloseDialog}
-          onSave={handleSave}
-          showAlert={showAlert}
-          provinces={provincesData}
-        />
-      )}
+      <CustomerForm
+        open={openDialog}
+        onClose={handleCloseDialog}
+        onSave={handleSave}
+        showAlert={showAlert}
+        customerToEdit={customerToEdit}
+      />
 
       <AlertMessage
         type={alert.severity}
@@ -165,23 +154,24 @@ export default function CustomerList() {
         <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
-              <TableCell>Mã KH</TableCell>
-              <TableCell>Tên KH</TableCell>
-              <TableCell>Địa chỉ</TableCell>
-              <TableCell>Số điện thoại</TableCell>
-              <TableCell>Tên</TableCell>
-              <TableCell>Hành động</TableCell>
+              <TableCell sx={{ textAlign: 'center' }}>Mã KH</TableCell>
+              <TableCell sx={{ textAlign: 'center' }}>Khách hàng</TableCell>
+              <TableCell sx={{ textAlign: 'center' }}>Người Liên Hệ Chính</TableCell>
+              <TableCell sx={{ textAlign: 'center' }}>Số điện thoại</TableCell>
+              <TableCell sx={{ textAlign: 'center' }}>Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {customers.map(customer => (
               <TableRow key={customer.id}>
-                <TableCell>{customer.customer_code}</TableCell>
-                <TableCell>{customer.name}</TableCell>
-                <TableCell>{getAddressString(customer)}</TableCell>
-                <TableCell>{customer.primary_contact_phone}</TableCell>
-                <TableCell>{customer.primary_contact_name}</TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>{customer.customer_code}</TableCell>
                 <TableCell>
+                  <Typography variant="body2" fontWeight="bold">{customer.name}</Typography>
+                  <Typography variant="body2" color="text.secondary">{getAddressString(customer)}</Typography>
+                </TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>{customer.primary_contact_name}</TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>{customer.primary_contact_phone}</TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     <Tooltip title="Sửa thông tin">
                       <IconButton

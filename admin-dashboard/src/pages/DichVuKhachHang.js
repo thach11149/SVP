@@ -8,7 +8,7 @@ import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import ChecklistPopup from '../components/ChecklistPopup';
 
-export default function LapKeHoachCongViec({ session }) {
+export default function DichVuKhachHang({ session }) {
   const [searchParams] = useSearchParams();
   const preselectedCustomerId = searchParams.get('customer_id');
   // Comment để tránh lỗi ESLint no-unused-vars
