@@ -1,0 +1,15 @@
+// UI Components Directory
+// Contains reusable UI components and authentication-related components
+//
+// Current components:
+// - AlertMessage.js: Toast notifications and alerts
+// - Navbar.js: Navigation bar component
+// - Sidebar.js: Application sidebar with navigation menu
+// - ForgotPassword.js: Password recovery form
+// - ResetPassword.js: Password reset form
+//
+// Future components to add:
+// - Button.js: Custom button components
+// - Modal.js: Reusable modal dialogs
+// - Input.js: Custom input components
+// - LoadingSpinner.js: Loading indicators

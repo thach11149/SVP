@@ -5,7 +5,7 @@ import {
   Divider, Box, Typography, ImageList, ImageListItem, ImageListItemBar
 } from '@mui/material';
 import { CheckCircle, Image } from '@mui/icons-material';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../supabaseClient';
 
 export default function JobDetailDialog({ 
   open, 
@@ -160,6 +160,7 @@ export default function JobDetailDialog({
       onClose={onClose}
       maxWidth="md"
       fullWidth
+      ModalProps={{ container: document.getElementById('root') }}
     >
       <DialogTitle>
         Chi tiết Công việc

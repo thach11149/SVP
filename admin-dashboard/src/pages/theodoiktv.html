@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Theo Dõi Phân Bổ Công Việc KTV - Sao Việt Pest</title>
+    <!-- Tải Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Cấu hình Font Inter -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fc;
+        }
+        .scrollable-table-container {
+            max-height: 60vh; /* Giới hạn chiều cao để bảng có thể cuộn */
+            overflow-y: auto;
+        }
+        /* Custom scrollbar for aesthetics */
+        .scrollable-table-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .scrollable-table-container::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+    <!-- Tải Chart.js cho Biểu đồ -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <!-- Tải plugin annotation cho Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.2/dist/chartjs-plugin-annotation.min.js"></script>
+</head>
+<body class="p-4 sm:p-8">
+
+    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-2xl p-6 md:p-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-3">Phân Bổ Công Việc Kỹ Thuật Viên</h1>
+        <p class="text-gray-500 mb-6">Theo dõi tình hình giao việc và tổng quãng đường di chuyển để đảm bảo sự đồng đều và công bằng trong đội ngũ KTV.</p>
+
+        <!-- Thanh Lọc & Chỉ Số Tổng Quan -->
+        <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <!-- Bộ Lọc -->
+            <div class="flex flex-col sm:flex-row gap-4">
+                <div class="flex flex-col">
+                    <label for="month-filter" class="text-sm font-medium text-gray-700 mb-1">Tháng/Năm:</label>
+                    <input type="month" id="month-filter" value="2025-10" class="p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="flex flex-col">
+                    <label for="team-filter" class="text-sm font-medium text-gray-700 mb-1">Đội/Nhóm:</label>
+                    <select id="team-filter" class="p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <option>Tất cả</option>
+                        <option>Đội 1 (TP.HCM)</option>
+                        <option>Đội 2 (Hà Nội)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Chỉ Số Trung Bình (Hiển thị nhanh) -->
+            <div class="flex flex-wrap gap-4 text-center">
+                <div class="p-2 bg-white rounded-lg shadow-md border">
+                    <p class="text-2xl font-semibold text-blue-600" id="avg-jobs">18.5</p>
+                    <p class="text-xs text-gray-500">Việc TB/KTV</p>
+                </div>
+                <div class="p-2 bg-white rounded-lg shadow-md border">
+                    <p class="text-2xl font-semibold text-blue-600" id="avg-km">320 Km</p>
+                    <p class="text-xs text-gray-500">Km TB/KTV</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Biểu đồ So Sánh (Visualizations) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Biểu đồ Việc -->
+            <div class="lg:col-span-2 bg-white p-4 rounded-xl shadow-lg border">
+                <h3 class="text-lg font-semibold text-gray-700 mb-3">So Sánh Số Việc Được Giao Tháng Này</h3>
+                <canvas id="jobChart" height="150"></canvas>
+            </div>
+            <!-- Biểu đồ Km -->
+            <div class="bg-white p-4 rounded-xl shadow-lg border">
+                <h3 class="text-lg font-semibold text-gray-700 mb-3">Phân Bổ Loại Hình Dịch Vụ</h3>
+                <canvas id="serviceChart" height="150"></canvas>
+            </div>
+        </div>
+
+        <!-- Bảng Dữ Liệu Chi Tiết -->
+        <div class="bg-white rounded-xl shadow-lg border p-4">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Dữ Liệu Chi Tiết Phân Bổ Công Việc (Tháng 10/2025)</h2>
+            
+            <div class="scrollable-table-container border rounded-lg">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50 sticky top-0 z-10">
+                        <tr>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10">STT</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Tên KTV</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Số ĐT</th>
+                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Việc T9</th>
+                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Việc T10</th>
+                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Chênh Lệch Việc</th>
+                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tỷ Lệ HT (%)</th>
+                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Km T9</th>
+                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Km T10</th>
+                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Chênh Lệch Km</th>
+                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Giờ Làm (TB)</th>
+                            <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Tình Trạng</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="ktv-data">
+                        <!-- Dữ liệu mẫu sẽ được điền bằng JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Đăng ký plugin annotation ngay khi thư viện được tải (vì đã đưa script vào <head>)
+        Chart.register(window['chartjs-plugin-annotation']);
+
+        // Dữ liệu mẫu cho KTV
+        const ktvData = [
+            { id: 1, name: "Nguyễn Văn A", phone: "0901xxx111", jobs_prev: 19, jobs_current: 25, km_prev: 350, km_current: 480, completion_rate: 96, work_hours: 180 },
+            { id: 2, name: "Trần Thị B", phone: "0902xxx222", jobs_prev: 18, jobs_current: 17, km_prev: 310, km_current: 290, completion_rate: 100, work_hours: 120 },
+            { id: 3, name: "Lê Văn C", phone: "0903xxx333", jobs_prev: 20, jobs_current: 12, km_prev: 380, km_current: 210, completion_rate: 90, work_hours: 95 },
+            { id: 4, name: "Phạm Thị D", phone: "0904xxx444", jobs_prev: 17, jobs_current: 22, km_prev: 280, km_current: 390, completion_rate: 98, work_hours: 150 },
+            { id: 5, name: "Hoàng Minh E", phone: "0905xxx555", jobs_prev: 19, jobs_current: 19, km_prev: 320, km_current: 315, completion_rate: 95, work_hours: 135 },
+            { id: 6, name: "Vũ Trọng F", phone: "0906xxx666", jobs_prev: 21, jobs_current: 27, km_prev: 400, km_current: 510, completion_rate: 99, work_hours: 190 },
+            { id: 7, name: "Đặng Thu G", phone: "0907xxx777", jobs_prev: 16, jobs_current: 15, km_prev: 250, km_current: 260, completion_rate: 97, work_hours: 110 },
+            // Thêm dữ liệu mẫu
+            { id: 8, name: "Tôn Thất H", phone: "0908xxx888", jobs_prev: 18, jobs_current: 18, km_prev: 300, km_current: 300, completion_rate: 96, work_hours: 125 },
+        ];
+
+        // Tính toán các chỉ số trung bình và chênh lệch
+        const totalJobs = ktvData.reduce((sum, item) => sum + item.jobs_current, 0);
+        const totalKm = ktvData.reduce((sum, item) => sum + item.km_current, 0);
+        const avgJobs = totalJobs / ktvData.length;
+        const avgKm = totalKm / ktvData.length;
+
+        // Cập nhật chỉ số trung bình trên dashboard
+        document.getElementById('avg-jobs').textContent = avgJobs.toFixed(1);
+        document.getElementById('avg-km').textContent = `${avgKm.toFixed(0)} Km`;
+
+        // Hàm xác định trạng thái dựa trên sự chênh lệch
+        function getStatus(value, avg, thresholdJobs = 4, thresholdKm = 100) {
+            const diff = value - avg;
+            const absDiff = Math.abs(diff);
+            
+            let statusText, statusClass;
+
+            if (absDiff < thresholdJobs || (value >= avg - thresholdJobs && value <= avg + thresholdJobs)) {
+                statusText = "Cân Bằng";
+                statusClass = "bg-green-100 text-green-800";
+            } else if (diff > 0) {
+                statusText = "Quá Tải (Cao)";
+                statusClass = "bg-red-100 text-red-800";
+            } else {
+                statusText = "Ít Việc (Thấp)";
+                statusClass = "bg-yellow-100 text-yellow-800";
+            }
+
+            return { diff: diff.toFixed(0), statusText, statusClass };
+        }
+
+        // Điền dữ liệu vào bảng
+        const tableBody = document.getElementById('ktv-data');
+        ktvData.forEach((ktv, index) => {
+            const { diff: diffJobs, statusText, statusClass } = getStatus(ktv.jobs_current, avgJobs);
+            const { diff: diffKm } = getStatus(ktv.km_current, avgKm, 0, 100); // Ngưỡng KM lớn hơn
+
+            const row = document.createElement('tr');
+            row.classList.add(index % 2 === 0 ? 'bg-white' : 'bg-gray-50', 'hover:bg-gray-100', 'transition', 'duration-150');
+
+            row.innerHTML = `
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">${index + 1}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-blue-600">${ktv.name}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500">${ktv.phone}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 text-center">${ktv.jobs_prev}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm font-semibold text-gray-800 text-center">${ktv.jobs_current}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-center ${diffJobs > 0 ? 'text-red-500' : (diffJobs < 0 ? 'text-green-500' : 'text-gray-500')}">
+                    ${diffJobs > 0 ? `+${diffJobs}` : diffJobs}
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 text-center">${ktv.completion_rate}%</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 text-center">${ktv.km_prev}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm font-semibold text-gray-800 text-center">${ktv.km_current}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-center ${diffKm > 0 ? 'text-red-500' : (diffKm < 0 ? 'text-green-500' : 'text-gray-500')}">
+                    ${diffKm > 0 ? `+${diffKm}` : diffKm}
+                </td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 text-center">${(ktv.work_hours / 160 * 100).toFixed(0)}h / 160h</td>
+                <td class="px-3 py-2 whitespace-nowrap">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClass}">
+                        ${statusText}
+                    </span>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+
+        // --- Cấu hình Biểu đồ ---
+        
+        // Biểu đồ 1: So Sánh Số Việc Được Giao
+        const jobLabels = ktvData.map(ktv => ktv.name.split(' ').pop()); // Chỉ lấy tên
+        const jobData = ktvData.map(ktv => ktv.jobs_current);
+
+        new Chart(document.getElementById('jobChart'), {
+            type: 'bar',
+            data: {
+                labels: jobLabels,
+                datasets: [
+                    {
+                        label: 'Số Việc Tháng Này',
+                        data: jobData,
+                        backgroundColor: jobData.map(job => {
+                            if (job > avgJobs + 4) return 'rgba(239, 68, 68, 0.7)'; // Đỏ: Quá tải
+                            if (job < avgJobs - 4) return 'rgba(251, 191, 36, 0.7)'; // Vàng: Ít việc
+                            return 'rgba(59, 130, 246, 0.7)'; // Xanh dương: Cân bằng
+                        }),
+                        borderColor: jobData.map(job => {
+                            if (job > avgJobs + 4) return 'rgb(239, 68, 68)';
+                            if (job < avgJobs - 4) return 'rgb(251, 191, 36)';
+                            return 'rgb(59, 130, 246)';
+                        }),
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: false },
+                    // Cấu hình Annotation chỉ chạy sau khi plugin đã được đăng ký
+                    annotation: {
+                        annotations: {
+                            line1: {
+                                type: 'line',
+                                yMin: avgJobs,
+                                yMax: avgJobs,
+                                borderColor: 'rgb(75, 192, 192)',
+                                borderWidth: 2,
+                                borderDash: [6, 6],
+                                label: {
+                                    content: `TB Đội (${avgJobs.toFixed(1)} việc)`,
+                                    display: true,
+                                    position: 'start'
+                                }
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Số Việc' },
+                        suggestedMax: Math.max(...jobData) + 5
+                    }
+                }
+            }
+        });
+        
+        // Biểu đồ 2: Phân Bổ Loại Hình Dịch Vụ (Dữ liệu giả lập)
+        new Chart(document.getElementById('serviceChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Dịch Hại Tổng Hợp', 'Diệt Chuột', 'Diệt Mối', 'SOS/Khác'],
+                datasets: [{
+                    label: 'Số Việc',
+                    data: [45, 25, 15, 15],
+                    backgroundColor: [
+                        'rgba(59, 130, 246, 0.8)',
+                        'rgba(249, 115, 22, 0.8)',
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(107, 114, 128, 0.8)'
+                    ],
+                    hoverOffset: 4,
+                    borderWidth: 0,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                        }
+                    },
+                    title: { display: false },
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>

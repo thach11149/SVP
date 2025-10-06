@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESG Dashboard - Kiểm Soát Côn Trùng Bền Vững</title>
+    <!-- Tải Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7fafc; /* Light gray background */
+        }
+        .tab-button.active {
+            border-bottom: 3px solid #10b981; /* Green border for active tab */
+            color: #10b981;
+            font-weight: 600;
+        }
+        /* Custom styles for the KPI Card's gauge */
+        .gauge-red { background-color: #ef4444; } /* Red */
+        .gauge-yellow { background-color: #f59e0b; } /* Yellow */
+        .gauge-blue { background-color: #3b82f6; } /* Blue */
+        .gauge-green { background-color: #10b981; } /* Green */
+        .gauge-purple { background-color: #8b5cf6; } /* Purple */
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+
+    <div class="max-w-6xl mx-auto bg-white shadow-2xl rounded-xl p-6 md:p-10">
+        <!-- HEADER -->
+        <header class="mb-8 border-b pb-4">
+            <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                <span class="text-4xl mr-3">🌎</span> ESG Dashboard - Kiểm Soát Côn Trùng Bền Vững
+            </h1>
+            <p class="text-gray-500 mt-1">
+                Theo dõi các Chỉ số Môi trường, Xã hội và Quản trị (E, S, G) theo chuẩn **GRI/SASB/ISO** (Quý Hiện Tại).
+            </p>
+        </header>
+
+        <!-- TAB NAVIGATION -->
+        <div class="flex border-b border-gray-200 mb-6 space-x-6">
+            <button class="tab-button active pb-3 text-lg transition duration-200" data-tab-id="environment" onclick="openTab('environment')">
+                🌎 Môi trường (E)
+            </button>
+            <button class="tab-button pb-3 text-lg text-gray-500 hover:text-gray-700 transition duration-200" data-tab-id="social" onclick="openTab('social')">
+                🧑‍🤝‍🧑 Xã hội (S)
+            </button>
+            <button class="tab-button pb-3 text-lg text-gray-500 hover:text-gray-700 transition duration-200" data-tab-id="governance" onclick="openTab('governance')">
+                💼 Quản trị (G)
+            </button>
+        </div>
+
+        <!-- TAB CONTENT CONTAINER -->
+        <div id="tab-content">
+            
+            <!-- 🌎 Môi trường (E) Tab Content -->
+            <div id="environment" class="tab-pane">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-6 border-l-4 border-green-500 pl-3">Chỉ số Môi trường (E) - Giảm thiểu Tác động</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    <!-- KPI 1: Cường độ Hóa chất (SASB EM-PM-110a.1) -->
+                    <div class="bg-gray-50 p-5 rounded-lg shadow-md border-t-4 border-red-500">
+                        <p class="text-lg font-medium text-gray-700">1. Cường độ Hoạt chất Chính</p>
+                        <p class="text-3xl font-bold text-red-600 mt-2">0.05 kg/Job</p>
+                        <p class="text-sm text-gray-500 mt-1">Mục tiêu: $< 0.04 \text{ kg}/\text{Job}$</p>
+                        <div class="mt-4">
+                            <div class="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                                <div class="gauge-red h-2.5 rounded-full" style="width: 75%;" title="Đạt 75% so với mục tiêu tối đa cho phép"></div>
+                            </div>
+                            <p class="text-xs text-red-500 mt-1">Cần tối ưu hóa liều lượng/hoạt chất. Cường độ cao hơn 25% Baseline.</p>
+                        </div>
+                    </div>
+
+                    <!-- KPI 2: Tỷ lệ Áp dụng IPM (IFS Guideline) -->
+                    <div class="bg-gray-50 p-5 rounded-lg shadow-md border-t-4 border-green-500">
+                        <p class="text-lg font-medium text-gray-700">2. Tỷ lệ Áp dụng IPM</p>
+                        <p class="text-3xl font-bold text-green-600 mt-2">85%</p>
+                        <p class="text-sm text-gray-500 mt-1">Đã áp dụng IPM cho **120/140** Jobs trong quý.</p>
+                        <div class="mt-4">
+                            <div class="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                                <div class="gauge-green h-2.5 rounded-full" style="width: 85%;" title="Đạt 85% mục tiêu 100%"></div>
+                            </div>
+                            <p class="text-xs text-green-500 mt-1">**Tuyệt vời!** Đã vượt qua mục tiêu tối thiểu ($\ge 80\%$) theo IFS.</p>
+                        </div>
+                    </div>
+
+                    <!-- KPI 3: Phát thải từ Phương tiện (GRI 305-1) -->
+                    <div class="bg-gray-50 p-5 rounded-lg shadow-md border-t-4 border-yellow-500">
+                        <p class="text-lg font-medium text-gray-700">3. Phát thải GHG (Scope 1)</p>
+                        <p class="text-3xl font-bold text-yellow-600 mt-2">1.5 $\text{t}\text{CO}_2\text{e}$</p>
+                        <p class="text-sm text-gray-500 mt-1">Tăng 5% so với Quý trước do quãng đường di chuyển tăng.</p>
+                        <div class="mt-4">
+                            <div class="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                                <div class="gauge-yellow h-2.5 rounded-full" style="width: 50%;" title="Cần cải thiện hiệu quả nhiên liệu"></div>
+                            </div>
+                            <p class="text-xs text-yellow-600 mt-1">Cần kiểm soát nhiên liệu và tối ưu hóa tuyến đường dịch vụ.</p>
+                        </div>
+                    </div>
+
+                    <!-- KPI 4: Tỷ lệ Xe Phát thải Thấp (MỚI) -->
+                    <div class="bg-gray-50 p-5 rounded-lg shadow-md border-t-4 border-blue-500">
+                        <p class="text-lg font-medium text-gray-700">4. Tỷ lệ Xe Phát thải Thấp</p>
+                        <p class="text-3xl font-bold text-blue-600 mt-2">12%</p>
+                        <p class="text-sm text-gray-500 mt-1">**3/25** xe trong đội hình là xe Hybrid/Tiêu chuẩn Euro 4 trở lên.</p>
+                        <div class="mt-4">
+                            <div class="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                                <div class="gauge-blue h-2.5 rounded-full" style="width: 12%;" title="Cần tăng cường đầu tư cho đội xe xanh"></div>
+                            </div>
+                            <p class="text-xs text-blue-500 mt-1">Mục tiêu $30\%$ trong vòng 2 năm. Cần đẩy nhanh tiến độ.</p>
+                        </div>
+                    </div>
+
+                    <!-- KPI 5: Thu hồi Chất thải Nguy hại (GRI 306-2) -->
+                    <div class="bg-gray-50 p-5 rounded-lg shadow-md border-t-4 border-green-500">
+                        <p class="text-lg font-medium text-gray-700">5. Tỷ lệ Thu hồi Rác thải Nguy hại</p>
+                        <p class="text-3xl font-bold text-green-600 mt-2">98%</p>
+                        <p class="text-sm text-gray-500 mt-1">Tổng thu hồi: **180 kg/183 kg** vỏ chai/bả chuột đã sử dụng.</p>
+                        <div class="mt-4">
+                            <div class="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                                <div class="gauge-green h-2.5 rounded-full" style="width: 98%;" title="Gần đạt tuyệt đối"></div>
+                            </div>
+                            <p class="text-xs text-green-500 mt-1">**Xuất sắc!** Đã vượt mục tiêu $90\%$. Đảm bảo chứng từ xử lý hợp pháp.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- KPI 6: Tiêu thụ Năng lượng (GRI 302-1) -->
+                    <div class="bg-gray-50 p-5 rounded-lg shadow-md border-t-4 border-yellow-500">
+                        <p class="text-lg font-medium text-gray-700">6. Tiêu thụ Năng lượng (Văn phòng)</p>
+                        <p class="text-3xl font-bold text-yellow-600 mt-2">2,500 $\text{kWh}$</p>
+                        <p class="text-sm text-gray-500 mt-1">Tương đương cường độ **$10 \text{ kWh}/\text{Job}$**. Không tăng trưởng.</p>
+                        <div class="mt-4">
+                            <div class="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                                <div class="gauge-yellow h-2.5 rounded-full" style="width: 60%;" title="Đạt 60% mục tiêu giảm 10%"></div>
+                            </div>
+                            <p class="text-xs text-yellow-600 mt-1">Cần áp dụng các biện pháp tiết kiệm điện tại văn phòng.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🧑‍🤝‍🧑 Xã hội (S) Tab Content -->
+            <div id="social" class="tab-pane hidden">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-6 border-l-4 border-orange-500 pl-3">Chỉ số Xã hội (S) - An toàn và Con người</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    
+                    <!-- KPI 7: Tần suất Sự cố Lao động (GRI 403-9/ISO 45001) -->
+                    <div class="bg-gray-50 p-5 rounded-lg shadow-md border-t-4 border-red-500">
+                        <p class="text-lg font-medium text-gray-700">7. Tần suất Sự cố Lao động (TRIR)</p>
+                        <p class="text-3xl font-bold text-red-600 mt-2">1.8</p>
+                        <p class="text-sm text-gray-500 mt-1">**1** Sự cố mất thời gian làm việc (LTI) trong Quý.</p>
+                        <div class="mt-4">
+                            <div class="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                                <div class="gauge-red h-2.5 rounded-full" style="width: 80%;" title="80% mục tiêu an toàn"></div>
+                            </div>
+                            <p class="text-xs text-red-500 mt-1">Mục tiêu toàn cầu $\le 1.5$. Cần điều tra nguyên nhân sâu xa của sự cố.</p>
+                        </div>
+                    </div>
+
+                    <!-- KPI 8: Giờ Đào tạo (GRI 404-1) -->
+                    <div class="bg-gray-50 p-5 rounded-lg shadow-md border-t-4 border-blue-500">
+                        <p class="text-lg font-medium text-gray-700">8. Giờ Đào tạo KTV/Năm</p>
+                        <p class="text-3xl font-bold text-blue-600 mt-2">14.5 Giờ</p>
+                        <p class="text-sm text-gray-500 mt-1">Đào tạo **IPM, An toàn Hóa chất, Sử dụng Thiết bị**. Mục tiêu $\ge 16$ Giờ.</p>
+                        <div class="mt-4">
+                            <div class="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                                <div class="gauge-blue h-2.5 rounded-full" style="width: 90%;" title="Đạt 90% mục tiêu"></div>
+                            </div>
+                            <p class="text-xs text-blue-500 mt-1">Đang đạt gần mục tiêu. Cần thêm 1.5 giờ/KTV để hoàn thành.</p>
+                        </div>
+                    </div>
+
+                    <!-- KPI 9: Khiếu nại Môi trường/An toàn (GRI 413-1) -->
+                    <div class="bg-gray-50 p-5 rounded-lg shadow-md border-t-4 border-yellow-500">
+                        <p class="text-lg font-medium text-gray-700">9. Khiếu nại An toàn/Môi trường</p>
+                        <p class="text-3xl font-bold text-yellow-600 mt-2">2 Vụ</p>
+                        <p class="text-sm text-gray-500 mt-1">**2** phàn nàn về quy trình thông báo tồn dư hóa chất.</p>
+                        <div class="mt-4">
+                            <div class="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                                <div class="gauge-yellow h-2.5 rounded-full" style="width: 40%;" title="Đang ở mức rủi ro Thấp"></div>
+                            </div>
+                            <p class="text-xs text-yellow-600 mt-1">Đã xử lý 100%. Cần cải thiện quy trình truyền thông với khách hàng.</p>
+                        </div>
+                    </div>
+
+                    <!-- KPI 10: Tỷ lệ Giữ chân NV (GRI 401) -->
+                    <div class="bg-gray-50 p-5 rounded-lg shadow-md border-t-4 border-green-500">
+                        <p class="text-lg font-medium text-gray-700">10. Tỷ lệ Giữ chân Nhân viên</p>
+                        <p class="text-3xl font-bold text-green-600 mt-2">92%</p>
+                        <p class="text-sm text-gray-500 mt-1">Chỉ **2/25** KTV nghỉ việc trong Quý. Tốt hơn $85\%$ trung bình ngành.</p>
+                        <div class="mt-4">
+                            <div class="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                                <div class="gauge-green h-2.5 rounded-full" style="width: 92%;" title="Vượt mục tiêu ngành"></div>
+                            </div>
+                            <p class="text-xs text-green-500 mt-1">**Tuyệt vời.** Cho thấy sự hài lòng và ổn định của đội ngũ Kỹ thuật viên.</p>
+                        </div>
+                    </div>
+
+                    <!-- KPI 11: Tỷ lệ Thành công lần đầu (ISO 9001) -->
+                    <div class="bg-gray-50 p-5 rounded-lg shadow-md border-t-4 border-blue-500">
+                        <p class="text-lg font-medium text-gray-700">11. Tỷ lệ Thành công Lần đầu</p>
+                        <p class="text-3xl font-bold text-blue-600 mt-2">95%</p>
+                        <p class="text-sm text-gray-500 mt-1">**7/140** Jobs cần xử lý lại. Mục tiêu $95\%$.</p>
+                        <div class="mt-4">
+                            <div class="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                                <div class="gauge-blue h-2.5 rounded-full" style="width: 95%;" title="Đạt mục tiêu"></div>
+                            </div>
+                            <p class="text-xs text-blue-500 mt-1">Giữ vững tiêu chuẩn Chất lượng cao (ISO 9001).</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 💼 Quản trị (G) Tab Content -->
+            <div id="governance" class="tab-pane hidden">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-6 border-l-4 border-purple-500 pl-3">Chỉ số Quản trị (G) - Tuân thủ và Minh bạch</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    <!-- KPI 12: Vi phạm Môi trường (GRI 307-1) -->
+                    <div class="bg-gray-50 p-5 rounded-lg shadow-md border-t-4 border-green-500">
+                        <p class="text-lg font-medium text-gray-700">12. Số vụ Vi phạm Môi trường</p>
+                        <p class="text-3xl font-bold text-green-600 mt-2">0 Vụ</p>
+                        <p class="text-sm text-gray-500 mt-1">Không có cảnh báo hay tiền phạt từ cơ quan quản lý Môi trường.</p>
+                        <div class="mt-4">
+                            <div class="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                                <div class="gauge-green h-2.5 rounded-full" style="width: 100%;" title="Tuyệt đối an toàn"></div>
+                            </div>
+                            <p class="text-xs text-green-500 mt-1">**Tuyệt đối!** Đảm bảo tuân thủ Giấy phép Hóa chất và Xử lý Rác thải.</p>
+                        </div>
+                    </div>
+
+                    <!-- KPI 13: Tuân thủ Đạo đức (GRI 205-3) -->
+                    <div class="bg-gray-50 p-5 rounded-lg shadow-md border-t-4 border-green-500">
+                        <p class="text-lg font-medium text-gray-700">13. Số vụ Tham nhũng Xác nhận</p>
+                        <p class="text-3xl font-bold text-green-600 mt-2">0 Vụ</p>
+                        <p class="text-sm text-gray-500 mt-1">Không có sự cố tham nhũng/hối lộ được xác nhận nội bộ/bên ngoài.</p>
+                        <div class="mt-4">
+                            <div class="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                                <div class="gauge-green h-2.5 rounded-full" style="width: 100%;" title="Không vi phạm"></div>
+                            </div>
+                            <p class="text-xs text-green-500 mt-1">**Minh bạch.** Bảo trì chính sách không khoan nhượng.</p>
+                        </div>
+                    </div>
+
+                    <!-- KPI 14: Tỷ lệ NV Đào tạo Chống Tham nhũng (MỚI) -->
+                    <div class="bg-gray-50 p-5 rounded-lg shadow-md border-t-4 border-purple-500">
+                        <p class="text-lg font-medium text-gray-700">14. Đào tạo Chống Tham nhũng</p>
+                        <p class="text-3xl font-bold text-purple-600 mt-2">90%</p>
+                        <p class="text-sm text-gray-500 mt-1">**27/30** nhân viên đã hoàn thành và ký xác nhận Code of Conduct.</p>
+                        <div class="mt-4">
+                            <div class="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                                <div class="gauge-purple h-2.5 rounded-full" style="width: 90%;" title="Đạt 90% mục tiêu 100%"></div>
+                            </div>
+                            <p class="text-xs text-purple-500 mt-1">Cần thúc đẩy 3 nhân viên còn lại hoàn thành ngay trong tháng này.</p>
+                        </div>
+                    </div>
+
+                    <!-- KPI 15: Quản lý Rủi ro IPM (IFS Guideline) -->
+                    <div class="bg-gray-50 p-5 rounded-lg shadow-md border-t-4 border-yellow-500">
+                        <p class="text-lg font-medium text-gray-700">15. Tỷ lệ Site có Đánh giá Rủi ro</p>
+                        <p class="text-3xl font-bold text-yellow-600 mt-2">78%</p>
+                        <p class="text-sm text-gray-500 mt-1">**200/256** Khách hàng B2B có Hồ sơ Phân tích Nguy cơ (Hazard Analysis) cập nhật.</p>
+                        <div class="mt-4">
+                            <div class="h-2.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                                <div class="gauge-yellow h-2.5 rounded-full" style="width: 78%;" title="Cần tăng cường"></div>
+                            </div>
+                            <p class="text-xs text-yellow-600 mt-1">Cần hoàn thành 100% đánh giá rủi ro cho các site Nhà máy/Thực phẩm (IFS).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript for Tab Switching -->
+    <script>
+        // Hàm chuyển đổi giữa các tab
+        function openTab(tabId) {
+            // Ẩn tất cả nội dung tab
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.add('hidden');
+            });
+
+            // Xóa trạng thái active khỏi tất cả nút tab
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active', 'text-gray-700');
+                button.classList.add('text-gray-500');
+            });
+
+            // Hiển thị nội dung tab được chọn
+            const activePane = document.getElementById(tabId);
+            if (activePane) {
+                activePane.classList.remove('hidden');
+            }
+
+            // Đặt trạng thái active cho nút tab được chọn
+            const activeButton = document.querySelector(`.tab-button[data-tab-id="${tabId}"]`);
+            if (activeButton) {
+                activeButton.classList.add('active', 'text-gray-700');
+                activeButton.classList.remove('text-gray-500');
+            }
+        }
+
+        // Khởi tạo tab Môi trường (E) khi trang tải xong
+        document.addEventListener('DOMContentLoaded', () => {
+            openTab('environment');
+        });
+    </script>
+</body>
+</html>

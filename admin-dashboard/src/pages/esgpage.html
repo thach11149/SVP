@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESG Dashboard - Sao Việt Pest</title>
+    <!-- Tải Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Cấu hình Font Inter và màu sắc -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': '#059669', // Màu xanh lục đậm, thể hiện sự bền vững
+                        'secondary': '#fcd34d', // Màu vàng
+                        'background': '#f9fafb',
+                        'card-bg': '#ffffff',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Tùy chỉnh nhỏ cho hiệu ứng thẻ và shadow */
+        .card {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+        .tab-button {
+            transition: all 0.2s ease;
+            border-radius: 0.5rem 0.5rem 0 0;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .tab-button.active {
+            color: #059669;
+            border-bottom: 4px solid #059669;
+            background-color: #ffffff;
+        }
+        /* Style cho thanh tiến trình */
+        .progress-bar-fill {
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body class="font-sans bg-background p-4 sm:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- HEADER -->
+        <header class="mb-8 p-4 bg-white rounded-xl shadow-lg">
+            <h1 class="text-3xl font-extrabold text-primary flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3" viewBox="0 0 24 24" fill="currentColor">
+                    <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm4.28 10.28a.75.75 0 0 0 0-1.06l-3-3a.75.75 0 1 0-1.06 1.06l1.72 1.72H8.25a.75.75 0 0 0 0 1.5h5.47l-1.72 1.72a.75.75 0 1 0 1.06 1.06l3-3Z" clip-rule="evenodd" />
+                </svg>
+                Bảng Điều Khiển ESG (Environmental, Social, Governance)
+            </h1>
+            <p class="text-gray-600 mt-2">Dữ liệu theo dõi Bền vững năm 2024 (Baseline: 2023) | **Sao Việt Pest**</p>
+        </header>
+
+        <!-- NAVIGATION TABS -->
+        <div class="flex border-b border-gray-200 mb-6 bg-white rounded-t-xl shadow-sm">
+            <button class="tab-button active" data-tab="environment">1. Môi Trường (E)</button>
+            <button class="tab-button" data-tab="social">2. Xã Hội (S)</button>
+            <button class="tab-button" data-tab="governance">3. Quản Trị (G)</button>
+        </div>
+
+        <!-- TAB CONTENT -->
+        <div id="tab-content" class="p-6 bg-white rounded-b-xl rounded-tr-xl shadow-lg">
+
+            <!-- ENVIRONMENT TAB (E) -->
+            <div id="environment" class="tab-pane active grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- KPI 1.1: Lượng Hóa Chất Sử Dụng -->
+                <div class="card p-5 bg-card-bg rounded-xl border border-green-100">
+                    <h3 class="text-lg font-bold text-primary mb-2">1.1 Lượng Hóa Chất Sử Dụng (kg)</h3>
+                    <p class="text-gray-500 text-sm mb-3">**Tiêu chuẩn:** SASB EM-PM-110a.1</p>
+                    <div class="text-3xl font-extrabold text-gray-800">125.5 kg</div>
+                    <div class="text-sm text-red-500 mt-1">
+                        Tăng **+5.5%** so với Baseline (119 kg)
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-medium text-gray-700">Chỉ số Cường độ (kg/Dịch vụ):</label>
+                        <span class="text-xl font-semibold text-gray-700">0.051 kg/Dịch vụ</span>
+                    </div>
+                </div>
+
+                <!-- KPI 1.2: Mức độ Áp dụng IPM -->
+                <div class="card p-5 bg-card-bg rounded-xl border border-green-100">
+                    <h3 class="text-lg font-bold text-primary mb-2">1.2 Tỷ lệ Áp dụng IPM (%)</h3>
+                    <p class="text-gray-500 text-sm mb-3">**Tiêu chuẩn:** IFS Pest Control Guideline</p>
+                    <div class="text-3xl font-extrabold text-primary">85%</div>
+                    <div class="text-sm text-green-600 mt-1">
+                        Mục tiêu: **≥90%** | Tăng **+15%** so với Baseline
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-medium text-gray-700">Tiến trình đạt mục tiêu (90%):</label>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mt-1">
+                            <div class="progress-bar-fill bg-primary h-2.5 rounded-full" style="width: 85%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI 1.3: Khí thải GHG & Nhiên liệu -->
+                <div class="card p-5 bg-card-bg rounded-xl border border-green-100">
+                    <h3 class="text-lg font-bold text-primary mb-2">1.3 Phát thải GHG (tCO₂e)</h3>
+                    <p class="text-gray-500 text-sm mb-3">**Tiêu chuẩn:** GRI 305-1 (Scope 1 & 2)</p>
+                    <div class="text-3xl font-extrabold text-gray-800">4.7 tCO₂e</div>
+                    <div class="text-sm text-red-500 mt-1">
+                        Tăng **+1.2%** so với Baseline (4.65 tCO₂e)
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-medium text-gray-700">Tổng Nhiên liệu Tiêu thụ:</label>
+                        <span class="text-xl font-semibold text-gray-700">1,950 Lít</span>
+                    </div>
+                </div>
+
+                <!-- KPI 1.5: Chất thải nguy hại -->
+                <div class="card p-5 bg-card-bg rounded-xl border border-green-100">
+                    <h3 class="text-lg font-bold text-primary mb-2">1.5 Chất thải Nguy hại (kg)</h3>
+                    <p class="text-gray-500 text-sm mb-3">**Tiêu chuẩn:** GRI 306-1</p>
+                    <div class="text-3xl font-extrabold text-gray-800">18.2 kg</div>
+                    <div class="text-sm text-green-600 mt-1">
+                        Giảm **-8%** so với Baseline (19.8 kg)
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-medium text-gray-700">Tỷ lệ Tái chế Chất thải:</label>
+                        <span class="text-xl font-semibold text-gray-700">75%</span>
+                    </div>
+                </div>
+
+                <!-- KPI 1.4: Năng lượng tiêu thụ -->
+                <div class="card p-5 bg-card-bg rounded-xl border border-green-100">
+                    <h3 class="text-lg font-bold text-primary mb-2">1.4 Năng lượng Tiêu thụ (kWh)</h3>
+                    <p class="text-gray-500 text-sm mb-3">**Tiêu chuẩn:** GRI 302-1</p>
+                    <div class="text-3xl font-extrabold text-gray-800">8,500 kWh</div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        Đang theo dõi
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-medium text-gray-700">Năng lượng tái tạo:</label>
+                        <span class="text-xl font-semibold text-gray-700">0%</span>
+                    </div>
+                </div>
+
+                <!-- KPI 1.6: Vi phạm Môi trường -->
+                <div class="card p-5 bg-card-bg rounded-xl border border-green-100">
+                    <h3 class="text-lg font-bold text-primary mb-2">1.6 Vi phạm Môi trường</h3>
+                    <p class="text-gray-500 text-sm mb-3">**Tiêu chuẩn:** GRI 307-1</p>
+                    <div class="text-3xl font-extrabold text-primary">0</div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        Không có vụ việc nghiêm trọng
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-medium text-gray-700">Ghi chú:</label>
+                        <span class="text-sm font-semibold text-gray-700">0 cảnh cáo, 0 phạt hành chính</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SOCIAL TAB (S) -->
+            <div id="social" class="tab-pane hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- KPI 2.1: An toàn Sức khỏe Nghề nghiệp (TRIR) -->
+                <div class="card p-5 bg-card-bg rounded-xl border border-amber-100">
+                    <h3 class="text-lg font-bold text-secondary mb-2">2.1 Tỷ lệ Sự cố Ghi nhận (TRIR)</h3>
+                    <p class="text-gray-500 text-sm mb-3">**Tiêu chuẩn:** GRI 403-9</p>
+                    <div class="text-3xl font-extrabold text-gray-800">0.95</div>
+                    <div class="text-sm text-green-600 mt-1">
+                        Mục tiêu: **≤1.0** | Giảm **-5%** so với Baseline
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-medium text-gray-700">Số vụ Tai nạn Mất Thời gian (LTIFR):</label>
+                        <span class="text-xl font-semibold text-gray-700">0.0</span>
+                    </div>
+                </div>
+
+                <!-- KPI 2.2: Đào tạo và Năng lực -->
+                <div class="card p-5 bg-card-bg rounded-xl border border-amber-100">
+                    <h3 class="text-lg font-bold text-secondary mb-2">2.2 Giờ Đào tạo/Nhân viên (h)</h3>
+                    <p class="text-gray-500 text-sm mb-3">**Tiêu chuẩn:** GRI 404-1</p>
+                    <div class="text-3xl font-extrabold text-gray-800">24.5 giờ</div>
+                    <div class="text-sm text-green-600 mt-1">
+                        Mục tiêu: **≥20 giờ** | Tăng **+12%** so với Baseline
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-medium text-gray-700">% Hoàn thành khóa IPM:</label>
+                        <span class="text-xl font-semibold text-gray-700">98%</span>
+                    </div>
+                </div>
+
+                <!-- KPI 2.3: Hài lòng Khách hàng & Khiếu nại -->
+                <div class="card p-5 bg-card-bg rounded-xl border border-amber-100">
+                    <h3 class="text-lg font-bold text-secondary mb-2">2.3 Số Khiếu nại Dịch vụ</h3>
+                    <p class="text-gray-500 text-sm mb-3">**Tiêu chuẩn:** GRI 416-2</p>
+                    <div class="text-3xl font-extrabold text-gray-800">4 vụ</div>
+                    <div class="text-sm text-red-500 mt-1">
+                        Tăng **+1 vụ** so với Quý trước
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-medium text-gray-700">% Khắc phục Thành công:</label>
+                        <span class="text-xl font-semibold text-gray-700">100% (trong 3 ngày)</span>
+                    </div>
+                </div>
+
+                <!-- KPI 2.4: Giữ chân Nhân viên -->
+                <div class="card p-5 bg-card-bg rounded-xl border border-amber-100">
+                    <h3 class="text-lg font-bold text-secondary mb-2">2.4 Tỷ lệ Giữ chân Nhân viên (%)</h3>
+                    <p class="text-gray-500 text-sm mb-3">**Tiêu chuẩn:** GRI 401</p>
+                    <div class="text-3xl font-extrabold text-gray-800">88%</div>
+                    <div class="text-sm text-green-600 mt-1">
+                        Mục tiêu: **≥85%** | Tăng **+3%** so với Baseline
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-medium text-gray-700">Tỷ lệ Nữ/Tổng số nhân viên:</label>
+                        <span class="text-xl font-semibold text-gray-700">22%</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- GOVERNANCE TAB (G) -->
+            <div id="governance" class="tab-pane hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- KPI 3.1: Hệ thống Quản lý -->
+                <div class="card p-5 bg-card-bg rounded-xl border border-blue-100">
+                    <h3 class="text-lg font-bold text-blue-600 mb-2">3.1 Chứng nhận ISO</h3>
+                    <p class="text-gray-500 text-sm mb-3">**Tiêu chuẩn:** ISO 14001:2015, ISO 45001:2018</p>
+                    <div class="text-3xl font-extrabold text-blue-600">
+                        Đang Triển khai
+                    </div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        Dự kiến hoàn thành: Quý 4/2024
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-medium text-gray-700">Số cuộc Kiểm toán Nội bộ:</label>
+                        <span class="text-xl font-semibold text-gray-700">2/năm</span>
+                    </div>
+                </div>
+
+                <!-- KPI 3.2: Quản lý Rủi ro & IPM -->
+                <div class="card p-5 bg-card-bg rounded-xl border border-blue-100">
+                    <h3 class="text-lg font-bold text-blue-600 mb-2">3.2 % Đánh giá Rủi ro Hoàn chỉnh</h3>
+                    <p class="text-gray-500 text-sm mb-3">**Tiêu chuẩn:** IFS Pest Control Guideline</p>
+                    <div class="text-3xl font-extrabold text-gray-800">99%</div>
+                    <div class="text-sm text-green-600 mt-1">
+                        Mục tiêu: **100%** | Duy trì liên tục
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-medium text-gray-700">Quy trình Phân tích Nguy cơ (HA):</label>
+                        <span class="text-xl font-semibold text-gray-700">Áp dụng cho mọi Site</span>
+                    </div>
+                </div>
+
+                <!-- KPI 3.3: Đạo đức và Chống tham nhũng -->
+                <div class="card p-5 bg-card-bg rounded-xl border border-blue-100">
+                    <h3 class="text-lg font-bold text-blue-600 mb-2">3.3 Vi phạm Đạo đức/Tham nhũng</h3>
+                    <p class="text-gray-500 text-sm mb-3">**Tiêu chuẩn:** GRI 205-3</p>
+                    <div class="text-3xl font-extrabold text-blue-600">0</div>
+                    <div class="text-sm text-gray-600 mt-1">
+                        Không có sự cố được xác nhận
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs font-medium text-gray-700">% Đào tạo Chống Tham nhũng:</label>
+                        <span class="text-xl font-semibold text-gray-700">100% (Ban Lãnh đạo)</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+
+            // Hàm chuyển đổi tab
+            const switchTab = (targetTab) => {
+                // Ẩn tất cả tab pane và xóa trạng thái active của button
+                tabPanes.forEach(pane => pane.classList.add('hidden'));
+                tabButtons.forEach(button => {
+                    button.classList.remove('active', 'border-primary');
+                    button.classList.add('text-gray-500');
+                });
+
+                // Hiển thị tab được chọn và đánh dấu button
+                const activePane = document.getElementById(targetTab);
+                const activeButton = document.querySelector(`.tab-button[data-tab="${targetTab}"]`);
+
+                if (activePane) {
+                    activePane.classList.remove('hidden');
+                }
+
+                if (activeButton) {
+                    activeButton.classList.add('active');
+                    activeButton.classList.remove('text-gray-500');
+                }
+            };
+
+            // Lắng nghe sự kiện click cho các nút tab
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetTab = button.getAttribute('data-tab');
+                    switchTab(targetTab);
+                });
+            });
+
+            // Mặc định hiển thị tab Môi trường khi tải trang
+            switchTab('environment');
+        });
+    </script>
+</body>
+</html>

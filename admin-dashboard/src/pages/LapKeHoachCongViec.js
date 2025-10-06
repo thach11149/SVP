@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box, Typography, Paper, TextField, Select, MenuItem, FormControl, InputLabel,
-  RadioGroup, FormControlLabel, Radio, Checkbox, Button, Grid, Divider, Snackbar, Alert,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow
+  Box, Typography, Paper, Button, Grid, Snackbar, Alert
 } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import ChecklistPopup from '../components/ChecklistPopup';
+import ChecklistPopup from '../components/job/ChecklistPopup';
+import CustomerInfo from '../components/job/CustomerInfo';
+import JobInfo from '../components/job/JobInfo';
+import Materials from '../components/job/Materials';
+import TechnicianAssignment from '../components/job/TechnicianAssignment';
+import Checklist from '../components/job/Checklist';
 
 export default function LapKeHoachCongViec({ session }) {
   const [searchParams] = useSearchParams();
@@ -34,6 +37,8 @@ export default function LapKeHoachCongViec({ session }) {
   // Vật tư/hóa chất
   const [materialsList, setMaterialsList] = useState([]);
   const [selectedMaterials, setSelectedMaterials] = useState([]); // [{material_id, name, unit, category, required_quantity}]
+  // Service plan data
+  const [customerServicePlan, setCustomerServicePlan] = useState(null);
 
   useEffect(() => {
     console.log('Component mounted, starting data fetch...');
@@ -105,9 +110,30 @@ export default function LapKeHoachCongViec({ session }) {
       const preselectedCustomer = customers.find(c => c.id === preselectedCustomerId);
       if (preselectedCustomer) {
         setSelectedCustomer(preselectedCustomer);
+        fetchCustomerServicePlan(preselectedCustomer.id);
       }
     }
   }, [preselectedCustomerId, customers]);
+
+  // Fetch service plan data khi chọn customer
+  const fetchCustomerServicePlan = async (customerId) => {
+    try {
+      const { data, error } = await supabase
+        .from('customer_service_plans')
+        .select('*')
+        .eq('customer_id', customerId)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        console.error('Error fetching service plan:', error);
+      } else {
+        setCustomerServicePlan(data);
+      }
+    } catch (error) {
+      console.error('Error in fetchCustomerServicePlan:', error);
+      setCustomerServicePlan(null);
+    }
+  };
 
   const handleChecklistAdded = (newItems) => {
     // Refresh checklist sau khi thêm mới từ popup
@@ -130,28 +156,6 @@ export default function LapKeHoachCongViec({ session }) {
     });
   };
 
-  const filteredTechnicians = techniciansData.filter(
-    tech => {
-      if (!searchTech) return true;
-      const searchTerm = searchTech.toLowerCase();
-      return (
-        tech.name.toLowerCase().includes(searchTerm) ||
-        (tech.tech_code && tech.tech_code.toLowerCase().includes(searchTerm)) ||
-        tech.id.toString().toLowerCase().includes(searchTerm)
-      );
-    }
-  );
-
-  const filteredCustomers = customers.filter(c => {
-    if (!searchCustomer.trim()) return true;
-    
-    const searchTerm = searchCustomer.toLowerCase().trim();
-    const customerName = (c.name || '').toLowerCase();
-    const customerCode = (c.customer_code || '').toLowerCase();
-    
-    return customerName.includes(searchTerm) || customerCode.includes(searchTerm);
-  });
-
   // Function để format địa chỉ đầy đủ
   const formatFullAddress = (customer) => {
     if (!customer) return '';
@@ -163,6 +167,14 @@ export default function LapKeHoachCongViec({ session }) {
     if (customer.province_name) parts.push(customer.province_name);
     
     return parts.join(', ');
+  };
+
+  // Function để chuyển đổi ngày thành thứ trong tuần
+  const getDayOfWeek = (dateString) => {
+    if (!dateString) return 'Chưa cập nhật';
+    const date = new Date(dateString);
+    const daysOfWeek = ['Chủ Nhật ', 'Thứ 2 ', 'Thứ 3 ', 'Thứ 4 ', 'Thứ 5 ', 'Thứ 6 ', 'Thứ 7 '];
+    return daysOfWeek[date.getDay()];
   };
 
   const resetForm = () => {
@@ -339,312 +351,70 @@ export default function LapKeHoachCongViec({ session }) {
 
         <form onSubmit={handleSubmit}>
           <Grid container spacing={4} alignItems="stretch">
-            {/* Left Column */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              {/* Nhóm 1: Thông tin Khách hàng */}
-              <Paper variant="outlined" sx={{ p: 3, mb: 3 }}>
-                <Typography variant="h6" fontWeight={600} color="primary" gutterBottom>
-                  Nhóm 1: Thông tin Khách hàng
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-                
-                <TextField
-                  label="Tìm kiếm khách hàng"
-                  value={searchCustomer}
-                  onChange={e => setSearchCustomer(e.target.value)}
-                  fullWidth
-                  sx={{ mb: 2 }}
-                  placeholder="Nhập tên hoặc mã khách hàng..."
-                />
-                
-                <FormControl fullWidth required sx={{ mb: 2 }}>
-                  <InputLabel>Khách hàng *</InputLabel>
-                  <Select
-                    value={customer}
-                    onChange={e => {
-                      setCustomer(e.target.value);
-                      const cust = customers.find(c => c.id === e.target.value);
-                      setSelectedCustomer(cust || null);
-                    }}
-                    label="Khách hàng *"
-                  >
-                    <MenuItem value=""><em>-- Chọn khách hàng --</em></MenuItem>
-                    {filteredCustomers.map(c => (
-                      <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                <TextField
-                  label="Mã Khách hàng"
-                  value={selectedCustomer?.customer_code || ''}
-                  InputProps={{ readOnly: true }}
-                  fullWidth sx={{ mb: 2 }}
-                  variant="outlined"
-                />
-                {/* Thay TextField thành Typography cho các trường không sửa được */}
-                <Typography variant="body1" sx={{ mb: 1 }}>
-                  <strong>Người liên hệ:</strong> {selectedCustomer?.primary_contact_name || ''}
-                </Typography>
-                <Typography variant="body1" sx={{ mb: 1 }}>
-                  <strong>Chức vụ:</strong> {selectedCustomer?.primary_contact_position || ''}
-                </Typography>
-                <Typography variant="body1" sx={{ mb: 1 }}>
-                  <strong>Số điện thoại liên hệ:</strong> {selectedCustomer?.primary_contact_phone || ''}
-                </Typography>
-                <Typography variant="body1" sx={{ mb: 1 }}>
-                  <strong>Địa chỉ thực hiện:</strong> {formatFullAddress(selectedCustomer)}
-                </Typography>
-              </Paper>
-              {/* Nhóm 2: Thông tin Công việc */}
-              <Paper variant="outlined" sx={{ p: 3 }}>
-                <Typography variant="h6" fontWeight={600} color="success.main" gutterBottom>
-                  Nhóm 2: Thông tin Công việc
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-                <FormControl component="fieldset" sx={{ mb: 2 }}>
-                  <Typography fontWeight={500} mb={1}>Loại hình dịch vụ *</Typography>
-                  <RadioGroup
-                    row
-                    value={serviceType}
-                    onChange={e => setServiceType(e.target.value)}
-                  >
-                    <FormControlLabel value="Định kỳ" control={<Radio />} label="Định kỳ" />
-                    <FormControlLabel value="1 lần" control={<Radio />} label="1 lần" />
-                    <FormControlLabel value="SOS" control={<Radio />} label="SOS (Khẩn cấp)" />
-                  </RadioGroup>
-                </FormControl>
-                <TextField
-                  label="Ngày giờ thực hiện *"
-                  type="datetime-local"
-                  value={datetime}
-                  onChange={e => setDatetime(e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                  fullWidth sx={{ mb: 2 }}
-                  required
-                />
-                <TextField
-                  label="Nội dung công việc *"
-                  value={taskContent}
-                  onChange={e => setTaskContent(e.target.value)}
-                  multiline rows={4}
-                  fullWidth sx={{ mb: 2 }}
-                  required
-                  placeholder="Ví dụ: Kiểm tra vệ sinh bẫy đèn côn trùng, Bơm tổng thể khu vực kho..."
-                />
-                <TextField
-                  label="Yêu cầu/Lưu ý khác"
-                  value={notes}
-                  onChange={e => setNotes(e.target.value)}
-                  multiline rows={3}
-                  fullWidth sx={{ mb: 2 }}
-                  placeholder="Ghi chú các yêu cầu đặc biệt từ khách hàng hoặc lưu ý cho KTV..."
-                />
-              </Paper>
+            {/* 1. Thông tin khách hàng */}
+            <Grid size={{ xs: 12 }}>
+              <CustomerInfo
+                searchCustomer={searchCustomer}
+                setSearchCustomer={setSearchCustomer}
+                customer={customer}
+                setCustomer={setCustomer}
+                customers={customers}
+                selectedCustomer={selectedCustomer}
+                setSelectedCustomer={setSelectedCustomer}
+                customerServicePlan={customerServicePlan}
+                setCustomerServicePlan={setCustomerServicePlan}
+                fetchCustomerServicePlan={fetchCustomerServicePlan}
+                formatFullAddress={formatFullAddress}
+              />
             </Grid>
-            {/* Right Column */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              {/* Nhóm 3b: Vật tư/Hóa chất cần chuẩn bị */}
-              <Paper variant="outlined" sx={{ p: 3, mb: 3 }}>
-                <Typography variant="h6" fontWeight={600} color="info.main" gutterBottom>
-                  Nhóm 3b: Vật tư/Hóa chất cần chuẩn bị
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-                <TableContainer component={Paper} variant="outlined">
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell padding="checkbox">Chọn</TableCell>
-                        <TableCell>Tên vật tư</TableCell>
-                        <TableCell align="center">Số lượng</TableCell>
-                        <TableCell align="center">Đơn vị</TableCell>
-                        <TableCell>Ghi chú</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {materialsList.map(mat => {
-                        const selected = selectedMaterials.find(m => m.material_id === mat.id);
-                        return (
-                          <TableRow key={mat.id}>
-                            <TableCell padding="checkbox">
-                              <Checkbox
-                                checked={!!selected}
-                                onChange={e => {
-                                  if (e.target.checked) {
-                                    setSelectedMaterials([...selectedMaterials, {
-                                      material_id: mat.id,
-                                      name: mat.name,
-                                      unit: mat.unit,
-                                      category: mat.category,
-                                      required_quantity: 1,
-                                      notes: ''
-                                    }]);
-                                  } else {
-                                    setSelectedMaterials(selectedMaterials.filter(m => m.material_id !== mat.id));
-                                  }
-                                }}
-                              />
-                            </TableCell>
-                            <TableCell>{mat.name}</TableCell>
-                            <TableCell align="center">
-                              <TextField
-                                label="Số lượng"
-                                type="number"
-                                size="small"
-                                sx={{ width: 80 }}
-                                value={selected?.required_quantity || ''}
-                                disabled={!selected}
-                                onChange={e => {
-                                  const val = parseFloat(e.target.value) || 0;
-                                  setSelectedMaterials(selectedMaterials.map(m => m.material_id === mat.id ? { ...m, required_quantity: val } : m));
-                                }}
-                              />
-                            </TableCell>
-                            <TableCell align="center">{mat.unit}</TableCell>
-                            <TableCell>
-                              <TextField
-                                label="Ghi chú"
-                                size="small"
-                                fullWidth
-                                value={selected?.notes || ''}
-                                disabled={!selected}
-                                onChange={e => {
-                                  setSelectedMaterials(selectedMaterials.map(m => m.material_id === mat.id ? { ...m, notes: e.target.value } : m));
-                                }}
-                              />
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Paper>
-              {/* Nhóm 4: Phân công Nhân viên */}
-              <Paper variant="outlined" sx={{ p: 3 }}>
-                <Typography variant="h6" fontWeight={600} color="secondary" gutterBottom>
-                  Nhóm 4: Phân công Nhân viên
-                </Typography>
-                <Divider sx={{ mb: 2 }} />
-                <TextField
-                  label="Tìm kiếm nhân viên"
-                  value={searchTech}
-                  onChange={e => setSearchTech(e.target.value)}
-                  fullWidth
-                  sx={{ mb: 2 }}
-                  placeholder="Nhập tên hoặc mã nhân viên..."
-                />
-                <Box>
-                  {filteredTechnicians.map(tech => (
-                    <Box key={tech.id} sx={{ mb: 2, p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={technicians.includes(tech.id)}
-                            onChange={e => {
-                              if (e.target.checked) {
-                                // Nếu là người đầu tiên được chọn, tự động set làm lead
-                                if (technicians.length === 0) {
-                                  setTeamLead(tech.id);
-                                }
-                                setTechnicians([...technicians, tech.id]);
-                              } else {
-                                setTechnicians(technicians.filter(id => id !== tech.id));
-                                // Nếu bỏ chọn lead, reset teamLead
-                                if (teamLead === tech.id) {
-                                  setTeamLead('');
-                                }
-                              }
-                            }}
-                          />
-                        }
-                        label={
-                          <Box>
-                            <Typography fontWeight={500}>{tech.name}</Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              {tech.tech_code} - {tech.position}
-                            </Typography>
-                          </Box>
-                        }
-                        sx={{ mb: 1 }}
-                      />
-                    </Box>
-                  ))}
-                </Box>
-              </Paper>
+            {/* 2. Thông tin công việc */}
+            <Grid size={{ xs: 12 }}>
+              <JobInfo
+                customerServicePlan={customerServicePlan}
+                serviceType={serviceType}
+                setServiceType={setServiceType}
+                datetime={datetime}
+                setDatetime={setDatetime}
+                taskContent={taskContent}
+                setTaskContent={setTaskContent}
+                notes={notes}
+                setNotes={setNotes}
+                getDayOfWeek={getDayOfWeek}
+              />
+            </Grid>
+            {/* 3. Checklist Công việc (Tùy chọn) */}
+            <Grid size={{ xs: 12 }}>
+              <Checklist
+                checklistOptionsState={checklistOptionsState}
+                checklist={checklist}
+                setChecklist={setChecklist}
+                customChecklist={customChecklist}
+                setCustomChecklist={setCustomChecklist}
+                handleAddChecklist={handleAddChecklist}
+                setOpenChecklistPopup={setOpenChecklistPopup}
+              />
+            </Grid>
+            {/* 3b. Vật tư/Hóa chất cần chuẩn bị */}
+            <Grid size={{ xs: 12 }}>
+              <Materials
+                materialsList={materialsList}
+                selectedMaterials={selectedMaterials}
+                setSelectedMaterials={setSelectedMaterials}
+              />
+            </Grid>
+            {/* 4. Phân công Nhân viên */}
+            <Grid size={{ xs: 12 }}>
+              <TechnicianAssignment
+                searchTech={searchTech}
+                setSearchTech={setSearchTech}
+                technicians={technicians}
+                setTechnicians={setTechnicians}
+                teamLead={teamLead}
+                setTeamLead={setTeamLead}
+                techniciansData={techniciansData}
+              />
             </Grid>
           </Grid>
-
-          {/* Nhóm 3: Checklist Công việc - Chiếm 100% chiều rộng */}
-          <Paper variant="outlined" sx={{ p: 3, mt: 4 }}>
-            <Typography variant="h6" fontWeight={600} color="warning.main" gutterBottom>
-              Nhóm 3: Checklist Công việc (Tùy chọn)
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Grid container spacing={2}>
-              {/* Cột trái: Chọn checklist - Chiếm 60% */}
-              <Grid size={{ xs: 12, md: 7 }}>
-                <Typography variant="subtitle1" gutterBottom>Chọn checklist:</Typography>
-                <Box>
-                  {checklistOptionsState.map(opt => (
-                    <FormControlLabel
-                      key={opt.value}
-                      control={
-                        <Checkbox
-                          checked={checklist.includes(opt.value)}
-                          onChange={e => {
-                            if (e.target.checked) {
-                              setChecklist([...checklist, opt.value]);
-                            } else {
-                              setChecklist(checklist.filter(v => v !== opt.value));
-                            }
-                          }}
-                        />
-                      }
-                      label={opt.label}
-                      sx={{ display: 'block', mb: 0.5 }}  // Giảm margin bottom để gần nhau hơn
-                    />
-                  ))}
-                </Box>
-              </Grid>
-              {/* Cột phải: Hiển thị kết quả đã chọn - Chiếm 40% */}
-              <Grid size={{ xs: 12, md: 5 }}>
-                <Typography variant="subtitle1" gutterBottom>Đã chọn:</Typography>
-                <Box sx={{ p: 2, border: '1px solid #e0e0e0', borderRadius: 1, minHeight: 100 }}>
-                  {checklist.length > 0 ? (
-                    checklistOptionsState
-                      .filter(opt => checklist.includes(opt.value))
-                      .map((opt, index) => (
-                        <Typography key={opt.value} variant="body1">
-                          {/* Đổi từ body2 thành body1 để size chữ to bằng */}
-                          {index + 1}. {opt.label}
-                        </Typography>
-                      ))
-                  ) : (
-                    <Typography variant="body1" color="text.secondary">
-                      {/* Đổi từ body2 thành body1 */}
-                      Chưa chọn checklist nào.
-                    </Typography>
-                  )}
-                </Box>
-              </Grid>
-            </Grid>
-            <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-              <TextField
-                label="Thêm mục checklist"
-                value={customChecklist}
-                onChange={e => setCustomChecklist(e.target.value)}
-                size="small"
-                sx={{ flexGrow: 1 }}
-              />
-              <Button variant="contained" onClick={handleAddChecklist}>Thêm mục</Button>
-              <Button 
-                variant="outlined" 
-                onClick={() => setOpenChecklistPopup(true)}
-              >
-                Thêm nhiều
-              </Button>
-            </Box>
-          </Paper>
 
           {/* Nút tạo công việc */}
           <Box sx={{ mt: 4, textAlign: 'center' }}>

@@ -5,7 +5,7 @@ import {
   RadioGroup, FormControlLabel, Radio, Checkbox, Grid, Paper, Divider,
   Snackbar, Alert, Chip
 } from '@mui/material';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../supabaseClient';
 
 export default function JobFormDialog({ 
   open, 
@@ -335,6 +335,7 @@ export default function JobFormDialog({
         onClose={handleClose}
         maxWidth="lg"
         fullWidth
+        ModalProps={{ container: document.getElementById('root') }}
       >
         <DialogTitle>
           {editJob ? 'Chỉnh sửa Công việc' : 'Lập kế hoạch & Phân công Công việc'}

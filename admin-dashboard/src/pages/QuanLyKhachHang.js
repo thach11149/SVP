@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography, Container } from '@mui/material';
-import CustomerList from '../components/CustomerList';
+import CustomerList from '../components/customer/CustomerList';
 
 export default function QuanLyKhachHang() {
   return (

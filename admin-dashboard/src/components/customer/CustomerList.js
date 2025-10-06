@@ -1,15 +1,15 @@
 // src/components/CustomerList.js
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../supabaseClient';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button, Box, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Tooltip } from '@mui/material';
 import { Edit, Delete, Work } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import CustomerForm from './AddCustomerForm'; // Giữ import này
-import AlertMessage from './AlertMessage'; // Thêm import
-import provincesData from '../data/provinces.json';
-import districtsData from '../data/districts.json';
-import wardsData from '../data/wards.json';
+import AlertMessage from '../ui/AlertMessage'; // Thêm import
+import provincesData from '../../data/provinces.json';
+import districtsData from '../../data/districts.json';
+import wardsData from '../../data/wards.json';
 
 export default function CustomerList() {
   const navigate = useNavigate();
@@ -139,7 +139,7 @@ export default function CustomerList() {
         onConfirm={alert.onConfirm}
       />
 
-      <Dialog open={deleteDialog.open} onClose={handleCancelDelete}>
+      <Dialog open={deleteDialog.open} onClose={handleCancelDelete} ModalProps={{ container: document.getElementById('root') }}>
         <DialogTitle>Xác nhận xóa</DialogTitle>
         <DialogContent>
           Bạn có chắc chắn muốn xóa khách hàng này không?
@@ -172,7 +172,7 @@ export default function CustomerList() {
                 <TableCell sx={{ textAlign: 'center' }}>{customer.primary_contact_name}</TableCell>
                 <TableCell sx={{ textAlign: 'center' }}>{customer.primary_contact_phone}</TableCell>
                 <TableCell sx={{ textAlign: 'center' }}>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
                     <Tooltip title="Sửa thông tin">
                       <IconButton
                         size="small"
@@ -194,7 +194,7 @@ export default function CustomerList() {
                     </Tooltip>
                   </Box>
                   
-                  <Box sx={{ mt: 1 }}>
+                  <Box sx={{ mt: 1, display: 'flex', justifyContent: 'center' }}>
                     <Button
                       variant="outlined"
                       color="success"

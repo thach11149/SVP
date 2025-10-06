@@ -5,17 +5,21 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
-import ForgotPassword from './components/ForgotPassword';
-import ResetPassword from './components/ResetPassword';
+import ForgotPassword from './components/ui/ForgotPassword';
+import ResetPassword from './components/ui/ResetPassword';
 import LichLamViec from './pages/LichLamViec';
 import QuanLyKhachHang from './pages/QuanLyKhachHang';
 import LichThang from './pages/LichThang';
 import LapKeHoachCongViec from './pages/LapKeHoachCongViec';
 import ChecklistCongViec from './pages/ChecklistCongViec';
 import DanhSachCongViec from './pages/DanhSachCongViec';
-import Sidebar from './components/Sidebar';
+import Sidebar from './components/ui/Sidebar';
 import TestPage from './pages/TestPage';
 import KhoangCachDiChuyen from './pages/KhoangCachDiChuyen'; // Thêm import
+import ESGPage from './pages/ESGPage';
+import QuanLyTonKho from './pages/QuanLyTonKho';
+import DichVuKhachHang from './pages/DichVuKhachHang';
+import LapKeHoachGiaoViec from './pages/LapKeHoachGiaoViec';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -62,7 +66,7 @@ function App() {
             element={
               session ? (
                 <Box sx={{ display: 'flex', height: '100vh' }}>
-                  <Box sx={{ width: 240, borderRight: 1, borderColor: 'divider' }}>
+                  <Box>
                     <Sidebar session={session} />
                   </Box>
                   <Box sx={{ flex: 1, overflow: 'auto' }}>
@@ -77,6 +81,10 @@ function App() {
                       <Route path="/danh-sach-cong-viec" element={<DanhSachCongViec session={session} />} />
                       <Route path="/test" element={<TestPage />} />
                       <Route path="/khoang-cach-di-chuyen" element={<KhoangCachDiChuyen />} />  {/* Thêm route */}
+                      <Route path="/esg" element={<ESGPage />} />
+                      <Route path="/quan-ly-ton-kho" element={<QuanLyTonKho />} />
+                      <Route path="/dich-vu-khach-hang" element={<DichVuKhachHang session={session} />} />
+                      <Route path="/lap-ke-hoach-giao-viec" element={<LapKeHoachGiaoViec session={session} />} />
                     </Routes>
                   </Box>
                 </Box>

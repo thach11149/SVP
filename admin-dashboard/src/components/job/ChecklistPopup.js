@@ -6,7 +6,7 @@ import {
   IconButton, Paper
 } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../supabaseClient';
 
 export default function ChecklistPopup({ open, onClose, onChecklistAdded }) {
   const [newItems, setNewItems] = useState([]);

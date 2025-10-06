@@ -1,7 +1,7 @@
 // src/components/JobForm.js
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../supabaseClient';
 import {
   Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, Box,
   Select, MenuItem, FormControl, InputLabel, CircularProgress,
@@ -117,19 +117,19 @@ export default function JobForm({ open, onClose, onSave, onDelete, selectedSlot,
   return (
     <>
       {/* Dialog chính để tạo/sửa công việc */}
-      <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" ModalProps={{ container: document.getElementById('root') }}>
         <DialogTitle>{jobToEdit ? 'Sửa Công việc' : 'Tạo Công việc mới'}</DialogTitle>
         <Box component="form" onSubmit={handleSubmit}>
           <DialogContent>
             <FormControl fullWidth margin="dense">
               <InputLabel id="customer-select-label">Chọn Khách hàng</InputLabel>
-              <Select labelId="customer-select-label" name="customer_id" value={formData.customer_id} label="Chọn Khách hàng" onChange={handleChange} required>
+              <Select labelId="customer-select-label" name="customer_id" value={formData.customer_id} label="Chọn Khách hàng" onChange={handleChange} required MenuProps={{ container: document.getElementById('root') }}>
                 {customers.map(customer => (<MenuItem key={customer.id} value={customer.id}>{customer.name}</MenuItem>))}
               </Select>
             </FormControl>
             <FormControl fullWidth margin="dense">
               <InputLabel id="user-select-label">Gán cho Nhân viên</InputLabel>
-              <Select labelId="user-select-label" name="user_id" value={formData.user_id} label="Gán cho Nhân viên" onChange={handleChange} required>
+              <Select labelId="user-select-label" name="user_id" value={formData.user_id} label="Gán cho Nhân viên" onChange={handleChange} required MenuProps={{ container: document.getElementById('root') }}>
                 {users.map(user => (<MenuItem key={user.id} value={user.id}>{user.email}</MenuItem>))}
               </Select>
             </FormControl>
@@ -154,6 +154,7 @@ export default function JobForm({ open, onClose, onSave, onDelete, selectedSlot,
         onClose={handleCancelDelete}
         aria-labelledby="confirm-delete-dialog-title"
         aria-describedby="confirm-delete-dialog-description"
+        ModalProps={{ container: document.getElementById('root') }}
       >
         <DialogTitle id="confirm-delete-dialog-title">
           Xác nhận xóa

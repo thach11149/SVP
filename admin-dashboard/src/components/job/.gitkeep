@@ -1,0 +1,9 @@
+// Placeholder for job components directory
+// This directory contains all job-related UI components
+//
+// Structure:
+// - JobForm.js             - Job creation form
+// - JobDetailDialog.js     - Job details modal
+// - JobFormDialog.js       - Job form dialog
+// - ChecklistPopup.js      - Checklist item management popup
+// - ScheduleCalendar.js    - Job scheduling calendar component

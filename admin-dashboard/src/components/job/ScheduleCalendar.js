@@ -4,10 +4,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../../supabaseClient';
 import { Box, Typography } from '@mui/material';
 import JobForm from './JobForm';
-import AlertMessage from './AlertMessage'; // Import component thông báo
+import AlertMessage from '../ui/AlertMessage'; // Import component thông báo
 
 const localizer = momentLocalizer(moment);
 

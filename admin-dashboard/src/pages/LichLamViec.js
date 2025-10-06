@@ -5,7 +5,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { Box, Typography } from '@mui/material';
 import { supabase } from '../supabaseClient';
-import JobDetailDialog from '../components/JobDetailDialog';
+import JobDetailDialog from '../components/job/JobDetailDialog';
 
 export default function LichLamViec() {
   const [events, setEvents] = useState([]);

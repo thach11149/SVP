@@ -1,0 +1,14 @@
+// Backup Components Directory
+// This directory contains backup copies of components for reference and future use
+//
+// Files:
+// - AddCustomerForm copy 2.js: Backup version of AddCustomerForm component
+// - AddCustomerForm copy.js: Another backup version of AddCustomerForm component
+//
+// Purpose:
+// - Keep historical versions for rollback if needed
+// - Reference for future development
+// - Archive of component evolution
+//
+// Note: These files are not actively used in the application
+// They are kept for backup purposes only

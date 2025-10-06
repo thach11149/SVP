@@ -2,14 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, 
   TableHead, TableRow, Chip, IconButton, TextField, InputAdornment,
-  MenuItem, Select, FormControl, InputLabel, Grid, Dialog, DialogTitle,
+  MenuItem, Select, FormControl, InputLabel, Dialog, DialogTitle,
   DialogContent, DialogActions, Button, Snackbar, Alert
 } from '@mui/material';
 import { Search, Visibility, Edit, Delete, Add } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import JobFormDialog from '../components/JobFormDialog';
-import JobDetailDialog from '../components/JobDetailDialog';
+import JobFormDialog from '../components/job/JobFormDialog';
+import JobDetailDialog from '../components/job/JobDetailDialog';
 
 export default function DanhSachCongViec({ session }) {
   const navigate = useNavigate();
@@ -256,78 +256,75 @@ export default function DanhSachCongViec({ session }) {
           <Typography variant="h4" fontWeight={700} gutterBottom>
             Danh sách Công việc
           </Typography>
-          <Typography color="text.secondary">
-            Quản lý và theo dõi tất cả các công việc đã được tạo.
-          </Typography>
-        </Box>
-
-        {/* Filters */}
-        <Grid container spacing={2} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={6}>
-            <TextField
-              fullWidth
-              placeholder="Tìm kiếm theo nội dung công việc, tên khách hàng, mã khách hàng..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <FormControl fullWidth>
-              <InputLabel>Lọc theo trạng thái</InputLabel>
-              <Select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                label="Lọc theo trạng thái"
-              >
-                <MenuItem value="">Tất cả</MenuItem>
-                <MenuItem value="Mới tạo">Mới tạo</MenuItem>
-                <MenuItem value="Đang thực hiện">Đang thực hiện</MenuItem>
-                <MenuItem value="Hoàn thành">Hoàn thành</MenuItem>
-                <MenuItem value="Hủy">Hủy</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={3}>
-            <FormControl fullWidth>
-              <InputLabel>Lọc theo nhân viên</InputLabel>
-              <Select
-                value={technicianFilter}
-                onChange={(e) => setTechnicianFilter(e.target.value)}
-                label="Lọc theo nhân viên"
-              >
-                <MenuItem value="">Tất cả nhân viên</MenuItem>
-                {technicians.map(tech => (
-                  <MenuItem key={tech.id} value={tech.id}>
-                    {tech.name} ({tech.tech_code})
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={3}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography color="text.secondary">
+              Quản lý và theo dõi tất cả các công việc đã được tạo.
+            </Typography>
             <Button
               variant="contained"
               startIcon={<Add />}
               onClick={() => navigate('/lap-ke-hoach-cong-viec')}
-              fullWidth
-              sx={{ 
-                height: '56px',
+              sx={{
+                height: '40px',
                 borderRadius: 2,
                 textTransform: 'none',
-                fontSize: '1rem'
+                fontSize: '0.9rem',
+                px: 2
               }}
             >
               Thêm công việc
             </Button>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
+
+        {/* Filters */}
+        <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <TextField
+            placeholder="Tìm kiếm theo nội dung công việc, tên khách hàng, mã khách hàng..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{ 
+              flex: '1 1 400px',
+              minWidth: '400px'
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <FormControl sx={{ minWidth: 200, flex: '0 0 200px' }}>
+            <InputLabel>Lọc theo trạng thái</InputLabel>
+            <Select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              label="Lọc theo trạng thái"
+            >
+              <MenuItem value="">Tất cả</MenuItem>
+              <MenuItem value="Mới tạo">Mới tạo</MenuItem>
+              <MenuItem value="Đang thực hiện">Đang thực hiện</MenuItem>
+              <MenuItem value="Hoàn thành">Hoàn thành</MenuItem>
+              <MenuItem value="Hủy">Hủy</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl sx={{ minWidth: 200, flex: '0 0 200px' }}>
+            <InputLabel>Lọc theo nhân viên</InputLabel>
+            <Select
+              value={technicianFilter}
+              onChange={(e) => setTechnicianFilter(e.target.value)}
+              label="Lọc theo nhân viên"
+            >
+              <MenuItem value="">Tất cả nhân viên</MenuItem>
+              {technicians.map(tech => (
+                <MenuItem key={tech.id} value={tech.id}>
+                  {tech.name} ({tech.tech_code})
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
 
         {/* Results count */}
         <Box sx={{ mb: 2 }}>
@@ -419,6 +416,7 @@ export default function DanhSachCongViec({ session }) {
                       color="primary"
                       onClick={() => handleViewJob(job)}
                       title="Xem chi tiết"
+                      sx={{ mr: 1 }}
                     >
                       <Visibility />
                     </IconButton>
@@ -427,6 +425,7 @@ export default function DanhSachCongViec({ session }) {
                       color="warning"
                       onClick={() => handleEditJob(job)}
                       title="Chỉnh sửa"
+                      sx={{ mr: 1 }}
                     >
                       <Edit />
                     </IconButton>
@@ -481,6 +480,7 @@ export default function DanhSachCongViec({ session }) {
         <Dialog
           open={deleteDialogOpen}
           onClose={() => setDeleteDialogOpen(false)}
+          ModalProps={{ container: document.getElementById('root') }}
         >
           <DialogTitle>
             Xác nhận xóa công việc

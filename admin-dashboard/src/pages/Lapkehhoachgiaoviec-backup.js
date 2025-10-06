@@ -3,11 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Grid, TextField, Select, MenuItem, FormControl, InputLabel,
-  Button, Paper, Chip, Table, TableBody, TableCell, TableContainer,
+  Button, Paper, Chip, Alert, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Dialog, DialogTitle, DialogContent, DialogActions,
-  List, ListItem, ListItemText, ListItemButton
+  List, ListItem, ListItemText, ListItemButton, IconButton, Divider
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { supabase } from '../supabaseClient';
 
@@ -64,11 +65,11 @@ export default function TestPage() {
   const [jobs, setJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [services, setServices] = useState([]);
 
   useEffect(() => {
-    const fetchServicesAndJobs = async () => {
-      // Fetch services
-      const { data: servicesData, error: servicesError } = await supabase
+    const fetchServices = async () => {
+      const { data, error } = await supabase
         .from('customers')
         .select(`
           id, name, address, province_name,
@@ -77,42 +78,13 @@ export default function TestPage() {
           )
         `);
 
-      if (servicesError) {
-        console.error('Error fetching services:', servicesError);
-        return;
-      }
-
-      // Fetch existing jobs
-      const { data: jobsData, error: jobsError } = await supabase
-        .from('scheduled_jobs')
-        .select('*')
-        .order('scheduled_date', { ascending: true });
-
-      if (jobsError) {
-        console.error('Error fetching jobs:', jobsError);
-        return;
-      }
-
-      if (jobsData && jobsData.length > 0) {
-        // Convert to job format
-        const existingJobs = jobsData.map(job => ({
-          id: job.id,
-          customerId: job.customer_id,
-          clientName: job.customer_name,
-          date: new Date(job.scheduled_date),
-          status: job.status,
-          assignedTechs: job.assigned_technicians || [],
-          startTime: job.start_time || '08:00',
-          endTime: job.end_time || '10:00',
-          isDeleted: job.is_deleted || false,
-          deleteNote: job.delete_note || '',
-          serviceContent: job.service_content || ''
-        }));
-        setJobs(existingJobs);
+      if (error) {
+        console.error('Error fetching services:', error);
       } else {
-        // Auto generate jobs from services and insert to database
+        setServices(data || []);
+        // Auto generate jobs from services
         const generatedJobs = [];
-        servicesData.forEach(customer => {
+        data.forEach(customer => {
           customer.customer_service_plans?.forEach(plan => {
             if (plan.days_of_week && plan.frequency && plan.start_date && plan.end_date) {
               plan.days_of_week.forEach(day => {
@@ -122,52 +94,17 @@ export default function TestPage() {
                   new Date(plan.end_date),
                   day.toString(),
                   plan.frequency.toString()
-                ).map(job => ({
-                  ...job,
-                  customerId: customer.id,
-                  serviceContent: plan.service_types?.join(', ') || ''
-                }));
+                );
                 generatedJobs.push(...jobsForDay);
               });
             }
           });
         });
-
-        // Insert to database
-        if (generatedJobs.length > 0) {
-          const jobsToInsert = generatedJobs.map(job => ({
-            customer_id: job.customerId,
-            customer_name: job.clientName,
-            scheduled_date: job.date.toISOString().split('T')[0],
-            status: job.status,
-            assigned_technicians: job.assignedTechs,
-            start_time: job.startTime,
-            end_time: job.endTime,
-            is_deleted: job.isDeleted,
-            delete_note: job.deleteNote,
-            service_content: job.serviceContent
-          }));
-
-          const { data: insertedJobs, error: insertError } = await supabase
-            .from('scheduled_jobs')
-            .insert(jobsToInsert)
-            .select();
-
-          if (insertError) {
-            console.error('Error inserting jobs:', insertError);
-          } else {
-            // Set jobs with database ids
-            const jobsWithIds = insertedJobs.map((dbJob, index) => ({
-              ...generatedJobs[index],
-              id: dbJob.id
-            }));
-            setJobs(jobsWithIds);
-          }
-        }
+        setJobs(generatedJobs);
       }
     };
 
-    fetchServicesAndJobs();
+    fetchServices();
   }, []);
 
   const handleFormChange = (field, value) => {
@@ -191,29 +128,17 @@ export default function TestPage() {
   };
 
   const handleAssignTech = (techId, startTime, endTime) => {
-    const newAssigned = [...selectedJob.assignedTechs, { techId, startTime, endTime }];
     setJobs(prevJobs =>
       prevJobs.map(job =>
         job.id === selectedJob.id
           ? {
               ...job,
-              assignedTechs: newAssigned,
+              assignedTechs: [...job.assignedTechs, { techId, startTime, endTime }],
               status: 'assigned'
             }
           : job
       )
     );
-    // Update database
-    supabase
-      .from('scheduled_jobs')
-      .update({
-        assigned_technicians: newAssigned,
-        status: 'assigned'
-      })
-      .eq('id', selectedJob.id)
-      .then(({ error }) => {
-        if (error) console.error('Error updating job:', error);
-      });
     setAssignDialogOpen(false);
   };
 
@@ -227,44 +152,7 @@ export default function TestPage() {
             : job
         )
       );
-      // Update database
-      supabase
-        .from('scheduled_jobs')
-        .update({
-          is_deleted: true,
-          delete_note: note
-        })
-        .eq('id', jobId)
-        .then(({ error }) => {
-          if (error) console.error('Error updating job:', error);
-        });
     }
-  };
-
-  const handleRestoreJob = (jobId) => {
-    setJobs(prevJobs =>
-      prevJobs.map(job =>
-        job.id === jobId
-          ? { ...job, isDeleted: false, deleteNote: '' }
-          : job
-      )
-    );
-    // Update database
-    supabase
-      .from('scheduled_jobs')
-      .update({
-        is_deleted: false,
-        delete_note: ''
-      })
-      .eq('id', jobId)
-      .then(({ error }) => {
-        if (error) console.error('Error updating job:', error);
-      });
-  };
-
-  const handleSave = () => {
-    // Since auto-save is enabled, this button just confirms the data is saved
-    alert('Dữ liệu đã được lưu tự động. Không có thay đổi nào cần lưu thủ công.');
   };
 
   // Group jobs by date for display
@@ -371,7 +259,6 @@ export default function TestPage() {
               <TableRow>
                 <TableCell>Ngày</TableCell>
                 <TableCell>Khách Hàng</TableCell>
-                <TableCell>Nội Dung Công Việc</TableCell>
                 <TableCell>Trạng Thái</TableCell>
                 <TableCell>Nhân Viên Phân Bổ</TableCell>
                 <TableCell>Ghi Chú</TableCell>
@@ -395,7 +282,6 @@ export default function TestPage() {
                         {index === 0 && new Date(dateKey).toLocaleDateString('vi-VN')}
                       </TableCell>
                       <TableCell>{job.clientName}</TableCell>
-                      <TableCell sx={{ textDecoration: job.isDeleted ? 'line-through' : 'none' }}>{job.serviceContent || ''}</TableCell>
                       <TableCell>
                         <Chip
                           label={job.status === 'unassigned' ? 'Chưa Phân Bổ' : 'Đã Phân Bổ'}
@@ -460,11 +346,9 @@ export default function TestPage() {
                   <TableRow>
                     <TableCell>Ngày</TableCell>
                     <TableCell>Khách Hàng</TableCell>
-                    <TableCell>Nội Dung Công Việc</TableCell>
                     <TableCell>Trạng Thái</TableCell>
                     <TableCell>Nhân Viên Phân Bổ</TableCell>
                     <TableCell>Ghi Chú</TableCell>
-                    <TableCell>Thao Tác</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -472,7 +356,6 @@ export default function TestPage() {
                     <TableRow key={job.id}>
                       <TableCell>{job.date.toLocaleDateString('vi-VN')}</TableCell>
                       <TableCell sx={{ textDecoration: 'line-through' }}>{job.clientName}</TableCell>
-                      <TableCell sx={{ textDecoration: 'line-through' }}>{job.serviceContent || ''}</TableCell>
                       <TableCell>
                         <Chip
                           label={job.status === 'unassigned' ? 'Chưa Phân Bổ' : 'Đã Phân Bổ'}
@@ -494,16 +377,6 @@ export default function TestPage() {
                         })}
                       </TableCell>
                       <TableCell sx={{ textDecoration: 'line-through' }}>{job.deleteNote}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          color="primary"
-                          onClick={() => handleRestoreJob(job.id)}
-                        >
-                          Khôi phục
-                        </Button>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -511,18 +384,6 @@ export default function TestPage() {
             </TableContainer>
           </>
         )}
-
-        {/* Nút Lưu */}
-        <Box sx={{ mt: 3, textAlign: 'center' }}>
-          <Button
-            variant="contained"
-            color="success"
-            onClick={handleSave}
-            sx={{ px: 4, py: 1 }}
-          >
-            Lưu Dữ Liệu
-          </Button>
-        </Box>
 
         {/* Assignment Dialog */}
         <Dialog open={assignDialogOpen} onClose={() => setAssignDialogOpen(false)} maxWidth="sm" fullWidth>
