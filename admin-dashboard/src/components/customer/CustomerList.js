@@ -167,7 +167,6 @@ export default function CustomerList() {
                 <TableCell sx={{ textAlign: 'center' }}>{customer.customer_code}</TableCell>
                 <TableCell>
                   <Typography variant="body2" fontWeight="bold">{customer.name}</Typography>
-                  <Typography variant="body2" color="text.secondary">{getAddressString(customer)}</Typography>
                 </TableCell>
                 <TableCell sx={{ textAlign: 'center' }}>{customer.primary_contact_name}</TableCell>
                 <TableCell sx={{ textAlign: 'center' }}>{customer.primary_contact_phone}</TableCell>

@@ -5,10 +5,13 @@ import {
   Box, Typography, Grid, TextField, Select, MenuItem, FormControl, InputLabel,
   Button, Paper, Chip, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Dialog, DialogTitle, DialogContent, DialogActions,
-  List, ListItem, ListItemText, ListItemButton
+  List, ListItem, ListItemText, ListItemButton, IconButton
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import CloseIcon from '@mui/icons-material/Close';
+import CancelIcon from '@mui/icons-material/Cancel';
+import ClearIcon from '@mui/icons-material/Clear';
 import { supabase } from '../supabaseClient';
 
 const KTV_LIST = [
@@ -404,18 +407,43 @@ export default function TestPage() {
                         />
                       </TableCell>
                       <TableCell>
-                        {job.assignedTechs.map((tech, idx) => {
-                          const techInfo = KTV_LIST.find(t => t.id === tech.techId);
-                          return (
-                            <Box key={idx} sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                              <Chip
-                                label={`${techInfo?.name} (${tech.startTime}-${tech.endTime})`}
-                                sx={{ bgcolor: techInfo?.color, mr: 1, textDecoration: job.isDeleted ? 'line-through' : 'none' }}
-                                size="small"
-                              />
-                            </Box>
-                          );
-                        })}
+                        {/* Demo of different close icon styles */}
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Typography variant="body2" sx={{ mr: 1 }}>Trần Văn Hùng</Typography>
+                            <IconButton size="small" sx={{ p: 0.5 }}>
+                              <CloseIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Typography variant="body2" sx={{ mr: 1 }}>Trần Văn Hùng</Typography>
+                            <IconButton size="small" sx={{ p: 0 }}>
+                              <CloseIcon fontSize="inherit" />
+                            </IconButton>
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Typography variant="body2" sx={{ mr: 1 }}>Trần Văn Hùng</Typography>
+                            <IconButton size="small" sx={{ p: 0 }}>
+                              <CancelIcon fontSize="inherit" />
+                            </IconButton>
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Typography variant="body2" sx={{ mr: 1 }}>Trần Văn Hùng</Typography>
+                            <IconButton size="small" sx={{ p: 0 }}>
+                              <ClearIcon fontSize="inherit" />
+                            </IconButton>
+                          </Box>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Typography variant="body2" sx={{ mr: 1 }}>Trần Văn Hùng</Typography>
+                            <Typography variant="body2" sx={{ color: 'error.main', cursor: 'pointer', fontWeight: 'bold' }}>×</Typography>
+                          </Box>
+                          <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                            <Typography variant="body2">Trần Văn Hùng</Typography>
+                            <IconButton size="small" sx={{ position: 'absolute', top: -8, right: -8, p: 0 }}>
+                              <CloseIcon fontSize="inherit" />
+                            </IconButton>
+                          </Box>
+                        </Box>
                       </TableCell>
                       <TableCell sx={{ textDecoration: job.isDeleted ? 'line-through' : 'none' }}>
                         {job.deleteNote}

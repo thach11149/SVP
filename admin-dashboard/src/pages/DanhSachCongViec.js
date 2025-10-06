@@ -38,38 +38,14 @@ export default function DanhSachCongViec({ session }) {
       const { data, error } = await supabase
         .from('jobs')
         .select(`
-          id,
-          job_content,
-          service_type,
-          scheduled_date,
-          status,
-          notes,
-          created_at,
-          checklist,
-          team_lead_id,
+          *,
           customers (
             id,
             name,
-            customer_code,
-            address,
-            ward_name,
-            district_name,
-            province_name,
-            primary_contact_name,
-            primary_contact_phone
-          ),
-          job_assignments (
-            technicians (
-              id,
-              name,
-              tech_code,
-              email,
-              phone,
-              position
-            )
+            customer_code
           )
-        `)
-        .order('created_at', { ascending: false });
+        `)  // Bỏ JOIN job_assignments, dùng assigned_technicians JSONB trực tiếp từ jobs
+        .order('scheduled_date', { ascending: false });
 
       if (error) {
         console.error('Error fetching jobs:', error);
@@ -149,15 +125,16 @@ export default function DanhSachCongViec({ session }) {
   };
 
   const getTechniciansNames = (job) => {
-    if (!job.job_assignments || job.job_assignments.length === 0) {
+    if (!job.assigned_technicians || job.assigned_technicians.length === 0) {
       return 'Chưa phân công';
     }
     
     const teamLeadId = job.team_lead_id;
-    const techniciansNames = job.job_assignments
+    // Giả sử assigned_technicians là mảng [{technician_id: UUID, role: 'string', status: 'string', name: 'string'}]
+    const techniciansNames = job.assigned_technicians
       .map(assignment => {
-        const techName = assignment.technicians?.name || 'N/A';
-        const techId = assignment.technicians?.id;
+        const techName = assignment.name || 'N/A';
+        const techId = assignment.technician_id;
         const isTeamLead = techId === teamLeadId;
         return isTeamLead ? `${techName} (Team Lead)` : techName;
       })
@@ -234,8 +211,8 @@ export default function DanhSachCongViec({ session }) {
     const matchesStatus = !statusFilter || job.status === statusFilter;
     
     const matchesTechnician = !technicianFilter || 
-      (job.job_assignments && job.job_assignments.some(
-        assignment => assignment.technicians?.id === technicianFilter
+      (job.assigned_technicians && job.assigned_technicians.some(
+        assignment => assignment.technician_id === technicianFilter
       ));
     
     return matchesSearch && matchesStatus && matchesTechnician;

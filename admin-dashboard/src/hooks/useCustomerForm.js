@@ -65,29 +65,32 @@ export const useCustomerForm = (open, customerToEdit) => {
   useEffect(() => {
     if (open) {
       setProvinces(provincesData);
-      setFormData({
-        customer_type: 'company',
-        customer_code: '',
-        name: '',
-        tax_code: '',
-        primary_contact_name: '',
-        primary_contact_position: '',
-        primary_contact_phone: '',
-        primary_contact_email: '',
-        address: '',
-        ward: '',
-        district: '',
-        province: '',
-        site_contact_name: '',
-        site_contact_position: '',
-        site_contact_phone: '',
-        notes: '',
-        google_map_code: '',
-        service_types: [],
-        plan: 'Lịch Định kỳ'
-      });
+      // Only reset formData if not editing (no customerToEdit)
+      if (!customerToEdit?.id) {
+        setFormData({
+          customer_type: 'company',
+          customer_code: '',
+          name: '',
+          tax_code: '',
+          primary_contact_name: '',
+          primary_contact_position: '',
+          primary_contact_phone: '',
+          primary_contact_email: '',
+          address: '',
+          ward: '',
+          district: '',
+          province: '',
+          site_contact_name: '',
+          site_contact_position: '',
+          site_contact_phone: '',
+          notes: '',
+          google_map_code: '',
+          service_types: [],
+          plan: 'Lịch Định kỳ'
+        });
+      }
     }
-  }, [open]);
+  }, [open, customerToEdit?.id]);
 
   // Auto-generate customer code
   useEffect(() => {
@@ -132,15 +135,7 @@ export const useCustomerForm = (open, customerToEdit) => {
   useEffect(() => {
     if (customerToEdit?.id) {
       console.log('Loading customer:', customerToEdit);
-      // Map province and district names to codes
-      const provinceObj = provincesData.find(p => p.name === customerToEdit.province);
-      const provinceCode = provinceObj ? provinceObj.code : customerToEdit.province;
-      const districtObj = districtsData.find(d => d.name === customerToEdit.district && d.province_code === provinceCode);
-      const districtCode = districtObj ? districtObj.code : customerToEdit.district;
-      const wardObj = wardsData.find(w => w.name === customerToEdit.ward && w.district_code === districtCode);
-      const wardCode = wardObj ? wardObj.code : customerToEdit.ward;
-
-      // Load customer data
+      // Load customer basic info
       setFormData({
         customer_type: customerToEdit.customer_type,
         customer_code: customerToEdit.customer_code,
@@ -150,37 +145,76 @@ export const useCustomerForm = (open, customerToEdit) => {
         primary_contact_position: customerToEdit.primary_contact_position,
         primary_contact_phone: customerToEdit.primary_contact_phone,
         primary_contact_email: customerToEdit.primary_contact_email,
-        address: customerToEdit.address,
-        ward: wardCode,
-        district: districtCode,
-        province: provinceCode,
-        site_name: customerToEdit.site_name || '',
-        site_contact_name: customerToEdit.site_contact_name,
-        site_contact_position: customerToEdit.site_contact_position,
-        site_contact_phone: customerToEdit.site_contact_phone,
         notes: customerToEdit.notes,
-        google_map_code: customerToEdit.google_map_code,
-        distance_km: customerToEdit.distance_km || ''
+        // Site info will be loaded separately
+        site_name: '',
+        address: '',
+        province: '',
+        district: '',
+        ward: '',
+        google_map_code: '',
+        distance_km: '',
+        site_contact_name: '',
+        site_contact_position: '',
+        site_contact_phone: ''
       });
+
+      // Load site info
+      const loadSite = async () => {
+        const { data: siteData, error: siteError } = await supabase
+          .from('customer_sites')
+          .select('*')
+          .eq('customer_id', customerToEdit.id)
+          .limit(1);
+        if (siteData && siteData.length > 0 && !siteError) {
+          const site = siteData[0];
+          setFormData(prev => ({
+            ...prev,
+            site_name: site.site_name || '',
+            address: site.address || '',
+            province: site.province || '',
+            district: site.district || '',
+            ward: site.ward || '',
+            google_map_code: site.google_map_code || '',
+            site_contact_name: site.site_contact_name || '',
+            site_contact_position: site.site_contact_position || '',
+            site_contact_phone: site.site_contact_phone || ''
+          }));
+
+          // Load distance for this site
+          const { data: distanceData } = await supabase
+            .from('distances')
+            .select('khoang_cach')
+            .eq('diem_di', 'Công ty')
+            .eq('diem_den', site.site_name)
+            .limit(1);
+          if (distanceData && distanceData.length > 0) {
+            setFormData(prev => ({
+              ...prev,
+              distance_km: distanceData[0].khoang_cach?.toString() || ''
+            }));
+          }
+        }
+      };
 
       // Load service plan
       const loadServicePlan = async () => {
-        const { data, error } = await supabase
+        const { data: planData, error: planError } = await supabase
           .from('customer_service_plans')
           .select('*')
           .eq('customer_id', customerToEdit.id)
-          .single();
-        console.log('Load service plan data:', data, 'error:', error);
-        if (data && !error) {
+          .limit(1);
+        console.log('Load service plan data:', planData, 'error:', planError);
+        if (planData && planData.length > 0 && !planError) {
           setServicePlanData({
-            service_types: data.service_types || [],
-            plan: data.plan || 'Lịch Định kỳ',
-            days_of_week: data.days_of_week || [],
-            frequency: data.frequency || 'Hàng tuần',
-            start_date: data.start_date || '',
-            end_date: data.end_date || '',
-            report_date: data.report_date || '',
-            report_frequency: data.report_frequency || '1 tuần/lần',
+            service_types: planData[0].service_types || [],
+            plan: planData[0].plan || 'Lịch Định kỳ',
+            days_of_week: planData[0].days_of_week || [],
+            frequency: planData[0].frequency || 'Hàng tuần',
+            start_date: planData[0].start_date || '',
+            end_date: planData[0].end_date || '',
+            report_date: planData[0].report_date || '',
+            report_frequency: planData[0].report_frequency || '1 tuần/lần',
           });
         } else {
           setServicePlanData({
@@ -195,6 +229,7 @@ export const useCustomerForm = (open, customerToEdit) => {
           });
         }
       };
+      loadSite();
       loadServicePlan();
     }
   }, [customerToEdit]);
@@ -331,17 +366,7 @@ export const useCustomerForm = (open, customerToEdit) => {
           primary_contact_position: formData.primary_contact_position,
           primary_contact_phone: formData.primary_contact_phone,
           primary_contact_email: formData.primary_contact_email,
-          address: formData.address,
-          ward: formData.ward,
-          district: formData.district,
-          province: formData.province,
-          site_name: formData.site_name,
-          site_contact_name: formData.site_contact_name,
-          site_contact_position: formData.site_contact_position,
-          site_contact_phone: formData.site_contact_phone,
-          notes: formData.notes,
-          google_map_code: formData.google_map_code,
-          distance_km: formData.distance_km
+          notes: formData.notes
         };
         const { data: customer, error: customerError } = await supabase
           .from('customers')
@@ -361,17 +386,7 @@ export const useCustomerForm = (open, customerToEdit) => {
           primary_contact_position: formData.primary_contact_position,
           primary_contact_phone: formData.primary_contact_phone,
           primary_contact_email: formData.primary_contact_email,
-          address: formData.address,
-          ward: formData.ward,
-          district: formData.district,
-          province: formData.province,
-          site_name: formData.site_name,
-          site_contact_name: formData.site_contact_name,
-          site_contact_position: formData.site_contact_position,
-          site_contact_phone: formData.site_contact_phone,
-          notes: formData.notes,
-          google_map_code: formData.google_map_code,
-          distance_km: formData.distance_km
+          notes: formData.notes
         };
         const { error: customerError } = await supabase
           .from('customers')
@@ -380,39 +395,46 @@ export const useCustomerForm = (open, customerToEdit) => {
         if (customerError) throw customerError;
       }
 
-      // Save service plan
-      const servicePlan = {
+      // Save site info
+      const siteData = {
         customer_id: customerId,
-        service_types: servicePlanData.service_types,
-        plan: servicePlanData.plan,
-        days_of_week: servicePlanData.plan === 'Lịch Định kỳ' ? servicePlanData.days_of_week : null,
-        frequency: servicePlanData.plan === 'Lịch Định kỳ' ? servicePlanData.frequency : null,
-        start_date: servicePlanData.start_date || null,
-        end_date: servicePlanData.end_date || null,
-        report_date: servicePlanData.report_date || null,
-        report_frequency: servicePlanData.plan === 'Lịch Định kỳ' ? servicePlanData.report_frequency : null,
+        site_name: formData.site_name,
+        address: formData.address,
+        province: formData.province,
+        district: formData.district,
+        ward: formData.ward,
+        google_map_code: formData.google_map_code,
+        site_contact_name: formData.site_contact_name,
+        site_contact_position: formData.site_contact_position,
+        site_contact_phone: formData.site_contact_phone
+        // Removed distance_km, stored in distances table
       };
 
-      const { data: existingPlan } = await supabase
-        .from('customer_service_plans')
+      const { data: existingSite } = await supabase
+        .from('customer_sites')
         .select('*')
         .eq('customer_id', customerId)
         .limit(1);
 
-      let planError;
-      if (existingPlan && existingPlan.length > 0) {
-        const { error } = await supabase
-          .from('customer_service_plans')
-          .update(servicePlan)
-          .eq('customer_id', customerId);
-        planError = error;
+      let siteId;
+      if (existingSite && existingSite.length > 0) {
+        // Update existing site
+        const { error: siteError } = await supabase
+          .from('customer_sites')
+          .update(siteData)
+          .eq('id', existingSite[0].id);
+        if (siteError) throw siteError;
+        siteId = existingSite[0].id;
       } else {
-        const { error } = await supabase
-          .from('customer_service_plans')
-          .insert([servicePlan]);
-        planError = error;
+        // Insert new site
+        const { data: newSite, error: siteError } = await supabase
+          .from('customer_sites')
+          .insert([siteData])
+          .select('id')
+          .single();
+        if (siteError) throw siteError;
+        siteId = newSite.id;
       }
-      if (planError) throw planError;
 
       // Save distance if site_name and distance_km are provided
       if (formData.site_name && formData.distance_km) {
@@ -432,22 +454,53 @@ export const useCustomerForm = (open, customerToEdit) => {
           .eq('diem_den', formData.site_name)
           .limit(1);
 
-        let distanceError;
         if (existingDistance && existingDistance.length > 0) {
           // Update existing
           const { error } = await supabase
             .from('distances')
             .update(distanceData)
             .eq('id', existingDistance[0].id);
-          distanceError = error;
+          if (error) throw error;
         } else {
           // Insert new
           const { error } = await supabase
             .from('distances')
             .insert([distanceData]);
-          distanceError = error;
+          if (error) throw error;
         }
-        if (distanceError) throw distanceError;
+      }
+
+      // Save service plan
+      const servicePlan = {
+        customer_id: customerId,
+        site_id: siteId,
+        service_types: servicePlanData.service_types,
+        plan: servicePlanData.plan,
+        days_of_week: servicePlanData.plan === 'Lịch Định kỳ' ? servicePlanData.days_of_week : null,
+        frequency: servicePlanData.plan === 'Lịch Định kỳ' ? servicePlanData.frequency : null,
+        start_date: servicePlanData.start_date || null,
+        end_date: servicePlanData.end_date || null,
+        report_date: servicePlanData.report_date || null,
+        report_frequency: servicePlanData.plan === 'Lịch Định kỳ' ? servicePlanData.report_frequency : null,
+      };
+
+      const { data: existingPlan } = await supabase
+        .from('customer_service_plans')
+        .select('*')
+        .eq('customer_id', customerId)
+        .limit(1);
+
+      if (existingPlan && existingPlan.length > 0) {
+        const { error } = await supabase
+          .from('customer_service_plans')
+          .update(servicePlan)
+          .eq('id', existingPlan[0].id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('customer_service_plans')
+          .insert([servicePlan]);
+        if (error) throw error;
       }
 
       showAlert('Thành công!', 'success');

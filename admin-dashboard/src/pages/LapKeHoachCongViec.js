@@ -210,6 +210,17 @@ export default function LapKeHoachCongViec({ session }) {
         .map(tech => tech.name);
       const teamMembersString = selectedTechNames.length > 1 ? selectedTechNames.join(', ') : null;
       
+      // Populate assigned_technicians JSONB (thay thế job_assignments)
+      const assignedTechnicians = technicians.map(techId => {
+        const tech = techniciansData.find(t => t.id === techId);
+        return {
+          technician_id: techId,
+          role: techId === teamLead ? 'lead' : 'member',
+          status: 'assigned',
+          name: tech?.name || 'N/A'  // Populate name để tránh JOIN phức tạp
+        };
+      });
+      
       // Tạo một job chung cho tất cả technicians
       const jobData = {
         customer_id: customer,
@@ -224,11 +235,14 @@ export default function LapKeHoachCongViec({ session }) {
         contact_person: selectedCustomer?.primary_contact_name || '',
         contact_phone: selectedCustomer?.primary_contact_phone || '',
         address: formatFullAddress(selectedCustomer),
-        checklist: checklist,
+        checklist: checklist,  // Array, Supabase sẽ tự chuyển JSONB
         status: 'Đã giao',
         team_members: teamMembersString,
         team_lead_id: teamLead || null,
-        team_size: technicians.length
+        team_size: technicians.length,
+        assigned_technicians: assignedTechnicians,  // Populate đầy đủ
+        start_time: null,  // Set null nếu không có logic cụ thể
+        end_time: null     // Set null nếu không có logic cụ thể
       };
 
       // Lưu công việc vào bảng jobs
@@ -242,39 +256,7 @@ export default function LapKeHoachCongViec({ session }) {
         throw new Error(`Lỗi khi tạo công việc: ${jobError.message}`);
       }
 
-      // Tạo job assignments cho từng technician
-      const assignmentPromises = technicians.map(async (technicianUserId) => {
-        // Lấy technician record từ user_id
-        const { data: techData, error: techError } = await supabase
-          .from('technicians')
-          .select('id')
-          .eq('user_id', technicianUserId)
-          .single();
-
-        if (techError || !techData) {
-          throw new Error(`Không tìm thấy technician record cho user ${technicianUserId}: ${techError?.message}`);
-        }
-
-        const assignmentData = {
-          job_id: jobResult.id,
-          technician_id: techData.id, // Sử dụng technicians.id
-          role: technicianUserId === teamLead ? 'lead' : 'member',
-          status: 'assigned'
-        };
-
-        const { error: assignmentError } = await supabase
-          .from('job_assignments')
-          .insert([assignmentData]);
-
-        if (assignmentError) {
-          throw new Error(`Lỗi khi phân công cho technician ${technicianUserId}: ${assignmentError.message}`);
-        }
-
-        return assignmentData;
-      });
-
-      // Chờ tất cả assignments được tạo
-      await Promise.all(assignmentPromises);
+      // Bỏ insert job_assignments (đã thay bằng assigned_technicians)
 
       // Lưu checklist vào bảng job_checklist_items
       if (jobResult && jobResult.id && checklist.length > 0) {
@@ -305,7 +287,8 @@ export default function LapKeHoachCongViec({ session }) {
       resetForm();
 
     } catch (error) {
-      setSnackbar({ open: true, type: 'error', message: 'Có lỗi không mong muốn xảy ra. Vui lòng thử lại.' });
+      console.error('Error in handleSubmit:', error);
+      setSnackbar({ open: true, type: 'error', message: `Có lỗi xảy ra: ${error.message}` });
     }
   };
 

@@ -20,6 +20,7 @@ import ESGPage from './pages/ESGPage';
 import QuanLyTonKho from './pages/QuanLyTonKho';
 import DichVuKhachHang from './pages/DichVuKhachHang';
 import LapKeHoachGiaoViec from './pages/LapKeHoachGiaoViec';
+import RoleManagement from './pages/RoleManagement';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -85,6 +86,7 @@ function App() {
                       <Route path="/quan-ly-ton-kho" element={<QuanLyTonKho />} />
                       <Route path="/dich-vu-khach-hang" element={<DichVuKhachHang session={session} />} />
                       <Route path="/lap-ke-hoach-giao-viec" element={<LapKeHoachGiaoViec session={session} />} />
+                      <Route path="/role-management" element={<RoleManagement session={session} />} /> {/* Thêm route cho RoleManagement */}
                     </Routes>
                   </Box>
                 </Box>

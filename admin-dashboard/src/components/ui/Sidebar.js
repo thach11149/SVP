@@ -13,6 +13,7 @@ import MapIcon from '@mui/icons-material/Map'; // Import icon for Khoảng cách
 import NatureIcon from '@mui/icons-material/Nature'; // Import icon for ESG
 import InventoryIcon from '@mui/icons-material/Inventory'; // Import icon for Quản lý tồn kho
 import ScheduleIcon from '@mui/icons-material/Schedule'; // Import icon for Lập kế hoạch giao việc
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'; // Import icon for Role Management
 
 function Sidebar({ session }) {
   const navigate = useNavigate();
@@ -142,6 +143,15 @@ function Sidebar({ session }) {
               <InventoryIcon />
             </ListItemIcon>
             <ListItemText primary="Quản lý Tồn kho" sx={{ whiteSpace: 'nowrap' }} />
+          </ListItemButton>
+        </ListItem>
+
+        <ListItem>
+          <ListItemButton component={Link} to="/role-management" sx={{ bgcolor: location.pathname === '/role-management' ? 'rgba(255, 0, 0, 0.1)' : 'transparent', width: '100%' }}>
+            <ListItemIcon>
+              <AdminPanelSettingsIcon />
+            </ListItemIcon>
+            <ListItemText primary="Quản Lý Quyền" sx={{ whiteSpace: 'nowrap' }} />
           </ListItemButton>
         </ListItem>
 
