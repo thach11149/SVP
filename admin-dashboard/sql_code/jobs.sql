@@ -30,7 +30,6 @@ create table public.jobs (
   constraint jobs_new_pkey primary key (id),
   constraint jobs_new_created_by_fkey foreign KEY (created_by) references auth.users (id) on delete set null,
   constraint jobs_new_customer_id_fkey foreign KEY (customer_id) references customers (id) on delete CASCADE,
-  constraint jobs_new_team_lead_id_fkey foreign KEY (team_lead_id) references technicians (id) on delete set null,
   constraint jobs_new_status_check check (
     (
       status = any (

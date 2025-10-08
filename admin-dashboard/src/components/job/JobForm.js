@@ -1,178 +1,104 @@
 // src/components/JobForm.js
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../supabaseClient';
 import {
-  Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, Box,
-  Select, MenuItem, FormControl, InputLabel, CircularProgress,
-  DialogContentText
+  Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Grid
 } from '@mui/material';
-import moment from 'moment';
 
-export default function JobForm({ open, onClose, onSave, onDelete, selectedSlot, jobToEdit, showAlert, setAlert }) {
-  const [loading, setLoading] = useState(false);
-  const [customers, setCustomers] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false); // State cho popup xác nhận xóa
+export default function JobForm({ open, onClose, onSave, jobToEdit }) {
   const [formData, setFormData] = useState({
-    customer_id: '', user_id: '', job_description: '', scheduled_date: null
+    clientName: '',
+    serviceContent: '',
+    startTime: '08:00',
+    endTime: '10:00',
+    notes: ''
   });
 
   useEffect(() => {
-    async function fetchData() {
-      const { data: customersData } = await supabase.from('customers').select('id, name');
-      setCustomers(customersData || []);
-
-      const { data: usersData, error: usersError } = await supabase.rpc('get_all_users');
-      if (usersError) {
-          console.error('Lỗi lấy danh sách nhân viên:', usersError);
-      } else {
-          setUsers(usersData || []);
-      }
-    }
-    if (open) fetchData();
-  }, [open]);
-  
-  useEffect(() => {
     if (jobToEdit) {
-      // Chỉ điền formData khi customers và users đã được load
-      if (customers.length > 0 && users.length > 0) {
-        setFormData({
-          customer_id: jobToEdit.resource.customer_id || '',
-          user_id: jobToEdit.resource.user_id || '',
-          job_description: jobToEdit.resource.job_description || '',
-          scheduled_date: jobToEdit.resource.scheduled_date || null,
-        });
-      }
-    } else if (selectedSlot) {
       setFormData({
-        customer_id: '', user_id: '', job_description: '', scheduled_date: selectedSlot.start
+        clientName: jobToEdit.clientName || '',
+        serviceContent: jobToEdit.serviceContent || '',
+        startTime: jobToEdit.startTime || '08:00',
+        endTime: jobToEdit.endTime || '10:00',
+        notes: jobToEdit.notes || ''
       });
     }
-  }, [jobToEdit, selectedSlot, open, customers, users]); // Thêm customers và users vào dependency
+  }, [jobToEdit]);
 
-  const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleChange = (field, value) => {
+    setFormData({ ...formData, [field]: value });
   };
 
-  // Mở popup xác nhận xóa
-  const handleDelete = () => {
-    setConfirmDeleteOpen(true);
-  };
-
-  // Xác nhận xóa
-  const handleConfirmDelete = async () => {
-    try {
-      const jobId = jobToEdit?.id;
-      if (!jobId) {
-        showAlert && showAlert('Không tìm thấy ID công việc để xóa!', 'error');
-        setConfirmDeleteOpen(false);
-        return;
-      }
-      
-      await onDelete(jobId);
-      setConfirmDeleteOpen(false);
-      onClose();
-      
-      // Hiện AlertMessage thông báo xóa thành công
-      setAlert && setAlert({ type: 'success', message: 'Xóa công việc thành công!' });
-      
-    } catch (error) {
-      showAlert && showAlert('Lỗi khi xóa: ' + error.message, 'error');
-      setConfirmDeleteOpen(false);
-    }
-  };
-
-  // Hủy xóa
-  const handleCancelDelete = () => {
-    setConfirmDeleteOpen(false);
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-    try {
-      let savedData;
-      const { id, ...restOfFormData } = formData;
-      if (jobToEdit) {
-        const { data, error } = await supabase.from('jobs').update(restOfFormData).eq('id', jobToEdit.id).select('*, customers(name)').single();
-        if (error) throw error;
-        savedData = data;
-        showAlert && showAlert('Cập nhật công việc thành công!', 'success');
-      } else {
-        const { data, error } = await supabase.from('jobs').insert([formData]).select('*, customers(name)').single();
-        if (error) throw error;
-        savedData = data;
-        showAlert && showAlert('Tạo công việc thành công!', 'success');
-      }
-      onSave(savedData);
-      onClose();
-    } catch (error) {
-      showAlert && showAlert('Lỗi: ' + error.message, 'error');
-    } finally {
-      setLoading(false);
+    if (jobToEdit) {
+      onSave({ ...jobToEdit, ...formData }); // Gọi onSave với dữ liệu đã cập nhật
     }
+    onClose();
   };
 
   return (
-    <>
-      {/* Dialog chính để tạo/sửa công việc */}
-      <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" ModalProps={{ container: document.getElementById('root') }}>
-        <DialogTitle>{jobToEdit ? 'Sửa Công việc' : 'Tạo Công việc mới'}</DialogTitle>
-        <Box component="form" onSubmit={handleSubmit}>
-          <DialogContent>
-            <FormControl fullWidth margin="dense">
-              <InputLabel id="customer-select-label">Chọn Khách hàng</InputLabel>
-              <Select labelId="customer-select-label" name="customer_id" value={formData.customer_id} label="Chọn Khách hàng" onChange={handleChange} required MenuProps={{ container: document.getElementById('root') }}>
-                {customers.map(customer => (<MenuItem key={customer.id} value={customer.id}>{customer.name}</MenuItem>))}
-              </Select>
-            </FormControl>
-            <FormControl fullWidth margin="dense">
-              <InputLabel id="user-select-label">Gán cho Nhân viên</InputLabel>
-              <Select labelId="user-select-label" name="user_id" value={formData.user_id} label="Gán cho Nhân viên" onChange={handleChange} required MenuProps={{ container: document.getElementById('root') }}>
-                {users.map(user => (<MenuItem key={user.id} value={user.id}>{user.email}</MenuItem>))}
-              </Select>
-            </FormControl>
-            <TextField margin="dense" name="job_description" label="Mô tả công việc" type="text" fullWidth multiline rows={3} value={formData.job_description} onChange={handleChange} required />
-            <TextField margin="dense" name="scheduled_date" label="Ngày bắt đầu" type="datetime-local" fullWidth InputLabelProps={{ shrink: true }} value={formData.scheduled_date ? moment(formData.scheduled_date).format('YYYY-MM-DDTHH:mm') : ''} onChange={handleChange} />
-          </DialogContent>
-          <DialogActions sx={{ justifyContent: 'space-between', padding: '16px 24px' }}>
-              {jobToEdit && <Button color="error" onClick={handleDelete}>Xóa</Button>}
-              <Box>
-                  <Button onClick={onClose}>Hủy</Button>
-                  <Button type="submit" variant="contained" disabled={loading}>
-                      {loading ? <CircularProgress size={24} /> : 'Lưu'}
-                  </Button>
-              </Box>
-          </DialogActions>
-        </Box>
-      </Dialog>
-
-      {/* Dialog xác nhận xóa */}
-      <Dialog
-        open={confirmDeleteOpen}
-        onClose={handleCancelDelete}
-        aria-labelledby="confirm-delete-dialog-title"
-        aria-describedby="confirm-delete-dialog-description"
-        ModalProps={{ container: document.getElementById('root') }}
-      >
-        <DialogTitle id="confirm-delete-dialog-title">
-          Xác nhận xóa
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="confirm-delete-dialog-description">
-            Bạn có chắc chắn muốn xóa công việc này không? Hành động này không thể hoàn tác.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCancelDelete}>
-            Hủy
-          </Button>
-          <Button onClick={handleConfirmDelete} color="error" variant="contained" autoFocus>
-            Xóa
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>Sửa Thông Tin Công Việc</DialogTitle>
+      <DialogContent>
+        <form onSubmit={handleSubmit}>
+          <Grid container spacing={2} sx={{ pt: 2 }}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Tên Khách Hàng"
+                value={formData.clientName}
+                onChange={(e) => handleChange('clientName', e.target.value)}
+                required
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Nội Dung Công Việc"
+                value={formData.serviceContent}
+                onChange={(e) => handleChange('serviceContent', e.target.value)}
+                required
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Thời Gian Bắt Đầu"
+                type="time"
+                value={formData.startTime}
+                onChange={(e) => handleChange('startTime', e.target.value)}
+                required
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <TextField
+                fullWidth
+                label="Thời Gian Kết Thúc"
+                type="time"
+                value={formData.endTime}
+                onChange={(e) => handleChange('endTime', e.target.value)}
+                required
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Ghi Chú"
+                multiline
+                rows={4}
+                value={formData.notes}
+                onChange={(e) => handleChange('notes', e.target.value)}
+              />
+            </Grid>
+          </Grid>
+        </form>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Hủy</Button>
+        <Button onClick={handleSubmit} variant="contained">Lưu</Button>
+      </DialogActions>
+    </Dialog>
   );
 }

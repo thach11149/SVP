@@ -35,7 +35,12 @@ export default function AddCustomerForm({ open, onClose, onSave, showAlert, cust
   // Giao diện
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="md" 
+      fullWidth
+    >
       {/* Tiêu đề thay đổi tùy theo chế độ */}
       <DialogTitle>{customerToEdit ? 'Sửa Hồ Sơ Khách Hàng' : 'Tạo Mới Hồ Sơ Khách Hàng'}</DialogTitle>
       <Box component="form" onSubmit={onSubmit}>  {/* Sửa từ onSubmit={handleSubmit} thành onSubmit={onSubmit} */}

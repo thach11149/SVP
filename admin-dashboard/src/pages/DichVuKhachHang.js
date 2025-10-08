@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button, IconButton, Tooltip, Dialog
+  Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Tooltip
 } from '@mui/material';
 import { Edit } from '@mui/icons-material';
 import { supabase } from '../supabaseClient';
 import CustomerForm from '../components/customer/AddCustomerForm';
 import AlertMessage from '../components/ui/AlertMessage';
-import provincesData from '../data/provinces.json';
-import districtsData from '../data/districts.json';
-import wardsData from '../data/wards.json';
 
 export default function DichVuKhachHang({ session }) {
   const [services, setServices] = useState([]);
@@ -23,7 +20,7 @@ export default function DichVuKhachHang({ session }) {
         .select(`
           *,
           customer_sites (
-            site_name, address, province, district, ward, google_map_code
+            site_name, address, province, district, ward, ward_name, district_name, province_name, google_map_code
           ),
           customer_service_plans (
             service_types, plan, days_of_week, frequency, start_date, end_date, report_date, report_frequency
@@ -43,14 +40,6 @@ export default function DichVuKhachHang({ session }) {
   const formatContractPeriod = (start, end) => {
     if (!start || !end) return '';
     return `${new Date(start).toLocaleDateString('vi-VN')} - ${new Date(end).toLocaleDateString('vi-VN')}`;
-  };
-
-  const formatReportInfo = (reportDate, reportFrequency) => {
-    if (!reportDate || !reportFrequency) return '';
-    const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-    const dayIndex = parseInt(reportDate) - 1; // Assuming 1=Monday, 7=Sunday
-    const dayName = days[dayIndex] || '';
-    return `${dayName}, ${reportFrequency}`;
   };
 
   const showAlert = (message, severity = 'info') => {
@@ -87,44 +76,47 @@ export default function DichVuKhachHang({ session }) {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>STT</TableCell>
-                <TableCell>Tên khách hàng</TableCell>
-                <TableCell>Địa điểm</TableCell>
-                <TableCell>Loại hình dịch vụ</TableCell>
-                <TableCell>Tần suất thực hiện</TableCell>
-                <TableCell>Thời hạn hợp đồng</TableCell>
-                <TableCell>Ngày báo cáo</TableCell>
-                <TableCell>Hành động</TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>STT</TableCell>
+                <TableCell sx={{ textAlign: 'left' }}>Tên khách hàng</TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>Địa điểm</TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>Loại hình dịch vụ</TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>Tần suất thực hiện</TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>Thời hạn hợp đồng</TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>Ngày báo cáo</TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>Hành động</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {services.map((service, index) => (
                 <TableRow key={service.id}>
-                  <TableCell>{index + 1}</TableCell>
-                  <TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}>{index + 1}</TableCell>
+                  <TableCell sx={{ textAlign: 'left' }}>
                     <Box>
                       <Typography fontWeight={500}>{service.name}</Typography>
                       <Typography variant="body2" color="text.secondary">
-                        {service.customer_sites?.[0]?.address || ''}
+                        {(() => {
+                          const site = service.customer_sites?.[0];
+                          if (!site) return 'N/A';
+                          const addressParts = [site.address, site.ward_name, site.district_name].filter(Boolean);
+                          return addressParts.length > 0 ? addressParts.join(', ') : 'N/A';
+                        })()}
                       </Typography>
                     </Box>
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}>
                     {(() => {
                       const site = service.customer_sites?.[0];
-                      if (!site) return '';
-                      const provinceName = provincesData.find(p => p.code === site.province)?.name || '';
-                      const districtName = districtsData.find(d => d.code === site.district)?.name || '';
-                      const wardName = wardsData.find(w => w.code === site.ward)?.name || '';
-                      return [provinceName, districtName, wardName].filter(Boolean).join(', ');
+                      if (!site) return 'N/A';
+                      const locationParts = [/* site.ward_name, site.district_name, */ site.province_name].filter(Boolean);
+                      return locationParts.length > 0 ? locationParts.join(', ') : 'N/A';
                     })()}
                   </TableCell>
-                  <TableCell>{service.customer_service_plans?.[0]?.service_types?.join(', ') || ''}</TableCell>
-                  <TableCell>{service.customer_service_plans?.[0]?.frequency || ''}</TableCell>
-                  <TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}>{service.customer_service_plans?.[0]?.service_types?.join(', ') || ''}</TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}>{service.customer_service_plans?.[0]?.frequency || ''}</TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}>
                     {formatContractPeriod(service.customer_service_plans?.[0]?.start_date, service.customer_service_plans?.[0]?.end_date)}
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}>
                     {(() => {
                       const reportDate = service.customer_service_plans?.[0]?.report_date;
                       const reportFrequency = service.customer_service_plans?.[0]?.report_frequency;

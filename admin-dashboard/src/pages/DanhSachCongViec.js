@@ -34,24 +34,35 @@ export default function DanhSachCongViec({ session }) {
     try {
       setLoading(true);
       console.log('Fetching jobs...');
-      
+
       const { data, error } = await supabase
         .from('jobs')
         .select(`
-          *,
+          id,
+          job_content,
+          service_type,
+          status,
+          scheduled_date,
+          assigned_technicians,
+          team_lead_id,
           customers (
             id,
             name,
             customer_code
+          ),
+          customer_sites (
+            site_name,
+            address
           )
-        `)  // Bỏ JOIN job_assignments, dùng assigned_technicians JSONB trực tiếp từ jobs
+        `)
+        .eq('is_deleted', false)  // Thêm filter để chỉ lấy công việc chưa xóa mềm
         .order('scheduled_date', { ascending: false });
 
       if (error) {
         console.error('Error fetching jobs:', error);
         throw error;
       }
-      
+
       console.log('Jobs fetched successfully:', data?.length || 0, data);
       setJobs(data || []);
     } catch (error) {
@@ -70,15 +81,15 @@ export default function DanhSachCongViec({ session }) {
   const fetchTechnicians = async () => {
     try {
       const { data, error } = await supabase
-        .from('technicians')
-        .select('id, name, tech_code')
-        .eq('active', true)
+        .from('technician_users')
+        .select('technician_id, name, tech_code')
         .order('name', { ascending: true });
       
       if (error) {
         console.error('Error fetching technicians:', error);
       } else {
-        setTechnicians(data || []);
+        const mapped = (data || []).map(item => ({ id: item.technician_id, name: item.name, tech_code: item.tech_code }));
+        setTechnicians(mapped);
       }
     } catch (error) {
       console.error('Error in fetchTechnicians:', error);
@@ -171,17 +182,22 @@ export default function DanhSachCongViec({ session }) {
   // Confirm delete job
   const confirmDeleteJob = async () => {
     try {
+      // Thay đổi từ delete thành update để soft delete
       const { error } = await supabase
         .from('jobs')
-        .delete()
+        .update({
+          is_deleted: true,
+          delete_note: 'Xóa từ DanhSachCongViec.js'  // Có thể prompt user nhập note nếu cần
+        })
         .eq('id', jobToDelete.id);
 
       if (error) throw error;
 
-      setJobs(jobs.filter(job => job.id !== jobToDelete.id));
+      // Refresh data thay vì filter local
+      fetchJobs();
       setSnackbar({
         open: true,
-        message: 'Xóa công việc thành công',
+        message: 'Xóa công việc thành công (soft delete)',
         severity: 'success'
       });
     } catch (error) {
@@ -323,6 +339,7 @@ export default function DanhSachCongViec({ session }) {
                 <TableCell><strong>Mã CV</strong></TableCell>
                 <TableCell><strong>Nội dung công việc</strong></TableCell>
                 <TableCell><strong>Khách hàng</strong></TableCell>
+                <TableCell><strong>Địa điểm</strong></TableCell>
                 <TableCell><strong>Loại dịch vụ</strong></TableCell>
                 <TableCell><strong>Ngày thực hiện</strong></TableCell>
                 <TableCell><strong>Người thực hiện</strong></TableCell>
@@ -357,6 +374,11 @@ export default function DanhSachCongViec({ session }) {
                         {job.customers?.customer_code || ''}
                       </Typography>
                     </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {job.customer_sites?.site_name || 'N/A'}
+                    </Typography>
                   </TableCell>
                   <TableCell>
                     <Chip 
@@ -419,7 +441,7 @@ export default function DanhSachCongViec({ session }) {
               ))}
               {filteredJobs.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                  <TableCell colSpan={9} align="center" sx={{ py: 4 }}> 
                     <Typography color="text.secondary">
                       {jobs.length === 0 
                         ? 'Chưa có công việc nào được tạo. Hãy tạo công việc đầu tiên từ trang "Lập kế hoạch công việc".' 
@@ -457,7 +479,6 @@ export default function DanhSachCongViec({ session }) {
         <Dialog
           open={deleteDialogOpen}
           onClose={() => setDeleteDialogOpen(false)}
-          ModalProps={{ container: document.getElementById('root') }}
         >
           <DialogTitle>
             Xác nhận xóa công việc

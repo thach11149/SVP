@@ -23,7 +23,10 @@ export default function CustomerList() {
   const fetchCustomers = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.from('customers').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('customers')
+        .select('*, customer_sites(*)')
+        .order('created_at', { ascending: false });
       if (error) throw error;
       setCustomers(data);
     } catch (error) {
@@ -100,10 +103,15 @@ export default function CustomerList() {
 
   // Hàm lấy tên địa chỉ từ code
   const getAddressString = (customer) => {
-    const provinceName = provincesData.find(p => p.code === customer.province)?.name || customer.province_name || '';
-    const districtName = districtsData.find(d => d.code === customer.district)?.name || customer.district_name || '';
-    const wardName = wardsData.find(w => w.code === customer.ward)?.name || customer.ward_name || '';
-    return [customer.address, wardName, districtName, provinceName].filter(Boolean).join(', ');
+    // Chỉ lấy từ customer_sites, không fallback vì bảng customers không có trường địa chỉ
+    const site = customer.customer_sites?.[0];
+    if (site) {
+      const provinceName = provincesData.find(p => p.code === site.province)?.name || site.province_name || '';
+      const districtName = districtsData.find(d => d.code === site.district)?.name || site.district_name || '';
+      const wardName = wardsData.find(w => w.code === site.ward)?.name || site.ward_name || '';
+      return [site.address, wardName, districtName, provinceName].filter(Boolean).join(', ');
+    }
+    return 'Chưa có địa chỉ'; // Hoặc chuỗi rỗng nếu không muốn hiển thị
   };
 
   useEffect(() => {
@@ -139,7 +147,7 @@ export default function CustomerList() {
         onConfirm={alert.onConfirm}
       />
 
-      <Dialog open={deleteDialog.open} onClose={handleCancelDelete} ModalProps={{ container: document.getElementById('root') }}>
+      <Dialog open={deleteDialog.open} onClose={handleCancelDelete}>
         <DialogTitle>Xác nhận xóa</DialogTitle>
         <DialogContent>
           Bạn có chắc chắn muốn xóa khách hàng này không?
@@ -166,7 +174,12 @@ export default function CustomerList() {
               <TableRow key={customer.id}>
                 <TableCell sx={{ textAlign: 'center' }}>{customer.customer_code}</TableCell>
                 <TableCell>
-                  <Typography variant="body2" fontWeight="bold">{customer.name}</Typography>
+                  <Box>
+                    <Typography fontWeight={500}>{customer.name}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {getAddressString(customer)}
+                    </Typography>
+                  </Box>
                 </TableCell>
                 <TableCell sx={{ textAlign: 'center' }}>{customer.primary_contact_name}</TableCell>
                 <TableCell sx={{ textAlign: 'center' }}>{customer.primary_contact_phone}</TableCell>
@@ -176,7 +189,7 @@ export default function CustomerList() {
                       <IconButton
                         size="small"
                         color="primary"
-                        onClick={() => handleEdit(customer)}
+                        onClick={(e) => { e.currentTarget.blur(); handleEdit(customer); }}
                       >
                         <Edit />
                       </IconButton>
@@ -186,7 +199,7 @@ export default function CustomerList() {
                       <IconButton
                         size="small"
                         color="error"
-                        onClick={() => handleDeleteClick(customer.id)}
+                        onClick={(e) => { e.currentTarget.blur(); handleDeleteClick(customer.id); }}
                       >
                         <Delete />
                       </IconButton>

@@ -21,6 +21,8 @@ import QuanLyTonKho from './pages/QuanLyTonKho';
 import DichVuKhachHang from './pages/DichVuKhachHang';
 import LapKeHoachGiaoViec from './pages/LapKeHoachGiaoViec';
 import RoleManagement from './pages/RoleManagement';
+import ErrorLogsViewer from './components/ErrorLogsViewer';
+import ErrorLogger from './utils/ErrorLogger';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -38,6 +40,9 @@ function App() {
       setSession(session);
       setLoading(false);  // Set loading false khi auth state change
     });
+
+    // Initialize error logging
+    ErrorLogger.setupGlobalErrorHandler();
 
     return () => subscription.unsubscribe();
   }, []);
@@ -87,6 +92,7 @@ function App() {
                       <Route path="/dich-vu-khach-hang" element={<DichVuKhachHang session={session} />} />
                       <Route path="/lap-ke-hoach-giao-viec" element={<LapKeHoachGiaoViec session={session} />} />
                       <Route path="/role-management" element={<RoleManagement session={session} />} /> {/* Thêm route cho RoleManagement */}
+                      <Route path="/error-logs" element={<ErrorLogsViewer />} />
                     </Routes>
                   </Box>
                 </Box>

@@ -160,7 +160,6 @@ export default function JobDetailDialog({
       onClose={onClose}
       maxWidth="md"
       fullWidth
-      ModalProps={{ container: document.getElementById('root') }}
     >
       <DialogTitle>
         Chi tiết Công việc

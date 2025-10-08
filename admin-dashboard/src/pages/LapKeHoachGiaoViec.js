@@ -1,21 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Typography, Grid, TextField, Select, MenuItem, FormControl, InputLabel,
   Button, Paper, Chip, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Dialog, DialogTitle, DialogContent, DialogActions,
-  List, ListItem, ListItemText, Checkbox,
+  TableHead, TableRow,
   Autocomplete,
-  TextField as MuiTextField, // Rename to avoid conflict
+  TextField as MuiTextField,
   Tooltip,
-  IconButton
+  IconButton,
+  Checkbox
 } from '@mui/material';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import DeleteIcon from '@mui/icons-material/Delete';
-import RestoreIcon from '@mui/icons-material/Restore'; // Thêm import cho icon khôi phục
-import CloseIcon from '@mui/icons-material/Close';
+import RestoreIcon from '@mui/icons-material/Restore';
+import { Edit } from '@mui/icons-material';
 import { supabase } from '../supabaseClient';
 import CustomerList from '../components/CustomerList';
 import AlertMessage from '../components/ui/AlertMessage';
+import JobFormDialog from '../components/job/JobFormDialog'; // Thay đổi import
 
 const generateContractJobs = (clientName, startDate, endDate, targetDayOfWeek, frequencyWeeks) => {
   const jobs = [];
@@ -50,21 +50,154 @@ const generateContractJobs = (clientName, startDate, endDate, targetDayOfWeek, f
   return jobs;
 };
 
-export default function TestPage() {
+export default function TestPage({ session }) {
   const [jobs, setJobs] = useState([]);
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
-  const [selectedTechnicians, setSelectedTechnicians] = useState([]);
-  const [isEditing, setIsEditing] = useState(false);
   const [customers, setCustomers] = useState([]);
   const [techniciansData, setTechniciansData] = useState([]);
   const [selectedCustomers, setSelectedCustomers] = useState([]);
-  const [filterType, setFilterType] = useState('week'); // 'week', 'month', 'range'
+  const [filterType, setFilterType] = useState('week');
   const [filterStartDate, setFilterStartDate] = useState(new Date());
   const [filterEndDate, setFilterEndDate] = useState(new Date());
   const [alert, setAlert] = useState({ type: '', message: '', duration: 4000 });
-  const [selectedJobs, setSelectedJobs] = useState([]); // Thêm state cho selectedJobs
-  const [selectedBulkTechnicians, setSelectedBulkTechnicians] = useState([]); // Thêm state cho selectedBulkTechnicians
+  const [selectedJobs, setSelectedJobs] = useState([]);
+  const [selectedBulkTechnicians, setSelectedBulkTechnicians] = useState([]);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [jobToEdit, setJobToEdit] = useState(null);
+
+  // Di chuyển fetchServicesAndJobs ra ngoài useEffect
+  const fetchServicesAndJobs = useCallback(async () => {
+    // Fetch services
+    const { data: servicesData, error: servicesError } = await supabase
+      .from('customer_sites')
+      .select(`
+        id, site_name, address, province_name,
+        customers!inner (id, name),
+        customer_service_plans (
+          service_types, plan, days_of_week, frequency, start_date, end_date, report_date, report_frequency
+        )
+      `);
+
+    if (servicesError) {
+      console.error('Error fetching services:', servicesError);
+      return;
+    }
+
+    // Fetch existing jobs
+    const { data: jobsData, error: jobsError } = await supabase
+      .from('jobs')
+      .select('*')
+      .order('scheduled_date', { ascending: true });
+
+    if (jobsError) {
+      console.error('Error fetching jobs:', jobsError);
+      return;
+    }
+
+    // Define existingJobKeys here, outside if-else
+    const existingJobKeys = new Set(
+      (jobsData || []).map(job => `${job.customer_id}_${job.scheduled_date}`)
+    );
+
+    if (jobsData && jobsData.length > 0) {
+      // Convert to job format
+      const existingJobs = jobsData.map(job => ({
+        id: job.id,
+        customerId: job.customer_id,
+        clientName: job.customer_name,
+        date: new Date(job.scheduled_date),
+        status: job.status,
+        assignedTechs: job.assigned_technicians || [],
+        startTime: job.start_time || '08:00',
+        endTime: job.end_time || '10:00',
+        isDeleted: job.is_deleted || false,
+        deleteNote: job.delete_note || '',
+        serviceContent: job.service_content || '',
+        notes: job.notes // Thêm notes
+      }));
+      setJobs(existingJobs);
+    } else {
+      // Auto generate jobs from services and insert to database
+      const generatedJobs = [];
+      servicesData.forEach(site => {
+        site.customer_service_plans?.forEach(plan => {
+          if (plan.days_of_week && plan.frequency && plan.start_date && plan.end_date) {
+            plan.days_of_week.forEach(day => {
+              const jobsForDay = generateContractJobs(
+                `${site.customers.name} - ${site.site_name}`,
+                new Date(plan.start_date),
+                new Date(plan.end_date),
+                day.toString(),
+                plan.frequency.toString()
+              );
+              console.log('Jobs for day:', jobsForDay.length);
+              
+              // Filter out jobs that already exist
+              const newJobsForDay = jobsForDay.filter(job => {
+                const jobKey = `${site.customers.id}_${job.date.toISOString().split('T')[0]}`;
+                return !existingJobKeys.has(jobKey);
+              });
+              
+              generatedJobs.push(...newJobsForDay.map(job => ({
+                ...job,
+                customerId: site.customers.id,
+                serviceContent: plan.service_types?.join(', ') || ''
+              })));
+            });
+          } else {
+            console.log('Plan missing required fields:', plan);
+          }
+        });
+      });
+
+      // Insert to database
+      if (generatedJobs.length > 0) {
+        const jobsToInsert = generatedJobs.map(job => ({
+          customer_id: job.customerId,
+          customer_name: job.clientName,
+          scheduled_date: job.date.toISOString().split('T')[0],
+          status: job.status,
+          assigned_technicians: job.assignedTechs,
+          start_time: job.startTime,
+          end_time: job.endTime,
+          is_deleted: job.isDeleted,
+          delete_note: job.deleteNote,
+          service_content: job.serviceContent,
+          notes: job.notes || '',
+          // Thêm các trường còn thiếu theo schema
+          created_by: session?.user?.id || null,
+          job_description: `Công việc định kỳ cho ${job.clientName}`,
+          scheduled_time: null, // Có thể set nếu có
+          service_type: 'Định kỳ',
+          job_content: job.serviceContent,
+          checklist: [],
+          completed: false,
+          contact_person: null, // Có thể fetch thêm nếu cần
+          contact_phone: null,
+          special_requests: null,
+          address: null, // Từ site.address nếu có
+          team_lead_id: null,
+          team_size: null,
+          team_members: null
+        }));
+
+        const { data: insertedJobs, error: insertError } = await supabase
+          .from('jobs')
+          .insert(jobsToInsert)
+          .select();
+
+        if (insertError) {
+          console.error('Error inserting jobs:', insertError);
+        } else {
+          // Set jobs with database ids
+          const jobsWithIds = insertedJobs.map((dbJob, index) => ({
+            ...generatedJobs[index],
+            id: dbJob.id
+          }));
+          setJobs(jobsWithIds);
+        }
+      }
+    }
+  }, [session?.user?.id]);
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -87,124 +220,21 @@ export default function TestPage() {
 
     const fetchTechnicians = async () => {
       const { data, error } = await supabase
-        .from('technician_users')
+        .from('profiles')  // Thay đổi từ 'technicians' thành 'profiles' theo schema mới
         .select('id, tech_code, name, phone, email, position')
-        .eq('active', true);
-      if (error) {
-        console.error('Error fetching technicians:', error);
-      } else {
-        setTechniciansData(data);
-      }
-    };
-
-    const fetchServicesAndJobs = async () => {
-      // Fetch services
-      const { data: servicesData, error: servicesError } = await supabase
-        .from('customer_sites')
-        .select(`
-          id, site_name, address, province_name,
-          customers!inner (id, name),
-          customer_service_plans (
-            service_types, plan, days_of_week, frequency, start_date, end_date, report_date, report_frequency
-          )
-        `);
-
-      if (servicesError) {
-        console.error('Error fetching services:', servicesError);
-        return;
-      }
-
-      // Fetch existing jobs
-      const { data: jobsData, error: jobsError } = await supabase
-        .from('jobs')
-        .select('*')
-        .order('scheduled_date', { ascending: true });
-
-      if (jobsError) {
-        console.error('Error fetching jobs:', jobsError);
-        return;
-      }
-
-      if (jobsData && jobsData.length > 0) {
-        // Convert to job format
-        const existingJobs = jobsData.map(job => ({
-          id: job.id,
-          customerId: job.customer_id,
-          clientName: job.customer_name,
-          date: new Date(job.scheduled_date),
-          status: job.status,
-          assignedTechs: job.assigned_technicians || [],
-          startTime: job.start_time || '08:00',
-          endTime: job.end_time || '10:00',
-          isDeleted: job.is_deleted || false,
-          deleteNote: job.delete_note || '',
-          serviceContent: job.service_content || '',
-          notes: job.notes || '' // Thêm notes
-        }));
-        setJobs(existingJobs);
-      } else {
-        // Auto generate jobs from services and insert to database
-        const generatedJobs = [];
-        servicesData.forEach(site => {
-          site.customer_service_plans?.forEach(plan => {
-            if (plan.days_of_week && plan.frequency && plan.start_date && plan.end_date) {
-              plan.days_of_week.forEach(day => {
-                const jobsForDay = generateContractJobs(
-                  `${site.customers.name} - ${site.site_name}`,
-                  new Date(plan.start_date),
-                  new Date(plan.end_date),
-                  day.toString(),
-                  plan.frequency.toString()
-                ).map(job => ({
-                  ...job,
-                  customerId: site.customers.id,
-                  serviceContent: plan.service_types?.join(', ') || ''
-                }));
-                generatedJobs.push(...jobsForDay);
-              });
-            }
-          });
-        });
-
-        // Insert to database
-        if (generatedJobs.length > 0) {
-          const jobsToInsert = generatedJobs.map(job => ({
-            customer_id: job.customerId,
-            customer_name: job.clientName,
-            scheduled_date: job.date.toISOString().split('T')[0],
-            status: job.status,
-            assigned_technicians: job.assignedTechs,
-            start_time: job.startTime,
-            end_time: job.endTime,
-            is_deleted: job.isDeleted,
-            delete_note: job.deleteNote,
-            service_content: job.serviceContent,
-            notes: job.notes || '' // Thêm notes
-          }));
-
-          const { data: insertedJobs, error: insertError } = await supabase
-            .from('jobs')
-            .insert(jobsToInsert)
-            .select();
-
-          if (insertError) {
-            console.error('Error inserting jobs:', insertError);
-          } else {
-            // Set jobs with database ids
-            const jobsWithIds = insertedJobs.map((dbJob, index) => ({
-              ...generatedJobs[index],
-              id: dbJob.id
-            }));
-            setJobs(jobsWithIds);
-          }
-        }
-      }
-    };
+        .eq('active', true)
+        .eq('role', 'technician');  // Thêm filter role để chỉ lấy kỹ thuật viên
+    if (error) {
+      console.error('Error fetching technicians:', error);
+    } else {
+      setTechniciansData(data);
+    }
+  };
 
     fetchCustomers();
     fetchTechnicians();
-    fetchServicesAndJobs();
-  }, []);
+    fetchServicesAndJobs();  // Gọi hàm đã di chuyển
+  }, [session?.user?.id, fetchServicesAndJobs]); // Added 'session?.user?.id' to the dependency array
 
   const formatContractPeriod = (start, end) => {
     if (!start || !end) return '';
@@ -338,7 +368,22 @@ export default function TestPage() {
       is_deleted: job.isDeleted,
       delete_note: job.deleteNote,
       service_content: job.serviceContent,
-      notes: job.notes || '' // Thêm notes
+      notes: job.notes || '',
+      // Thêm các trường còn thiếu
+      created_by: session?.user?.id || null,
+      job_description: `Công việc định kỳ cho ${job.clientName}`,
+      scheduled_time: null,
+      service_type: 'Định kỳ',
+      job_content: job.serviceContent,
+      checklist: [],
+      completed: false,
+      contact_person: null,
+      contact_phone: null,
+      special_requests: null,
+      address: null,
+      team_lead_id: null,
+      team_size: null,
+      team_members: null
     }));
 
     const { data: insertedJobs, error: insertError } = await supabase
@@ -360,101 +405,22 @@ export default function TestPage() {
     }
   };
 
-  const handleJobClick = (job) => {
-    setSelectedJob(job);
-    setIsEditing(job.status === 'assigned');
-    setSelectedTechnicians([]); // Bắt đầu empty để chọn thêm
-    setAssignDialogOpen(true);
+  // Thêm hàm xử lý chỉnh sửa công việc
+  const handleEditJob = (job) => {
+    setJobToEdit(job); // Set trực tiếp job (không sao chép nếu không cần)
+    setEditDialogOpen(true);
   };
 
-  const handleToggleTechnician = (techId) => {
-    setSelectedTechnicians(prev =>
-      prev.includes(techId) ? prev.filter(id => id !== techId) : [...prev, techId]
-    );
+  const handleCloseEditDialog = () => {
+    setEditDialogOpen(false);
+    setJobToEdit(null);
   };
 
-  const handleRemoveSelectedTechnician = (techId) => {
-    setSelectedTechnicians(prev => prev.filter(id => id !== techId));
-  };
-
-  const handleAssignSelectedTechnicians = () => {
-    const newAssigned = [
-      ...selectedJob.assignedTechs,
-      ...selectedTechnicians.map(techId => ({
-        techId,
-        startTime: selectedJob.startTime,
-        endTime: selectedJob.endTime
-      }))
-    ];
-    setJobs(prevJobs =>
-      prevJobs.map(job =>
-        job.id === selectedJob.id
-          ? {
-              ...job,
-              assignedTechs: newAssigned,
-              status: newAssigned.length > 0 ? 'assigned' : 'unassigned'
-            }
-          : job
-      )
-    );
-    // Update database
-    supabase
-      .from('jobs')
-      .update({
-        assigned_technicians: newAssigned,
-        status: newAssigned.length > 0 ? 'assigned' : 'unassigned'
-      })
-      .eq('id', selectedJob.id)
-      .then(({ error }) => {
-        if (error) console.error('Error updating job:', error);
-      });
-    setSelectedTechnicians([]);
-    setAssignDialogOpen(false);
-  };
-
-  const handleRemoveTechnician = (jobId, techId) => {
-    setJobs(prevJobs =>
-      prevJobs.map(job =>
-        job.id === jobId
-          ? {
-              ...job,
-              assignedTechs: job.assignedTechs.filter(tech => tech.techId !== techId),
-              status: job.assignedTechs.filter(tech => tech.techId !== techId).length > 0 ? 'assigned' : 'unassigned'
-            }
-          : job
-      )
-    );
-    // Update database
-    const job = jobs.find(j => j.id === jobId);
-    const newAssigned = job.assignedTechs.filter(tech => tech.techId !== techId);
-    supabase
-      .from('jobs')
-      .update({
-        assigned_technicians: newAssigned,
-        status: newAssigned.length > 0 ? 'assigned' : 'unassigned'
-      })
-      .eq('id', jobId)
-      .then(({ error }) => {
-        if (error) console.error('Error updating job:', error);
-      });
-  };
-
-  const handleTimeChange = (jobId, field, value) => {
-    setJobs(prevJobs =>
-      prevJobs.map(job =>
-        job.id === jobId
-          ? { ...job, [field]: value }
-          : job
-      )
-    );
-    // Update database
-    supabase
-      .from('jobs')
-      .update({ [field]: value })
-      .eq('id', jobId)
-      .then(({ error }) => {
-        if (error) console.error('Error updating job time:', error);
-      });
+  const handleSaveEdit = () => {
+    // Refresh data sau khi save từ JobFormDialog
+    fetchServicesAndJobs();  // Giờ có thể gọi được
+    setEditDialogOpen(false);
+    setJobToEdit(null);
   };
 
   const handleDeleteJob = (jobId) => {
@@ -518,7 +484,22 @@ export default function TestPage() {
         is_deleted: job.isDeleted,
         delete_note: job.deleteNote,
         service_content: job.serviceContent,
-        notes: job.notes || '' // Thêm notes
+        notes: job.notes || '',
+        // Thêm các trường còn thiếu
+        created_by: session?.user?.id || null,
+        job_description: `Công việc định kỳ cho ${job.clientName}`,
+        scheduled_time: null,
+        service_type: 'Định kỳ',
+        job_content: job.serviceContent,
+        checklist: [],
+        completed: false,
+        contact_person: null,
+        contact_phone: null,
+        special_requests: null,
+        address: null,
+        team_lead_id: null,
+        team_size: null,
+        team_members: null
       }));
 
     // Insert jobs mới (từ generateContractJobs, id là số)
@@ -535,7 +516,22 @@ export default function TestPage() {
         is_deleted: job.isDeleted,
         delete_note: job.deleteNote,
         service_content: job.serviceContent,
-        notes: job.notes || '' // Thêm notes
+        notes: job.notes || '',
+        // Thêm các trường còn thiếu
+        created_by: session?.user?.id || null,
+        job_description: `Công việc định kỳ cho ${job.clientName}`,
+        scheduled_time: null,
+        service_type: 'Định kỳ',
+        job_content: job.serviceContent,
+        checklist: [],
+        completed: false,
+        contact_person: null,
+        contact_phone: null,
+        special_requests: null,
+        address: null,
+        team_lead_id: null,
+        team_size: null,
+        team_members: null
       }));
 
     let errorOccurred = false;
@@ -551,9 +547,37 @@ export default function TestPage() {
     }
 
     if (newJobsToInsert.length > 0) {
+      const jobsToInsert = newJobsToInsert.map(job => ({
+        customer_id: job.customerId,
+        customer_name: job.clientName,
+        scheduled_date: job.date.toISOString().split('T')[0],
+        status: job.status,
+        assigned_technicians: job.assignedTechs,
+        start_time: job.startTime,
+        end_time: job.endTime,
+        is_deleted: job.isDeleted,
+        delete_note: job.deleteNote,
+        service_content: job.serviceContent,
+        notes: job.notes || '',
+        // Thêm các trường còn thiếu
+        created_by: session?.user?.id || null,
+        job_description: `Công việc định kỳ cho ${job.clientName}`,
+        scheduled_time: null,
+        service_type: 'Định kỳ',
+        job_content: job.serviceContent,
+        checklist: [],
+        completed: false,
+        contact_person: null,
+        contact_phone: null,
+        special_requests: null,
+        address: null,
+        team_lead_id: null,
+        team_size: null,
+        team_members: null
+      }));
       const { data: insertedJobs, error } = await supabase
         .from('jobs')
-        .insert(newJobsToInsert)
+        .insert(jobsToInsert)
         .select();
       if (error) {
         console.error('Error inserting new jobs:', error);
@@ -685,9 +709,10 @@ export default function TestPage() {
               assignedTechs: [
                 ...job.assignedTechs,
                 ...selectedBulkTechnicians.map(techId => ({
-                  techId,
+                  technician_id: techId,  // Thay đổi từ techId thành technician_id để nhất quán
+                  startTime: '08:00',
                   endTime: '10:00'
-                })).filter(newTech => !job.assignedTechs.some(existing => existing.techId === newTech.techId))
+                })).filter(newTech => !job.assignedTechs.some(existing => existing.technician_id === newTech.technician_id))  // Thay đổi từ techId thành technician_id
               ],
               status: 'assigned'
             }
@@ -700,11 +725,15 @@ export default function TestPage() {
       const job = jobs.find(j => j.id === jobId);
       const newAssigned = [
         ...job.assignedTechs,
-        ...selectedBulkTechnicians.map(techId => ({
-          techId,
-          startTime: '08:00',
-          endTime: '10:00'
-        })).filter(newTech => !job.assignedTechs.some(existing => existing.techId === newTech.techId))
+        ...selectedBulkTechnicians.map(techId => {
+          const tech = techniciansData.find(t => t.id === techId);
+          return {
+            name: tech?.name,
+            role: 'member',
+            status: 'assigned',
+            technician_id: techId
+          };
+        }).filter(newTech => !job.assignedTechs.some(existing => existing.technician_id === newTech.technician_id))  // Thay đổi từ techId thành technician_id
       ];
       supabase
         .from('jobs')
@@ -729,6 +758,55 @@ export default function TestPage() {
       setSelectedJobs([]);
     } else {
       setSelectedJobs(filteredJobs.map(job => job.id));
+    }
+  };
+
+  // Thêm hàm handleTimeChange sau handleNotesChange
+  const handleTimeChange = (jobId, field, value) => {
+    setJobs(prevJobs =>
+      prevJobs.map(job =>
+        job.id === jobId
+          ? { ...job, [field]: value }
+          : job
+      )
+    );
+    // Update database
+    supabase
+      .from('jobs')
+      .update({ [field]: value })
+      .eq('id', jobId)
+      .then(({ error }) => {
+        if (error) console.error('Error updating job time:', error);
+      });
+  };
+
+  // Thêm hàm handleRemoveTechnician sau handleTimeChange
+  const handleRemoveTechnician = (jobId, technicianId) => {
+    setJobs(prevJobs =>
+      prevJobs.map(job =>
+        job.id === jobId
+          ? {
+              ...job,
+              assignedTechs: job.assignedTechs.filter(tech => tech.technician_id !== technicianId),
+              status: job.assignedTechs.filter(tech => tech.technician_id !== technicianId).length > 0 ? 'assigned' : 'unassigned'
+            }
+          : job
+      )
+    );
+    // Update database
+    const job = jobs.find(j => j.id === jobId);
+    if (job) {
+      const updatedAssigned = job.assignedTechs.filter(tech => tech.technician_id !== technicianId);
+      supabase
+        .from('jobs')
+        .update({
+          assigned_technicians: updatedAssigned,
+          status: updatedAssigned.length > 0 ? 'assigned' : 'unassigned'
+        })
+        .eq('id', jobId)
+        .then(({ error }) => {
+          if (error) console.error('Error removing technician:', error);
+        });
     }
   };
 
@@ -955,7 +1033,7 @@ export default function TestPage() {
         </TableCell>
         <TableCell>
           {job.assignedTechs.map((tech, idx) => {
-            const techInfo = techniciansData.find(t => t.id === tech.techId);
+            const techInfo = techniciansData.find(t => t.id === tech.technician_id); // Sử dụng technician_id
             return (
               <Box key={idx} sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
                 <Typography variant="body2" sx={{ mr: 1 }}>
@@ -964,7 +1042,7 @@ export default function TestPage() {
                 <Typography 
                   variant="body2" 
                   sx={{ color: 'error.main', cursor: 'pointer', fontWeight: 'bold' }}
-                  onClick={() => handleRemoveTechnician(job.id, tech.techId)}
+                  onClick={() => handleRemoveTechnician(job.id, tech.technician_id)} // Sử dụng technician_id
                 >
                   ×
                 </Typography>
@@ -987,13 +1065,14 @@ export default function TestPage() {
           />
         </TableCell>
         <TableCell>
-          <Tooltip title={job.status === 'assigned' ? 'Sửa' : 'Thêm'}>
+          <Tooltip title="Sửa thông tin công việc">
             <IconButton
               size="small"
-              onClick={() => handleJobClick(job)}
+              color="primary"
+              onClick={(e) => { e.currentTarget.blur(); handleEditJob(job); }}
               sx={{ mr: 1 }}
             >
-              <PersonAddIcon />
+              <Edit />
             </IconButton>
           </Tooltip>
           <Tooltip title="Xóa">
@@ -1042,7 +1121,6 @@ export default function TestPage() {
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <TextField
                             type="time"
-                            value={job.startTime}
                             onChange={(e) => handleTimeChange(job.id, 'startTime', e.target.value)}
                             size="small"
                             sx={{ width: 80, mr: 1 }}
@@ -1068,11 +1146,11 @@ export default function TestPage() {
                       </TableCell>
                       <TableCell>
                         {job.assignedTechs.map((tech, idx) => {
-                          const techInfo = techniciansData.find(t => t.id === tech.techId);
+                          const techInfo = techniciansData.find(t => t.id === tech.technician_id); // Sử dụng technician_id
                           return (
                             <Chip
                               key={idx}
-                              label={`${techInfo?.name} (${tech.startTime.slice(0,5)}-${tech.endTime.slice(0,5)})`}
+                              label={`${techInfo?.name} (${tech.startTime?.slice(0,5) || 'N/A'}-${tech.endTime?.slice(0,5) || 'N/A'})`}
                               sx={{ mr: 1, textDecoration: 'line-through' }}
                               size="small"
                             />
@@ -1117,82 +1195,14 @@ export default function TestPage() {
           </Button>
         </Box>
 
-        {/* Assignment Dialog */}
-        <Dialog open={assignDialogOpen} onClose={() => setAssignDialogOpen(false)} maxWidth="sm" fullWidth>
-          <DialogTitle>{isEditing ? 'Sửa Phân Bổ Nhân Viên' : 'Phân Bổ Nhân Viên'}</DialogTitle>
-          <DialogContent>
-            {selectedJob && (
-              <Box>
-                <Typography variant="subtitle1" gutterBottom>
-                  Công Việc: {selectedJob.clientName} - {selectedJob.date.toLocaleDateString('vi-VN')}
-                </Typography>
-                {selectedJob.assignedTechs.length > 0 && (
-                  <>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Nhân viên đã giao:
-                    </Typography>
-                    <List>
-                      {selectedJob.assignedTechs.map((tech, idx) => {
-                        const techInfo = techniciansData.find(t => t.id === tech.techId);
-                        return (
-                          <ListItem key={tech.techId}>
-                            <ListItemText primary={techInfo?.name} />
-                          </ListItem>
-                        );
-                      })}
-                    </List>
-                  </>
-                )}
-                {selectedTechnicians.length > 0 && (
-                  <>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Nhân viên sẽ thêm:
-                    </Typography>
-                    <List>
-                      {selectedTechnicians.map((techId) => {
-                        const tech = techniciansData.find(t => t.id === techId);
-                        return (
-                          <ListItem key={techId} secondaryAction={
-                            <IconButton edge="end" onClick={() => handleRemoveSelectedTechnician(techId)}>
-                              <DeleteIcon />
-                            </IconButton>
-                          }>
-                            <ListItemText primary={tech?.name} />
-                          </ListItem>
-                        );
-                      })}
-                    </List>
-                  </>
-                )}
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Chọn nhân viên để thêm:
-                </Typography>
-                <List>
-                  {techniciansData.map((tech) => (
-                    <ListItem key={tech.id}>
-                      <Checkbox
-                        checked={selectedTechnicians.includes(tech.id)}
-                        onChange={() => handleToggleTechnician(tech.id)}
-                        disabled={selectedJob.assignedTechs.some(assigned => assigned.techId === tech.id)}
-                      />
-                      <ListItemText primary={tech.name} />
-                    </ListItem>
-                  ))}
-                </List>
-              </Box>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setAssignDialogOpen(false)}>Đóng</Button>
-            <Button
-              onClick={handleAssignSelectedTechnicians}
-              disabled={selectedTechnicians.length === 0}
-              variant="contained"
-            >
-              Giao việc
-            </Button>
-          </DialogActions>
-        </Dialog>
+        {/* Edit Job Dialog */}
+        <JobFormDialog
+          open={editDialogOpen}
+          onClose={handleCloseEditDialog}
+          onSave={handleSaveEdit}
+          editJob={jobToEdit}
+          session={session}
+        />
 
         {/* Alert Message */}
         <AlertMessage 
