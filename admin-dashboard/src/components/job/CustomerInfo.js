@@ -20,8 +20,8 @@ const CustomerInfo = ({
     if (!searchCustomer.trim()) return true;
 
     const searchTerm = searchCustomer.toLowerCase().trim();
-    const customerName = (c.name || '').toLowerCase();
-    const customerCode = (c.customer_code || '').toLowerCase();
+    const customerName = (c.customers?.name || '').toLowerCase();
+    const customerCode = (c.customers?.customer_code || '').toLowerCase();
 
     return customerName.includes(searchTerm) || customerCode.includes(searchTerm);
   });
@@ -48,7 +48,7 @@ const CustomerInfo = ({
           value={customer}
           onChange={e => {
             setCustomer(e.target.value);
-            const cust = customers.find(c => c.id === e.target.value);
+            const cust = customers.find(c => c.customers?.id === e.target.value);
             setSelectedCustomer(cust || null);
             if (e.target.value) {
               fetchCustomerServicePlan(e.target.value);
@@ -60,7 +60,7 @@ const CustomerInfo = ({
         >
           <MenuItem value=""><em>-- Chọn khách hàng --</em></MenuItem>
           {filteredCustomers.map(c => (
-            <MenuItem key={c.id} value={c.id}>{c.name}</MenuItem>
+            <MenuItem key={c.id} value={c.customers?.id}>{c.customers?.name}</MenuItem>
           ))}
         </Select>
       </FormControl>

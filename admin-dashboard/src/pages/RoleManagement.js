@@ -26,10 +26,10 @@ export default function RoleManagement({ session }) {
       if (!session?.user?.id) return;
       const { data } = await supabase
         .from('profiles')
-        .select('role_id, roles(name)')
+        .select('role_id, profile_roles(name)')
         .eq('id', session.user.id)
         .single();
-      setCurrentUserRole(data?.roles?.name);
+      setCurrentUserRole(data?.profile_roles?.name);
     };
     checkAccess();
     fetchData();
@@ -39,10 +39,10 @@ export default function RoleManagement({ session }) {
     try {
       setLoading(true);
       const [rolesRes, permsRes, rpRes, usersRes] = await Promise.all([
-        supabase.from('roles').select('*').order('name'),
+        supabase.from('profile_roles').select('*').order('name'),
         supabase.from('permissions').select('*').order('name'),
-        supabase.from('role_permissions').select('*, roles(name), permissions(name)'),
-        supabase.from('profiles').select('*, roles(name)').order('id')
+        supabase.from('profile_role_permissions').select('*, profile_roles(name), permissions(name)'),
+        supabase.from('profiles').select('*, profile_roles(name)').order('id')
       ]);
       setRoles(rolesRes.data || []);
       setPermissions(permsRes.data || []);
@@ -94,7 +94,7 @@ export default function RoleManagement({ session }) {
         }).eq('id', editUser.id);
         setSnackbar({ open: true, message: 'Cập nhật người dùng thành công', severity: 'success' });
       } else {
-        const table = tabValue === 0 ? 'roles' : 'permissions';
+        const table = tabValue === 1 ? 'profile_roles' : 'permissions';
         if (editItem) {
           await supabase.from(table).update(formData).eq('id', editItem.id);
           setSnackbar({ open: true, message: 'Cập nhật thành công', severity: 'success' });
@@ -113,7 +113,8 @@ export default function RoleManagement({ session }) {
 
   const handleDelete = async (id, table) => {
     try {
-      await supabase.from(table).delete().eq('id', id);
+      const actualTable = table === 'roles' ? 'profile_roles' : table;
+      await supabase.from(actualTable).delete().eq('id', id);
       setSnackbar({ open: true, message: 'Xóa thành công', severity: 'success' });
       fetchData();
     } catch (error) {
@@ -125,9 +126,9 @@ export default function RoleManagement({ session }) {
   const handleAssignPermission = async (roleId, permId, assign) => {
     try {
       if (assign) {
-        await supabase.from('role_permissions').insert([{ role_id: roleId, permission_id: permId }]);
+        await supabase.from('profile_role_permissions').insert([{ role_id: roleId, permission_id: permId }]);
       } else {
-        await supabase.from('role_permissions').delete().eq('role_id', roleId).eq('permission_id', permId);
+        await supabase.from('profile_role_permissions').delete().eq('role_id', roleId).eq('permission_id', permId);
       }
       fetchData();
       setSnackbar({ open: true, message: assign ? 'Gán quyền thành công' : 'Bỏ quyền thành công', severity: 'success' });
@@ -320,7 +321,7 @@ export default function RoleManagement({ session }) {
         )}
 
         <Dialog open={dialogOpen} onClose={handleCloseDialog}>
-          <DialogTitle>{editUser ? 'Sửa Người Dùng' : ((editItem ? 'Sửa' : 'Thêm') + ' ' + (tabValue === 0 ? 'Vai Trò' : 'Quyền'))}</DialogTitle>
+          <DialogTitle>{editUser ? 'Sửa Người Dùng' : ((editItem ? 'Sửa' : 'Thêm') + ' ' + (tabValue === 1 ? 'Vai Trò' : 'Quyền'))}</DialogTitle>
           <DialogContent>
             {editUser ? (
               <>

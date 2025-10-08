@@ -25,7 +25,7 @@ export default function CustomerList() {
       setLoading(true);
       const { data, error } = await supabase
         .from('customers')
-        .select('*, customer_sites(*)')
+        .select('*, customer_sites(*, customer_sites_plans(*))')  // Thêm select customer_sites_plans để lấy kế hoạch dịch vụ
         .order('created_at', { ascending: false });
       if (error) throw error;
       setCustomers(data);
@@ -114,6 +114,17 @@ export default function CustomerList() {
     return 'Chưa có địa chỉ'; // Hoặc chuỗi rỗng nếu không muốn hiển thị
   };
 
+  // Hàm lấy thông tin kế hoạch dịch vụ (từ customer_sites_plans)
+  const getServicePlanInfo = (customer) => {
+    const site = customer.customer_sites?.[0];
+    const plans = site?.customer_sites_plans || [];
+    if (plans.length > 0) {
+      const plan = plans[0]; // Lấy kế hoạch đầu tiên (có thể mở rộng để hiển thị nhiều)
+      return `${plan.service_types?.join(', ') || 'N/A'} - ${plan.plan || 'N/A'} (${plan.frequency || 'N/A'})`;
+    }
+    return 'Chưa có kế hoạch';
+  };
+
   useEffect(() => {
     fetchCustomers();
     // Không cần fetchProvinces nữa
@@ -162,28 +173,20 @@ export default function CustomerList() {
         <Table sx={{ minWidth: 650 }}>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ textAlign: 'center' }}>Mã KH</TableCell>
-              <TableCell sx={{ textAlign: 'center' }}>Khách hàng</TableCell>
-              <TableCell sx={{ textAlign: 'center' }}>Người Liên Hệ Chính</TableCell>
-              <TableCell sx={{ textAlign: 'center' }}>Số điện thoại</TableCell>
-              <TableCell sx={{ textAlign: 'center' }}>Hành động</TableCell>
+              <TableCell sx={{ textAlign: 'center' }}>Mã KH</TableCell><TableCell sx={{ textAlign: 'center' }}>Khách hàng</TableCell><TableCell sx={{ textAlign: 'center' }}>Người Liên Hệ Chính</TableCell><TableCell sx={{ textAlign: 'center' }}>Số điện thoại</TableCell><TableCell sx={{ textAlign: 'center' }}>Kế hoạch Dịch vụ</TableCell><TableCell sx={{ textAlign: 'center' }}>Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {customers.map(customer => (
               <TableRow key={customer.id}>
-                <TableCell sx={{ textAlign: 'center' }}>{customer.customer_code}</TableCell>
-                <TableCell>
+                <TableCell sx={{ textAlign: 'center' }}>{customer.customer_code}</TableCell><TableCell>
                   <Box>
                     <Typography fontWeight={500}>{customer.name}</Typography>
                     <Typography variant="body2" color="text.secondary">
                       {getAddressString(customer)}
                     </Typography>
                   </Box>
-                </TableCell>
-                <TableCell sx={{ textAlign: 'center' }}>{customer.primary_contact_name}</TableCell>
-                <TableCell sx={{ textAlign: 'center' }}>{customer.primary_contact_phone}</TableCell>
-                <TableCell sx={{ textAlign: 'center' }}>
+                </TableCell><TableCell sx={{ textAlign: 'center' }}>{customer.primary_contact_name}</TableCell><TableCell sx={{ textAlign: 'center' }}>{customer.primary_contact_phone}</TableCell><TableCell sx={{ textAlign: 'center' }}>{getServicePlanInfo(customer)}</TableCell><TableCell sx={{ textAlign: 'center' }}>
                   <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
                     <Tooltip title="Sửa thông tin">
                       <IconButton

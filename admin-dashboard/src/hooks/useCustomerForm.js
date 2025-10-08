@@ -33,6 +33,7 @@ export const useCustomerForm = (open, customerToEdit) => {
   });
 
   const [copyContact, setCopyContact] = useState(false);
+  const [siteId, setSiteId] = useState(null);
   const [provinces, setProvinces] = useState([]);
 
   const districts = useMemo(() => {
@@ -131,6 +132,13 @@ export const useCustomerForm = (open, customerToEdit) => {
     }
   }, [copyContact, formData.primary_contact_name, formData.primary_contact_position, formData.primary_contact_phone]);
 
+  // Reset siteId when form closes
+  useEffect(() => {
+    if (!open) {
+      setSiteId(null);
+    }
+  }, [open]);
+
   // Load customer data for editing
   useEffect(() => {
     if (customerToEdit?.id) {
@@ -180,6 +188,7 @@ export const useCustomerForm = (open, customerToEdit) => {
             site_contact_position: site.site_contact_position || '',
             site_contact_phone: site.site_contact_phone || ''
           }));
+          setSiteId(site.id);
 
           // Load distance for this site
           const { data: distanceData } = await supabase
@@ -199,22 +208,23 @@ export const useCustomerForm = (open, customerToEdit) => {
 
       // Load service plan
       const loadServicePlan = async () => {
-        const { data: planData, error: planError } = await supabase
-          .from('customer_service_plans')
-          .select('*')
+        const { data: siteData, error: planError } = await supabase
+          .from('customer_sites')
+          .select('customer_sites_plans(*)')
           .eq('customer_id', customerToEdit.id)
           .limit(1);
-        console.log('Load service plan data:', planData, 'error:', planError);
-        if (planData && planData.length > 0 && !planError) {
+        console.log('Load service plan data:', siteData, 'error:', planError);
+        if (siteData && siteData.length > 0 && siteData[0].customer_sites_plans && siteData[0].customer_sites_plans.length > 0 && !planError) {
+          const planData = siteData[0].customer_sites_plans[0];
           setServicePlanData({
-            service_types: planData[0].service_types || [],
-            plan: planData[0].plan || 'Lịch Định kỳ',
-            days_of_week: planData[0].days_of_week || [],
-            frequency: planData[0].frequency || 'Hàng tuần',
-            start_date: planData[0].start_date || '',
-            end_date: planData[0].end_date || '',
-            report_date: planData[0].report_date || '',
-            report_frequency: planData[0].report_frequency || '1 tuần/lần',
+            service_types: planData.service_types || [],
+            plan: planData.plan || 'Lịch Định kỳ',
+            days_of_week: planData.days_of_week || [],
+            frequency: planData.frequency || 'Hàng tuần',
+            start_date: planData.start_date || '',
+            end_date: planData.end_date || '',
+            report_date: planData.report_date || '',
+            report_frequency: planData.report_frequency || '1 tuần/lần',
           });
         } else {
           setServicePlanData({
@@ -472,7 +482,6 @@ export const useCustomerForm = (open, customerToEdit) => {
 
       // Save service plan
       const servicePlan = {
-        customer_id: customerId,
         site_id: siteId,
         service_types: servicePlanData.service_types,
         plan: servicePlanData.plan,
@@ -485,20 +494,20 @@ export const useCustomerForm = (open, customerToEdit) => {
       };
 
       const { data: existingPlan } = await supabase
-        .from('customer_service_plans')
+        .from('customer_sites_plans')
         .select('*')
-        .eq('customer_id', customerId)
+        .eq('site_id', siteId)
         .limit(1);
 
       if (existingPlan && existingPlan.length > 0) {
         const { error } = await supabase
-          .from('customer_service_plans')
+          .from('customer_sites_plans')
           .update(servicePlan)
           .eq('id', existingPlan[0].id);
         if (error) throw error;
       } else {
         const { error } = await supabase
-          .from('customer_service_plans')
+          .from('customer_sites_plans')
           .insert([servicePlan]);
         if (error) throw error;
       }
@@ -519,6 +528,7 @@ export const useCustomerForm = (open, customerToEdit) => {
     servicePlanData,
     copyContact,
     setCopyContact,
+    siteId,
     provinces,
     districts,
     wards,

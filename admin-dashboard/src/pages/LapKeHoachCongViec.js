@@ -46,8 +46,8 @@ export default function LapKeHoachCongViec({ session }) {
     const fetchCustomers = async () => {
       console.log('Starting to fetch customers...');
       const { data, error } = await supabase
-        .from('customers')
-        .select('id, customer_code, name, address, ward_name, district_name, province_name, primary_contact_name, primary_contact_phone');
+        .from('customer_sites')
+        .select('id, site_name, address, ward_name, district_name, province_name, customers(id, customer_code, name, primary_contact_name, primary_contact_phone)');
       
       if (error) {
         console.error('Error fetching customers:', error);
@@ -64,7 +64,7 @@ export default function LapKeHoachCongViec({ session }) {
 
     const fetchTechnicians = async () => {
       const { data, error } = await supabase
-        .from('technicians')
+        .from('profiles')
         .select('id, tech_code, name, phone, email, position')
         .eq('active', true);
       if (error) {
