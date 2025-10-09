@@ -72,7 +72,7 @@ export default function TestPage({ session }) {
       .select(`
         id, site_name, address, province_name,
         customers!inner (id, name),
-        customer_service_plans (
+        customer_sites_plans (
           service_types, plan, days_of_week, frequency, start_date, end_date, report_date, report_frequency
         )
       `);
@@ -82,10 +82,17 @@ export default function TestPage({ session }) {
       return;
     }
 
-    // Fetch existing jobs
+    // Fetch existing jobs với join để lấy site_name
     const { data: jobsData, error: jobsError } = await supabase
       .from('jobs')
-      .select('*')
+      .select(`
+        *,
+        customers!inner (
+          customer_sites (
+            site_name
+          )
+        )
+      `)
       .order('scheduled_date', { ascending: true });
 
     if (jobsError) {
@@ -99,11 +106,11 @@ export default function TestPage({ session }) {
     );
 
     if (jobsData && jobsData.length > 0) {
-      // Convert to job format
+      // Convert to job format, lấy site_name từ join
       const existingJobs = jobsData.map(job => ({
         id: job.id,
         customerId: job.customer_id,
-        clientName: job.customer_name,
+        clientName: job.customers?.customer_sites?.[0]?.site_name || job.customer_name,  // Ưu tiên site_name
         date: new Date(job.scheduled_date),
         status: job.status,
         assignedTechs: job.assigned_technicians || [],
@@ -206,7 +213,7 @@ export default function TestPage({ session }) {
         .select(`
           id, site_name, address, province_name,
           customers!inner (id, name),
-          customer_service_plans (
+          customer_sites_plans (
             service_types, plan, days_of_week, frequency, start_date, end_date, report_date, report_frequency
           )
         `);
@@ -221,9 +228,9 @@ export default function TestPage({ session }) {
     const fetchTechnicians = async () => {
       const { data, error } = await supabase
         .from('profiles')  // Thay đổi từ 'technicians' thành 'profiles' theo schema mới
-        .select('id, tech_code, name, phone, email, position')
+        .select('id, tech_code, name, phone, email, position, profile_roles!inner(name)')
         .eq('active', true)
-        .eq('role', 'technician');  // Thêm filter role để chỉ lấy kỹ thuật viên
+        .eq('profile_roles.name', 'technician');  // Filter role qua join
     if (error) {
       console.error('Error fetching technicians:', error);
     } else {
@@ -814,7 +821,7 @@ export default function TestPage({ session }) {
     <>
       <Box sx={{ p: 3 }}>
         <Typography variant="h4" gutterBottom>
-          Lập Kế Hoạch Giao Việc - Giao Diện Cải Tiến
+          Lập Kế Hoạch Giao Việc
         </Typography>
 
         {/* Danh sách khách hàng */}

@@ -20,10 +20,10 @@ export default function DichVuKhachHang({ session }) {
         .select(`
           *,
           customer_sites (
-            site_name, address, province, district, ward, ward_name, district_name, province_name, google_map_code
-          ),
-          customer_sites_plans (
-            service_types, plan, days_of_week, frequency, start_date, end_date, report_date, report_frequency
+            site_name, address, province, district, ward, ward_name, district_name, province_name, google_map_code,
+            customer_sites_plans (
+              service_types, plan, days_of_week, frequency, start_date, end_date, report_date, report_frequency
+            )
           )
         `);
 
@@ -111,15 +111,16 @@ export default function DichVuKhachHang({ session }) {
                       return locationParts.length > 0 ? locationParts.join(', ') : 'N/A';
                     })()}
                   </TableCell>
-                  <TableCell sx={{ textAlign: 'center' }}>{service.customer_sites_plans?.[0]?.service_types?.join(', ') || ''}</TableCell>
-                  <TableCell sx={{ textAlign: 'center' }}>{service.customer_sites_plans?.[0]?.frequency || ''}</TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}>{service.customer_sites?.[0]?.customer_sites_plans?.[0]?.service_types?.join(', ') || ''}</TableCell>
+                  <TableCell sx={{ textAlign: 'center' }}>{service.customer_sites?.[0]?.customer_sites_plans?.[0]?.frequency || ''}</TableCell>
                   <TableCell sx={{ textAlign: 'center' }}>
-                    {formatContractPeriod(service.customer_sites_plans?.[0]?.start_date, service.customer_sites_plans?.[0]?.end_date)}
+                    {formatContractPeriod(service.customer_sites?.[0]?.customer_sites_plans?.[0]?.start_date, service.customer_sites?.[0]?.customer_sites_plans?.[0]?.end_date)}
                   </TableCell>
                   <TableCell sx={{ textAlign: 'center' }}>
                     {(() => {
-                      const reportDate = service.customer_sites_plans?.[0]?.report_date;
-                      const reportFrequency = service.customer_sites_plans?.[0]?.report_frequency;
+                      const plan = service.customer_sites?.[0]?.customer_sites_plans?.[0];
+                      const reportDate = plan?.report_date;
+                      const reportFrequency = plan?.report_frequency;
                       if (!reportDate || !reportFrequency) return '';
                       const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
                       const dayIndex = new Date(reportDate).getDay(); // 0=Sunday, 1=Monday, etc.
