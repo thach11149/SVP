@@ -1,6 +1,7 @@
 create table public.customer_sites (
   id uuid not null default gen_random_uuid (),
   customer_id uuid not null,
+  site_code text null,
   site_name text not null,
   google_map_code text null,
   address text null,
@@ -14,8 +15,8 @@ create table public.customer_sites (
   site_contact_position text null,
   site_contact_phone text null,
   notes text null,
-  created_at timestamp with time zone null default now(),
-  updated_at timestamp with time zone null default now(),
+  created_at timestamp with time zone null default timezone ('Asia/Ho_Chi_Minh'::text, now()),
+  updated_at timestamp with time zone null default timezone ('Asia/Ho_Chi_Minh'::text, now()),
   constraint customer_sites_pkey primary key (id),
   constraint customer_sites_customer_id_fkey foreign KEY (customer_id) references customers (id) on delete CASCADE
 ) TABLESPACE pg_default;

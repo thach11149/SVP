@@ -76,17 +76,13 @@ export default function ScheduleCalendar() {
 
   const handleDeleteJob = async (jobId) => {
     try {
-      const { error } = await supabase
-        .from('jobs')
-        .update({ is_deleted: true })
-        .eq('id', jobId);
+      const { error } = await supabase.from('jobs').delete().eq('id', jobId);
       if (error) throw error;
       setEvents(events.filter(e => e.id !== jobId));
       handleCloseDialog();
       setAlert({ type: 'success', message: 'Xóa công việc thành công!' });
     } catch (error) {
-      console.error('Lỗi khi xóa công việc:', error);
-      setAlert({ type: 'error', message: 'Lỗi khi xóa công việc: ' + error.message });
+      alert('Lỗi khi xóa công việc: ' + error.message);
     }
   };
 

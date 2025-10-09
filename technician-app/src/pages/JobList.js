@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import moment from 'moment';
 
@@ -27,6 +27,10 @@ export default function JobList({ session }) {
     endDate: getTodayDate() 
   });
   const [isRangeMode, setIsRangeMode] = useState(false);
+  
+  // Ref để tránh fetch lại nhiều lần
+  const hasInitialized = useRef(false);
+  const currentUserId = useRef(null);
 
   // Data mẫu cho demo - sẽ được thay thế bằng dữ liệu từ Supabase
   // Removed sample data as we now fetch from database
@@ -36,248 +40,247 @@ export default function JobList({ session }) {
       if (!session || !session.user) {
         setLoading(false);
         setJobs([]);
+        hasInitialized.current = false;
+        currentUserId.current = null;
         return;
+      }
+
+      // Kiểm tra xem đã fetch cho user này chưa
+      if (hasInitialized.current && currentUserId.current === session.user.id) {
+        return; // Đã fetch rồi, không fetch lại
       }
 
       try {
         setLoading(true);
-        console.log('=== FETCHING JOBS ===');
-        console.log('User ID:', session.user.id);
-        console.log('User Email:', session.user.email);
+        console.log('🔄 Fetching jobs for user:', session.user.email);
+        
+        // Tìm profile của user hiện tại
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('id, name, email')
+          .eq('id', session.user.id)
+          .maybeSingle();
+          
+        if (!userProfile) {
+          console.log('❌ No profile found for user');
+          setJobs([]);
+          setLoading(false);
+          return;
+        }
 
-        // Strategy 1: Thử lấy jobs trực tiếp từ jobs table trước (có thể có data)
-        console.log('Trying direct jobs query...');
-        const { data: directJobs, /* error: directError */ } = await supabase
+        console.log('✅ Found user profile:', userProfile.name);
+
+        // Bước 1: Lấy job_assignments đơn giản trước
+        const { data: assignments, error: assignError } = await supabase
+          .from('job_assignments')
+          .select('job_id, role, status, assigned_at')
+          .eq('technician_id', session.user.id)
+          .eq('status', 'assigned');
+
+        if (assignError) {
+          console.error('❌ Error fetching assignments:', assignError);
+          setJobs([]);
+          setLoading(false);
+          return;
+        }
+
+        if (!assignments || assignments.length === 0) {
+          console.log('❌ No assignments found');
+          setJobs([]);
+          setLoading(false);
+          return;
+        }
+
+        // Bước 2: Lấy jobs dựa trên job_ids
+        const jobIds = assignments.map(a => a.job_id);
+        const { data: directJobs, error: jobsError } = await supabase
           .from('jobs')
           .select(`
             *,
-            customers (
+            customer_sites_plans (
               id,
-              name,
-              address,
-              primary_contact_name,
-              primary_contact_phone,
-              ward_name,
-              district_name,
-              province_name
-            ),
-            technicians!jobs_team_lead_id_fkey (
-              id,
-              name
-            ),
-            job_materials (
-              id,
-              required_quantity,
-              actual_quantity,
-              materials (
+              customer_sites (
                 id,
-                name,
-                unit,
-                category
-              )
-            ),
-            job_checklist_items (
-              id,
-              completed,
-              completed_at,
-              checklist (
-                id,
-                label,
-                value
+                site_name,
+                address,
+                customers (
+                  id,
+                  name,
+                  primary_contact_name,
+                  primary_contact_phone
+                )
               )
             )
           `)
-          .eq('user_id', session.user.id);
-          
-        console.log('Direct jobs result:', directJobs);
-        console.log('Direct jobs count:', directJobs?.length || 0);
-        
-        if (directJobs && directJobs.length > 0) {
-          console.log('✅ Found jobs directly, using them...');
-          const transformedJobs = directJobs.map(job => ({
-            ...job,
-            assignment_role: 'member',
-            assignment_status: 'assigned',
-            assigned_at: job.created_at,
-            customer_name: job.customers?.name,
-            address: job.address || `${job.customers?.address || ''}, ${job.customers?.ward_name || ''}, ${job.customers?.district_name || ''}, ${job.customers?.province_name || ''}`.replace(/,\s*,/g, ',').replace(/^,\s*|,\s*$/g, ''),
-            content: job.job_content || job.job_description,
-            special_requests: job.special_requests || 'Không có',
-            contact_person: job.contact_person || job.customers?.primary_contact_name,
-            phone_number: job.contact_phone || job.customers?.primary_contact_phone,
-            team_lead_name: job.technicians?.name || 'N/A',
-            required_chemicals: job.job_materials?.map(jm => ({
-              id: jm.materials.id,
-              name: jm.materials.name,
-              quantity: jm.required_quantity,
-              actual_quantity: jm.actual_quantity,
-              unit: jm.materials.unit,
-              category: jm.materials.category,
-              shortage: parseFloat(jm.required_quantity) - parseFloat(jm.actual_quantity || 0)
-            })) || [],
-            checklist_items: job.job_checklist_items?.map(jci => ({
-              id: jci.checklist.id,
-              label: jci.checklist.label,
-              value: jci.checklist.value,
-              completed: jci.completed === 'true',
-              completed_at: jci.completed_at
-            })) || []
-          }));
-          setJobs(transformedJobs);
-          setLoading(false);
-          return;
-        }
+          .in('id', jobIds);
 
-        // Strategy 2: Thử với job_assignments
-        console.log('No direct jobs found, trying assignments...');
-        
-        // Tìm technician record
-        let technicianId = null;
-        
-        // Thử tìm bằng user_id
-        const { data: techByUserId } = await supabase
-          .from('technicians')
-          .select('id, user_id, name, email')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
-          
-        if (techByUserId) {
-          technicianId = techByUserId.id;
-          console.log('✅ Found technician by user_id:', techByUserId);
-        } else {
-          // Thử tìm bằng email
-          const { data: techByEmail } = await supabase
-            .from('technicians')
-            .select('id, user_id, name, email')
-            .eq('email', session.user.email)
-            .maybeSingle();
-            
-          if (techByEmail) {
-            technicianId = techByEmail.id;
-            console.log('✅ Found technician by email:', techByEmail);
-          } else {
-            console.log('❌ No technician found for user');
-            
-            // Debug: Show all technicians để check data
-            const { data: allTechs } = await supabase
-              .from('technicians')
-              .select('id, user_id, name, email')
-              .limit(10);
-            console.log('Available technicians:', allTechs);
-          }
-        }
-        
-        if (!technicianId) {
-          console.log('❌ No technician ID found, no jobs to show');
+        if (jobsError) {
+          console.error('❌ Error fetching jobs:', jobsError);
           setJobs([]);
           setLoading(false);
           return;
         }
-
-        // Lấy jobs từ job_assignments
-        console.log('Fetching jobs via assignments for technician:', technicianId);
-        const { data: jobsData, /* error: jobsError */ } = await supabase
-          .from('job_assignments')
-          .select(`
-            job_id,
-            role,
-            status,
-            assigned_at,
-            jobs (
-              *,
-              customers (
-                id,
-                name,
-                address,
-                primary_contact_name,
-                primary_contact_phone,
-                ward_name,
-                district_name,
-                province_name
-              ),
-              technicians!jobs_team_lead_id_fkey (
-                id,
-                name
-              ),
-              job_materials (
-                id,
-                required_quantity,
-                actual_quantity,
-                materials (
-                  id,
-                  name,
-                  unit,
-                  category
-                )
-              ),
-              job_checklist_items (
-                id,
-                completed,
-                completed_at,
-                checklist (
-                  id,
-                  label,
-                  value
-                )
-              )
-            )
-          `)
-          .eq('technician_id', technicianId)
-          .eq('status', 'assigned');
-
-        console.log('Assignment jobs result:', jobsData);
-        console.log('Assignment jobs count:', jobsData?.length || 0);
-
-        if (jobsData && jobsData.length > 0) {
-          const transformedJobs = jobsData.map(assignment => {
-            const job = assignment.jobs;
+        
+        if (directJobs && directJobs.length > 0) {
+          console.log(`✅ Found ${directJobs.length} jobs, processing data...`);
+          
+          // Tạo map assignments theo job_id để dễ lookup
+          const assignmentMap = {};
+          assignments.forEach(assignment => {
+            assignmentMap[assignment.job_id] = assignment;
+          });
+          
+          const transformedJobs = directJobs.map(job => {
+            const assignment = assignmentMap[job.id];
+            const customerSite = job.customer_sites_plans?.customer_sites;
+            const customer = customerSite?.customers;
+            
             return {
               ...job,
-              assignment_role: assignment.role,
-              assignment_status: assignment.status,
-              assigned_at: assignment.assigned_at,
-              customer_name: job.customers?.name,
-              address: job.address || `${job.customers?.address || ''}, ${job.customers?.ward_name || ''}, ${job.customers?.district_name || ''}, ${job.customers?.province_name || ''}`.replace(/,\s*,/g, ',').replace(/^,\s*|,\s*$/g, ''),
-              content: job.job_content || job.job_description,
-              special_requests: job.special_requests || 'Không có',
-              contact_person: job.contact_person || job.customers?.primary_contact_name,
-              phone_number: job.contact_phone || job.customers?.primary_contact_phone,
-              team_lead_name: job.technicians?.name || 'N/A',
-              required_chemicals: job.job_materials?.map(jm => ({
-                id: jm.materials.id,
-                name: jm.materials.name,
-                quantity: jm.required_quantity,
-                actual_quantity: jm.actual_quantity,
-                unit: jm.materials.unit,
-                category: jm.materials.category,
-                shortage: parseFloat(jm.required_quantity) - parseFloat(jm.actual_quantity || 0)
-              })) || [],
-              checklist_items: job.job_checklist_items?.map(jci => ({
-                id: jci.checklist.id,
-                label: jci.checklist.label,
-                value: jci.checklist.value,
-                completed: jci.completed === 'true',
-                completed_at: jci.completed_at
-              })) || []
+              assignment_role: assignment?.role || 'member',
+              assignment_status: assignment?.status || 'assigned',
+              assigned_at: assignment?.assigned_at,
+              customer_name: customer?.name || 'N/A',
+              site_name: customerSite?.site_name || 'N/A',
+              address: customerSite?.address || 'N/A',
+              content: job.job_content || job.job_description || 'N/A',
+              service_content: job.service_content || 'N/A',
+              special_requests: job.notes || 'Không có',
+              contact_person: customer?.primary_contact_name || 'N/A',
+              phone_number: customer?.primary_contact_phone || 'N/A',
+              team_lead_name: 'N/A', // Tạm thời set N/A, sẽ lấy sau
+              required_chemicals: [], // Tạm thời để trống, sẽ lấy riêng
+              checklist_items: [] // Tạm thời để trống, sẽ lấy riêng
             };
           });
           
-          console.log('✅ Final transformed jobs:', transformedJobs);
+          // Bước 3: Lấy materials và checklist cho từng job
+          for (let job of transformedJobs) {
+            try {
+              // Lấy materials với join thủ công
+              const { data: jobMaterials, error: materialsError } = await supabase
+                .from('job_materials')
+                .select('required_quantity, actual_quantity, material_id, notes')
+                .eq('job_id', job.id);
+
+              if (materialsError) {
+                console.error(`❌ Error fetching materials for job ${job.id}:`, materialsError);
+                job.required_chemicals = [];
+              } else if (jobMaterials && jobMaterials.length > 0) {
+                // Lấy thông tin materials riêng biệt
+                const materialIds = jobMaterials.map(jm => jm.material_id).filter(Boolean);
+                if (materialIds.length > 0) {
+                  const { data: materialsDetails } = await supabase
+                    .from('materials')
+                    .select('id, name, unit, category')
+                    .in('id', materialIds);
+
+                  // Kết hợp job_materials với materials details
+                  job.required_chemicals = jobMaterials.map(jm => {
+                    const materialDetail = materialsDetails?.find(m => m.id === jm.material_id);
+                    return {
+                      id: materialDetail?.id || jm.material_id,
+                      name: materialDetail?.name || 'Unknown Material',
+                      quantity: jm.required_quantity,
+                      actual_quantity: jm.actual_quantity,
+                      unit: materialDetail?.unit || 'unit',
+                      category: materialDetail?.category || 'Other',
+                      shortage: parseFloat(jm.required_quantity) - parseFloat(jm.actual_quantity || 0)
+                    };
+                  });
+                } else {
+                  job.required_chemicals = [];
+                }
+              } else {
+                job.required_chemicals = [];
+              }
+
+              // Lấy checklist
+              const { data: checklist, error: checklistError } = await supabase
+                .from('job_checklist_items')
+                .select('id, completed, completed_at, label')
+                .eq('job_id', job.id);
+
+              if (checklistError) {
+                console.error(`❌ Error fetching checklist for job ${job.id}:`, checklistError);
+                job.checklist_items = [];
+              } else if (checklist) {
+                job.checklist_items = checklist.map(jci => ({
+                  id: jci.id,
+                  label: jci.label || 'Checklist item',
+                  value: jci.id,
+                  completed: jci.completed === true || jci.completed === 'true',
+                  completed_at: jci.completed_at
+                }));
+              } else {
+                job.checklist_items = [];
+              }
+
+              // Lấy team lead
+              const { data: teamLead, error: teamLeadError } = await supabase
+                .from('job_assignments')
+                .select('technician_id')
+                .eq('job_id', job.id)
+                .eq('role', 'lead')
+                .maybeSingle();
+
+              if (teamLeadError) {
+                console.error(`❌ Error fetching team lead for job ${job.id}:`, teamLeadError);
+              } else if (teamLead?.technician_id) {
+                // Lấy tên team lead từ profiles
+                const { data: teamLeadProfile } = await supabase
+                  .from('profiles')
+                  .select('name')
+                  .eq('id', teamLead.technician_id)
+                  .maybeSingle();
+                
+                if (teamLeadProfile?.name) {
+                  job.team_lead_name = teamLeadProfile.name;
+                }
+              }
+            } catch (error) {
+              console.error(`❌ Error fetching additional data for job ${job.id}:`, error);
+            }
+          }
+          
+          console.log(`✅ Processing complete: ${transformedJobs.length} jobs with materials & checklist loaded`);
           setJobs(transformedJobs);
-        } else {
-          console.log('❌ No jobs found via assignments either');
-          setJobs([]);
+          
+          // Fetch trạng thái hóa chất hàng ngày
+          const { data: chemicalStatusData, error: chemicalError } = await supabase
+            .from('daily_chemical_status')
+            .select('*')
+            .eq('user_id', session.user.id);
+
+          if (!chemicalError && chemicalStatusData) {
+            const statusMap = {};
+            chemicalStatusData.forEach(status => {
+              statusMap[status.date] = {
+                status: status.status,
+                notes: status.notes,
+                confirmed_at: status.confirmed_at,
+                collected: status.status === 'confirmed' || status.status === 'ready'
+              };
+            });
+            setDailyChemicalsStatus(statusMap);
+          }
+          
+          // Đánh dấu đã fetch thành công
+          hasInitialized.current = true;
+          currentUserId.current = session.user.id;
+          setLoading(false);
+          return;
         }
 
-        // Fetch trạng thái hóa chất hàng ngày
-        console.log('Fetching chemical status...');
+        // Nếu không tìm thấy jobs nào
+        console.log('❌ No jobs found via assignments');
+        setJobs([]);
+
+        // Fetch trạng thái hóa chất hàng ngày (luôn thực hiện khi không có jobs)
         const { data: chemicalStatusData, error: chemicalError } = await supabase
           .from('daily_chemical_status')
           .select('*')
           .eq('user_id', session.user.id);
-
-        console.log('Chemical status data:', chemicalStatusData);
-        console.log('Chemical status error:', chemicalError);
 
         if (!chemicalError && chemicalStatusData) {
           const statusMap = {};
@@ -289,20 +292,27 @@ export default function JobList({ session }) {
               collected: status.status === 'confirmed' || status.status === 'ready'
             };
           });
-          console.log('Chemical status map:', statusMap);
           setDailyChemicalsStatus(statusMap);
         }
+
+        // Đánh dấu đã fetch thành công (ngay cả khi không có jobs)
+        hasInitialized.current = true;
+        currentUserId.current = session.user.id;
 
       } catch (error) {
         console.error('❌ Error fetching jobs:', error);
         setJobs([]);
+        // Reset trạng thái nếu có lỗi để có thể thử lại
+        hasInitialized.current = false;
+        currentUserId.current = null;
       } finally {
         setLoading(false);
       }
     }
 
     fetchUserJobs();
-  }, [session]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]); // Chỉ depend vào user ID thay vì toàn bộ session object để tránh re-fetch không cần thiết
 
   // Initialize job status
   useEffect(() => {
@@ -389,11 +399,10 @@ export default function JobList({ session }) {
       
       // Tạo work report khi check-in
       const { data: reportData, error: reportError } = await supabase
-        .from('work_reports')
+        .from('job_reports')
         .insert({
           job_id: currentJob.id,
           user_id: session.user.id,
-          user_email: session.user.email,
           check_in_time: checkinTime,
           notes: ''
         })
@@ -405,7 +414,10 @@ export default function JobList({ session }) {
       // Cập nhật status job
       const { error: jobError } = await supabase
         .from('jobs')
-        .update({ status: 'Đang thực hiện' })
+        .update({ 
+          status: 'Đang thực hiện',
+          start_time: new Date(checkinTime).toTimeString().slice(0, 8)
+        })
         .eq('id', currentJob.id);
 
       if (jobError) throw jobError;
@@ -438,7 +450,7 @@ export default function JobList({ session }) {
 
       // Cập nhật work report với check-out time và notes
       const { error: reportError } = await supabase
-        .from('work_reports')
+        .from('job_reports')
         .update({
           check_out_time: checkoutTime,
           notes: reportData.notes || '',
@@ -467,7 +479,7 @@ export default function JobList({ session }) {
         const checklistUpdates = Object.entries(reportData.checklist)
           .filter(([_, completed]) => completed)
           .map(([index, _]) => {
-            const checklistItem = currentJob.job_checklist_items?.[parseInt(index)];
+            const checklistItem = currentJob.checklist_items?.[parseInt(index)];
             if (checklistItem) {
               return supabase
                 .from('job_checklist_items')
@@ -505,7 +517,8 @@ export default function JobList({ session }) {
         .from('jobs')
         .update({ 
           status: 'Hoàn thành',
-          completed: true
+          completed: true,
+          end_time: new Date(checkoutTime).toTimeString().slice(0, 8)
         })
         .eq('id', currentJob.id);
 
@@ -556,9 +569,9 @@ export default function JobList({ session }) {
       const jobDate = moment(job.scheduled_date).format('YYYY-MM-DD');
       return jobDate >= startDate && jobDate <= endDate;
     }).forEach(job => {
-      const isTeamLead = job.team_lead_id === session.user.id;
-      const isTeamWork = job.team_size > 1;
-      const shouldCountChemicals = !isTeamWork || isTeamLead;
+      const isTeamLead = job.assignment_role === 'lead';
+      const hasTeamLead = job.team_lead_name && job.team_lead_name !== 'N/A';
+      const shouldCountChemicals = !hasTeamLead || isTeamLead;
       
       job.required_chemicals?.forEach(chem => {
         if (shouldCountChemicals) {
@@ -689,14 +702,14 @@ export default function JobList({ session }) {
               <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
                 <h4 className="font-medium text-orange-800 mb-2">
                   <i className="fas fa-users mr-1"></i>
-                  Hóa chất team work (Team lead ({jobs.find(job => job.team_lead_id && job.team_size > 1)?.team_lead_name || 'N/A'}) sẽ lấy):
+                  Hóa chất team work (Team lead sẽ lấy):
                 </h4>
                 <ul className="list-disc list-inside text-orange-700 space-y-1 pl-4 text-sm">
                   {Object.values(teamWorkChemicals).map((chem, index) => (
                     <li key={index}>
                       <span className="font-medium">{chem.name}</span>: {chem.quantity} {chem.unit}
                       <span className="text-xs text-orange-600 ml-2">
-                        (Team lead ({jobs.find(job => job.team_lead_id && job.team_size > 1)?.team_lead_name || 'N/A'}) sẽ lấy - bạn có thể nhắc nhở)
+                        (Team lead sẽ lấy - bạn có thể nhắc nhở)
                       </span>
                     </li>
                   ))}
@@ -710,20 +723,22 @@ export default function JobList({ session }) {
             {/* Hiển thị thông tin về công việc team work */}
             {jobs.filter(job => {
               const jobDate = moment(job.scheduled_date).format('YYYY-MM-DD');
-              return jobDate >= startDate && jobDate <= endDate && job.team_size > 1;
+              const hasTeamLead = job.team_lead_name && job.team_lead_name !== 'N/A';
+              return jobDate >= startDate && jobDate <= endDate && hasTeamLead;
             }).length > 0 && (
               <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <h4 className="text-sm font-medium text-blue-800 mb-2">Thông tin công việc nhóm:</h4>
                 {jobs.filter(job => {
                   const jobDate = moment(job.scheduled_date).format('YYYY-MM-DD');
-                  return jobDate >= startDate && jobDate <= endDate && job.team_size > 1;
+                  const hasTeamLead = job.team_lead_name && job.team_lead_name !== 'N/A';
+                  return jobDate >= startDate && jobDate <= endDate && hasTeamLead;
                 }).map(job => (
                   <div key={job.id} className="text-xs text-blue-700 mb-1">
                     • {job.customer_name} - {moment(job.scheduled_date).format('DD/MM')}
-                    {job.team_lead_id === session.user.id ? (
+                    {job.assignment_role === 'lead' ? (
                       <span className="font-medium text-green-700"> (Bạn là team lead - sẽ lấy hóa chất)</span>
                     ) : (
-                      <span className="text-orange-700"> (Team member - nhắc nhở team lead)</span>
+                      <span className="text-orange-700"> (Team member - nhắc nhở team lead: {job.team_lead_name})</span>
                     )}
                   </div>
                 ))}
@@ -908,9 +923,14 @@ export default function JobList({ session }) {
               </h3>
               <p className="text-gray-600 text-sm mt-1 mb-2">
                 <i className="far fa-calendar-alt mr-1 text-gray-500"></i> 
-                {moment(job.scheduled_date).format('DD/MM/YYYY')} -
-                <i className="far fa-clock mr-1 text-gray-500"></i> 
-                {job.scheduled_time || 'Chưa xác định'}
+                {moment(job.scheduled_date).format('DD/MM/YYYY')}
+                {job.scheduled_time && (
+                  <>
+                    {' - '}
+                    <i className="far fa-clock mr-1 text-gray-500"></i> 
+                    {job.scheduled_time}
+                  </>
+                )}
                 <span className="ml-3">
                   <i className="fas fa-map-marker-alt mr-1 text-gray-500"></i> 
                   {job.address}
@@ -919,12 +939,8 @@ export default function JobList({ session }) {
               <p className="text-gray-700 text-sm">
                 <strong className="text-gray-800">Nội dung:</strong> {job.content}
                 <span className="ml-4">
-                  <strong className="text-gray-800">
-                    {job.team_members ? 'Làm cùng với:' : 'Thực hiện cá nhân'}
-                  </strong>
-                  {job.team_members && (
-                    <span className="text-gray-700"> {job.team_members}</span>
-                  )}
+                  <strong className="text-gray-800">Vai trò:</strong> 
+                  <span className="text-gray-700"> {job.assignment_role === 'lead' ? 'Team Lead' : 'Thành viên'}</span>
                 </span>
               </p>
             </div>
@@ -963,17 +979,16 @@ export default function JobList({ session }) {
             <strong className="text-gray-800">Nội dung:</strong> {currentJob.content}
           </p>
           <p className="text-gray-600 mb-2">
-            <strong className="text-gray-800">
-              {currentJob.team_members ? 'Làm cùng với:' : 'Thực hiện cá nhân'}
-            </strong>
-            {currentJob.team_members && (
-              <span className="text-gray-700"> {currentJob.team_members}</span>
+            <strong className="text-gray-800">Vai trò của bạn:</strong>
+            <span className="text-gray-700"> {currentJob.assignment_role === 'lead' ? 'Team Lead' : 'Thành viên'}</span>
+            {currentJob.team_lead_name && currentJob.assignment_role !== 'lead' && (
+              <span className="text-gray-700"> (Team Lead: {currentJob.team_lead_name})</span>
             )}
           </p>
           <p className="text-gray-600 mb-2">
             <strong className="text-gray-800">Người liên hệ:</strong> {currentJob.contact_person}
           </p>
-          <p className="text-gray-600 mb-4 flex items-center flex-wrap">
+          <div className="text-gray-600 mb-4 flex items-center flex-wrap">
             <strong className="text-gray-800 mr-2">Số điện thoại:</strong> 
             <span>{currentJob.phone_number || currentJob.customers?.phone_number}</span>
             <div className="flex space-x-2 mt-2 sm:mt-0 ml-0 sm:ml-2">
@@ -990,7 +1005,7 @@ export default function JobList({ session }) {
                 <i className="fas fa-comment-dots mr-1"></i> Zalo
               </button>
             </div>
-          </p>
+          </div>
           <p className="text-gray-600 mb-4">
             <strong className="text-gray-800">Yêu cầu đặc biệt:</strong> {currentJob.special_requests || 'Không có'}
           </p>
@@ -1019,7 +1034,7 @@ export default function JobList({ session }) {
                 currentJob.required_chemicals.map((chem, index) => (
                   <li key={index}>
                     {chem.name}: {chem.quantity} {chem.unit}
-                    {currentJob.team_size > 1 && currentJob.team_lead_id !== session.user.id && (
+                    {currentJob.assignment_role !== 'lead' && currentJob.team_lead_name && (
                       <span className="text-sm text-blue-600 ml-2">
                         (Team lead ({currentJob.team_lead_name}) sẽ lấy)
                       </span>
@@ -1030,12 +1045,12 @@ export default function JobList({ session }) {
                 <li className="text-gray-500">Không có hóa chất cần chuẩn bị cho công việc này.</li>
               )}
             </ul>
-            {currentJob.team_size > 1 && (
+            {currentJob.team_lead_name && (
               <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded">
                 <p className="text-sm text-blue-700">
                   <i className="fas fa-users mr-1"></i>
-                  Công việc nhóm ({currentJob.team_size} người) - 
-                  {currentJob.team_lead_id === session.user.id ? (
+                  Công việc nhóm - 
+                  {currentJob.assignment_role === 'lead' ? (
                     <span className="font-medium"> Bạn là team lead, chịu trách nhiệm lấy hóa chất</span>
                   ) : (
                     <span> Team lead ({currentJob.team_lead_name}) sẽ lấy hóa chất cho cả nhóm</span>

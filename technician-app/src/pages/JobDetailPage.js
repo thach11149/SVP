@@ -48,7 +48,7 @@ export default function JobDetailPage({ session }) {
 
       // Fetch work reports with images
       const { data: reportsData, error: reportsError } = await supabase
-        .from('work_reports')
+        .from('job_reports')
         .select(`
           *,
           job_report_images (
@@ -65,7 +65,7 @@ export default function JobDetailPage({ session }) {
       // Combine data
       const jobDetails = {
         ...jobData,
-        work_reports: reportsData?.map(report => ({
+        job_reports: reportsData?.map(report => ({
           ...report,
           images: report.job_report_images || []
         })) || []
@@ -90,7 +90,7 @@ export default function JobDetailPage({ session }) {
     setIsSubmitting(true);
     try {
       await supabase.from('jobs').update({ status: 'Đang xử lý' }).eq('id', jobId);
-      await supabase.from('work_reports').insert([{
+      await supabase.from('job_reports').insert([{
         job_id: jobId,
         user_id: session.user.id,
         check_in_time: new Date(),
@@ -105,12 +105,12 @@ export default function JobDetailPage({ session }) {
   };
 
   const handleCheckOut = async () => {
-    const lastReport = jobDetails.work_reports?.find(r => !r.check_out_time);
+    const lastReport = jobDetails.job_reports?.find(r => !r.check_out_time);
     if (!lastReport) return alert("Không tìm thấy phiên làm việc để check-out!");
 
     setIsSubmitting(true);
     try {
-      await supabase.from('work_reports').update({ check_out_time: new Date() }).eq('id', lastReport.id);
+      await supabase.from('job_reports').update({ check_out_time: new Date() }).eq('id', lastReport.id);
       await supabase.from('jobs').update({ status: 'Hoàn thành', completed: true }).eq('id', jobId);
       fetchJobData();
     } catch (error) {
@@ -129,13 +129,13 @@ export default function JobDetailPage({ session }) {
 
     setIsSubmitting(true);
     try {
-      const lastReport = jobDetails.work_reports?.find(r => r.id);
+      const lastReport = jobDetails.job_reports?.find(r => r.id);
       if (!lastReport) {
         alert("Bạn cần Check-in trước khi lưu báo cáo!");
         return;
       }
 
-      await supabase.from('work_reports').update({ notes: reportNotes }).eq('id', lastReport.id);
+      await supabase.from('job_reports').update({ notes: reportNotes }).eq('id', lastReport.id);
 
       if (selectedFiles && selectedFiles.length > 0) {
         for (const file of Array.from(selectedFiles)) {
@@ -165,7 +165,7 @@ export default function JobDetailPage({ session }) {
     setIsSubmitting(true);
     try {
       // Update report notes
-      await supabase.from('work_reports').update({ notes: reportNotes }).eq('id', editingReportId);
+      await supabase.from('job_reports').update({ notes: reportNotes }).eq('id', editingReportId);
 
       // Add new images if selected
       if (selectedFiles && selectedFiles.length > 0) {
@@ -207,12 +207,12 @@ export default function JobDetailPage({ session }) {
   if (!jobDetails) return <Container><Typography>Không tìm thấy công việc.</Typography></Container>;
 
   // Get reports for current user only, sorted by created_at descending
-  const userReports = jobDetails.work_reports?.filter(report => report.user_id === session?.user?.id);
+  const userReports = jobDetails.job_reports?.filter(report => report.user_id === session?.user?.id);
   const sortedUserReports = userReports?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   const latestReport = sortedUserReports?.[0];
 
   // Get all reports for display, sorted by created_at descending
-  const sortedReports = jobDetails.work_reports?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const sortedReports = jobDetails.job_reports?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
   return (
     <Container maxWidth="md" sx={{ mt: 2, mb: 4 }}>
@@ -325,7 +325,7 @@ export default function JobDetailPage({ session }) {
       ) : null}
 
       <Typography variant="h5" gutterBottom>Lịch sử Báo cáo</Typography>
-      {jobDetails.work_reports?.length > 0 ? (
+      {jobDetails.job_reports?.length > 0 ? (
         <Stack spacing={2}>
           {sortedReports.map(report => (
             <Paper key={report.id} sx={{ p: 2 }}>

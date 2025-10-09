@@ -17,6 +17,8 @@ create table public.job_assignments (
   )
 ) TABLESPACE pg_default;
 
+create index IF not exists idx_job_assignments_technician_id on public.job_assignments using btree (technician_id) TABLESPACE pg_default;
+
 create unique INDEX IF not exists single_lead_per_job on public.job_assignments using btree (job_id) TABLESPACE pg_default
 where
   (role = 'lead'::text);

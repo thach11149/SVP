@@ -6,6 +6,7 @@ create table public.job_checklist_items (
   completed_at timestamp with time zone null,
   created_at timestamp with time zone not null default timezone ('Asia/Ho_Chi_Minh'::text, now()),
   job_id uuid null,
+  label text not null default 'Checklist item'::text,
   constraint job_checklist_items_pkey primary key (id),
   constraint job_checklist_items_checklist_id_fkey foreign KEY (checklist_id) references checklist (id) on delete CASCADE,
   constraint job_checklist_items_job_id_fkey foreign KEY (job_id) references jobs (id) on delete CASCADE

@@ -379,7 +379,7 @@ export default function JobList({ session }) {
       
       // Tạo work report khi check-in
       const { data: reportData, error: reportError } = await supabase
-        .from('work_reports')
+        .from('job_reports')
         .insert({
           job_id: currentJob.id,
           user_id: session.user.id,
@@ -428,7 +428,7 @@ export default function JobList({ session }) {
 
       // Cập nhật work report với check-out time và notes
       const { error: reportError } = await supabase
-        .from('work_reports')
+        .from('job_reports')
         .update({
           check_out_time: checkoutTime,
           notes: reportData.notes || '',
