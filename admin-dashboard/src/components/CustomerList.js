@@ -63,13 +63,13 @@ const CustomerList = ({
                     </Typography>
                   </Box>
                 </TableCell>
-                <TableCell>{service.customer_service_plans?.[0]?.service_types?.join(', ') || ''}</TableCell>
-                <TableCell>{service.customer_service_plans?.[0]?.frequency || ''}</TableCell>
+                <TableCell>{service.customer_sites_plans?.[0]?.service_types?.join(', ') || ''}</TableCell>
+                <TableCell>{service.customer_sites_plans?.[0]?.frequency || ''}</TableCell>
                 <TableCell>
-                  {formatContractPeriod(service.customer_service_plans?.[0]?.start_date, service.customer_service_plans?.[0]?.end_date)}
+                  {formatContractPeriod(service.customer_sites_plans?.[0]?.start_date, service.customer_sites_plans?.[0]?.end_date)}
                 </TableCell>
                 <TableCell>
-                  {formatReportDay(service.customer_service_plans?.[0]?.days_of_week, service.customer_service_plans?.[0]?.report_frequency)}
+                  {formatReportDay(service.customer_sites_plans?.[0]?.days_of_week, service.customer_sites_plans?.[0]?.report_frequency)}
                 </TableCell>
               </TableRow>
             ))}

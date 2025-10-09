@@ -73,7 +73,7 @@ export default function TestPage() {
         .from('customers')
         .select(`
           id, name, address, province_name,
-          customer_service_plans (
+          customer_sites_plans (
             service_types, plan, days_of_week, frequency, start_date, end_date, report_date, report_frequency
           )
         `);
@@ -85,7 +85,7 @@ export default function TestPage() {
         // Auto generate jobs from services
         const generatedJobs = [];
         data.forEach(customer => {
-          customer.customer_service_plans?.forEach(plan => {
+          customer.customer_sites_plans?.forEach(plan => {
             if (plan.days_of_week && plan.frequency && plan.start_date && plan.end_date) {
               plan.days_of_week.forEach(day => {
                 const jobsForDay = generateContractJobs(

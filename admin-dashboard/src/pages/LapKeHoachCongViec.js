@@ -31,6 +31,7 @@ export default function LapKeHoachCongViec({ session }) {
   const [customChecklist, setCustomChecklist] = useState('');
   const [searchCustomer, setSearchCustomer] = useState('');
   const [customers, setCustomers] = useState([]);
+  const [isLoadingCustomers, setIsLoadingCustomers] = useState(true);  // Đã có, giữ nguyên
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [techniciansData, setTechniciansData] = useState([]);
   const [openChecklistPopup, setOpenChecklistPopup] = useState(false);
@@ -45,20 +46,29 @@ export default function LapKeHoachCongViec({ session }) {
     
     const fetchCustomers = async () => {
       console.log('Starting to fetch customers...');
-      const { data, error } = await supabase
-        .from('customer_sites')
-        .select('id, site_name, address, ward_name, district_name, province_name, customers(id, customer_code, name, primary_contact_name, primary_contact_phone)');
-      
-      if (error) {
-        console.error('Error fetching customers:', error);
-        setSnackbar({ 
-          open: true, 
-          type: 'error', 
-          message: `Lỗi khi tải danh sách khách hàng: ${error.message}` 
-        });
-      } else {
-        console.log('Customers loaded successfully:', data?.length || 0, data);
-        setCustomers(data || []);
+      setIsLoadingCustomers(true);
+      try {
+        const { data, error } = await supabase
+          .from('customer_sites')
+          .select('id, site_name, address, ward_name, district_name, province_name, customers(id, customer_code, name, primary_contact_name, primary_contact_phone, primary_contact_position)');
+        
+        if (error) {
+          console.error('Error fetching customers:', error);
+          setSnackbar({ 
+            open: true, 
+            type: 'error', 
+            message: `Lỗi khi tải danh sách khách hàng: ${error.message}` 
+          });
+        } else {
+          console.log('Customers loaded successfully:', data?.length || 0, data);
+          setCustomers(data || []);
+        }
+      } catch (err) {
+        console.error('Unexpected error fetching customers:', err);
+      } finally {
+        // QUAN TRỌNG: Đảm bảo setIsLoadingCustomers(false) luôn được gọi
+        setIsLoadingCustomers(false);
+        console.log('Set isLoadingCustomers to false');
       }
     };
 
@@ -107,10 +117,46 @@ export default function LapKeHoachCongViec({ session }) {
   // useEffect riêng cho set selectedCustomer khi preselectedCustomerId hoặc customers thay đổi
   useEffect(() => {
     if (preselectedCustomerId && customers.length > 0) {
-      const preselectedCustomer = customers.find(c => c.id === preselectedCustomerId);
+      // Bước 1: Tìm theo customer_id trong customer_sites (c.customers?.id) - MỤC TIÊU CHÍNH
+      let preselectedCustomer = customers.find(c => c.customers?.id === preselectedCustomerId);
+      
       if (preselectedCustomer) {
+        // Tìm thấy customer qua customer_id trong sites
+        console.log('Found preselected customer via customer_id in sites:', preselectedCustomer.customers?.name);
         setSelectedCustomer(preselectedCustomer);
-        fetchCustomerServicePlan(preselectedCustomer.id);
+        setCustomer(preselectedCustomerId); // Dùng customer_id làm value
+        fetchCustomerServicePlan(preselectedCustomerId);
+      } else {
+        // Bước 2: Kiểm tra xem có phải là site_id không
+        const siteCustomer = customers.find(c => c.id === preselectedCustomerId);
+        if (siteCustomer && siteCustomer.customers?.id) {
+          console.log('Found customer via site_id, converting to customer_id:', siteCustomer.customers?.name);
+          setSelectedCustomer(siteCustomer);
+          setCustomer(siteCustomer.customers.id); // Dùng customer_id, không phải site_id
+          fetchCustomerServicePlan(siteCustomer.customers.id);
+        } else {
+          // Bước 3: Customer tồn tại nhưng chưa có site, fetch trực tiếp từ customers table
+          const fetchDirectCustomer = async () => {
+            try {
+              const { data, error } = await supabase
+                .from('customers')
+                .select('id, customer_code, name, primary_contact_name, primary_contact_phone, primary_contact_position')
+                .eq('id', preselectedCustomerId)
+                .single();
+              
+              if (!error && data) {
+                console.log('Found customer directly from customers table (no sites yet):', data);
+                // Tạo customer object trực tiếp, không cần fake site
+                setSelectedCustomer(data);  // Direct customer object
+                setCustomer(preselectedCustomerId); // Customer ID
+                fetchCustomerServicePlan(preselectedCustomerId);
+              }
+            } catch (err) {
+              console.error('Error fetching customer directly:', err);
+            }
+          };
+          fetchDirectCustomer();
+        }
       }
     }
   }, [preselectedCustomerId, customers]);
@@ -119,15 +165,22 @@ export default function LapKeHoachCongViec({ session }) {
   const fetchCustomerServicePlan = async (customerId) => {
     try {
       const { data, error } = await supabase
-        .from('customer_service_plans')
-        .select('*')
+        .from('customer_sites')
+        .select(`
+          *,
+          customer_sites_plans(*)  // Join đúng với bảng customer_sites_plans
+        `)
         .eq('customer_id', customerId)
-        .single();
-      
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-        console.error('Error fetching service plan:', error);
+        .limit(1);  // Lấy site đầu tiên; điều chỉnh nếu cần tất cả sites
+    
+      if (error) {
+        console.error('Error fetching customer service plan:', error);
+        setCustomerServicePlan(null);
       } else {
-        setCustomerServicePlan(data);
+        // Lấy plan đầu tiên của site đầu tiên (hoặc xử lý nhiều plans nếu cần)
+        const site = data?.[0];
+        const plan = site?.customer_sites_plans?.[0] || null;
+        setCustomerServicePlan(plan);
       }
     } catch (error) {
       console.error('Error in fetchCustomerServicePlan:', error);
@@ -316,6 +369,35 @@ export default function LapKeHoachCongViec({ session }) {
     }
   };
 
+  const filteredCustomers = customers.filter(c => {
+    if (!searchCustomer.trim()) return true;
+
+    const searchTerm = searchCustomer.toLowerCase().trim();
+    const customerName = (c.customers?.name || '').toLowerCase();
+    const customerCode = (c.customers?.customer_code || '').toLowerCase();
+
+    return customerName.includes(searchTerm) || customerCode.includes(searchTerm);
+  });
+
+  // Đảm bảo khách hàng đã chọn luôn có trong danh sách, ngay cả khi không khớp bộ lọc  
+  // QUAN TRỌNG: So sánh với customer ID, không phải site ID
+  if (customer && !filteredCustomers.some(c => 
+    (c.customers?.id === customer) || (!c.customers && c.id === customer)
+  )) {
+    // Tìm theo customer ID trước
+    const selectedCust = customers.find(c => 
+      (c.customers?.id === customer) || (!c.customers && c.id === customer)
+    );
+    if (selectedCust) {
+      filteredCustomers.push(selectedCust);
+      console.log('Added selected customer to parent filtered list:', selectedCust.customers?.name || selectedCust.name);
+    } else if (selectedCustomer) {
+      // Nếu không tìm thấy nhưng có selectedCustomer (từ direct fetch)
+      filteredCustomers.push(selectedCustomer);
+      console.log('Added selected customer from direct fetch:', selectedCustomer.customers?.name || selectedCustomer.name);
+    }
+  }
+
   return (
     <Box sx={{ p: { xs: 2, sm: 4 }, bgcolor: '#f5f6fa', minHeight: '100vh' }}>
       <Paper elevation={3} sx={{ maxWidth: 1200, mx: 'auto', p: { xs: 2, sm: 4 }, borderRadius: 4 }}>
@@ -348,6 +430,7 @@ export default function LapKeHoachCongViec({ session }) {
                 setCustomerServicePlan={setCustomerServicePlan}
                 fetchCustomerServicePlan={fetchCustomerServicePlan}
                 formatFullAddress={formatFullAddress}
+                isLoadingCustomers={isLoadingCustomers}  // <<<<<< Thêm prop này
               />
             </Grid>
             {/* 2. Thông tin công việc */}

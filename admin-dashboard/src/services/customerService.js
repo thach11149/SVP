@@ -61,7 +61,7 @@ export const customerService = {
   // Get customer service plan
   async getCustomerServicePlan(customerId) {
     const { data, error } = await supabase
-      .from('customer_service_plans')
+      .from('customer_sites_plans')
       .select('*')
       .eq('customer_id', customerId)
       .single();
@@ -83,7 +83,7 @@ export const customerService = {
     if (existingPlan) {
       // Update
       const { error } = await supabase
-        .from('customer_service_plans')
+        .from('customer_sites_plans')
         .update(servicePlanData)
         .eq('customer_id', customer_id);
 
@@ -91,7 +91,7 @@ export const customerService = {
     } else {
       // Create
       const { error } = await supabase
-        .from('customer_service_plans')
+        .from('customer_sites_plans')
         .insert([servicePlanData]);
 
       if (error) throw error;
