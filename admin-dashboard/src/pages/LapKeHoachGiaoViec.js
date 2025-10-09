@@ -15,7 +15,7 @@ import { Edit } from '@mui/icons-material';
 import { supabase } from '../supabaseClient';
 import CustomerList from '../components/CustomerList';
 import AlertMessage from '../components/ui/AlertMessage';
-import JobFormDialog from '../components/job/JobFormDialog'; // Thay đổi import
+import JobFormDialog from '../components/job/JobFormDialog'; 
 
 const generateContractJobs = (clientName, startDate, endDate, targetDayOfWeek, frequencyWeeks) => {
   const jobs = [];
@@ -73,7 +73,7 @@ export default function TestPage({ session }) {
         id, site_name, address, province_name,
         customers!inner (id, name),
         customer_sites_plans (
-          service_types, plan, days_of_week, frequency, start_date, end_date, report_date, report_frequency
+          id, site_id, service_types, plan, days_of_week, frequency, start_date, end_date, report_date, report_frequency
         )
       `);
 
@@ -82,15 +82,14 @@ export default function TestPage({ session }) {
       return;
     }
 
-    // Fetch existing jobs với join để lấy site_name
+    // Fetch existing jobs
     const { data: jobsData, error: jobsError } = await supabase
       .from('jobs')
       .select(`
         *,
-        customers!inner (
-          customer_sites (
-            site_name
-          )
+        customer_sites_plans!inner (
+          site_id,
+          customer_sites!inner (site_name)
         )
       `)
       .order('scheduled_date', { ascending: true });
@@ -106,11 +105,11 @@ export default function TestPage({ session }) {
     );
 
     if (jobsData && jobsData.length > 0) {
-      // Convert to job format, lấy site_name từ join
+      // Convert to job format
       const existingJobs = jobsData.map(job => ({
         id: job.id,
         customerId: job.customer_id,
-        clientName: job.customers?.customer_sites?.[0]?.site_name || job.customer_name,  // Ưu tiên site_name
+        clientName: job.customer_name,
         date: new Date(job.scheduled_date),
         status: job.status,
         assignedTechs: job.assigned_technicians || [],
@@ -119,14 +118,16 @@ export default function TestPage({ session }) {
         isDeleted: job.is_deleted || false,
         deleteNote: job.delete_note || '',
         serviceContent: job.service_content || '',
-        notes: job.notes // Thêm notes
+        notes: job.notes,
+        planId: job.plan_id,
+        siteName: job.customer_sites_plans?.customer_sites?.site_name || ''  
       }));
       setJobs(existingJobs);
     } else {
       // Auto generate jobs from services and insert to database
       const generatedJobs = [];
       servicesData.forEach(site => {
-        site.customer_service_plans?.forEach(plan => {
+        site.customer_sites_plans?.forEach(plan => {
           if (plan.days_of_week && plan.frequency && plan.start_date && plan.end_date) {
             plan.days_of_week.forEach(day => {
               const jobsForDay = generateContractJobs(
@@ -147,7 +148,9 @@ export default function TestPage({ session }) {
               generatedJobs.push(...newJobsForDay.map(job => ({
                 ...job,
                 customerId: site.customers.id,
-                serviceContent: plan.service_types?.join(', ') || ''
+                serviceContent: plan.service_types?.join(', ') || '',
+                planId: plan.id,
+                siteName: site.site_name  
               })));
             });
           } else {
@@ -170,18 +173,19 @@ export default function TestPage({ session }) {
           delete_note: job.deleteNote,
           service_content: job.serviceContent,
           notes: job.notes || '',
+          plan_id: job.planId, 
           // Thêm các trường còn thiếu theo schema
           created_by: session?.user?.id || null,
           job_description: `Công việc định kỳ cho ${job.clientName}`,
-          scheduled_time: null, // Có thể set nếu có
+          scheduled_time: null, 
           service_type: 'Định kỳ',
           job_content: job.serviceContent,
           checklist: [],
           completed: false,
-          contact_person: null, // Có thể fetch thêm nếu cần
+          contact_person: null, 
           contact_phone: null,
           special_requests: null,
-          address: null, // Từ site.address nếu có
+          address: null, 
           team_lead_id: null,
           team_size: null,
           team_members: null
@@ -227,10 +231,10 @@ export default function TestPage({ session }) {
 
     const fetchTechnicians = async () => {
       const { data, error } = await supabase
-        .from('profiles')  // Thay đổi từ 'technicians' thành 'profiles' theo schema mới
+        .from('profiles')  
         .select('id, tech_code, name, phone, email, position, profile_roles!inner(name)')
         .eq('active', true)
-        .eq('profile_roles.name', 'technician');  // Filter role qua join
+        .eq('profile_roles.name', 'technician');  
     if (error) {
       console.error('Error fetching technicians:', error);
     } else {
@@ -241,7 +245,7 @@ export default function TestPage({ session }) {
     fetchCustomers();
     fetchTechnicians();
     fetchServicesAndJobs();  // Gọi hàm đã di chuyển
-  }, [session?.user?.id, fetchServicesAndJobs]); // Added 'session?.user?.id' to the dependency array
+  }, [session?.user?.id, fetchServicesAndJobs]); 
 
   const formatContractPeriod = (start, end) => {
     if (!start || !end) return '';
@@ -319,7 +323,7 @@ export default function TestPage({ session }) {
     selectedCustomers.forEach(siteId => {
       const site = customers.find(c => c.id === siteId);
       if (site) {
-        site.customer_service_plans?.forEach(plan => {
+        site.customer_sites_plans?.forEach(plan => {
           console.log('Processing plan for site:', site.customers.name, site.site_name, plan);
           if (plan.days_of_week && plan.frequency && plan.start_date && plan.end_date) {
             const frequency = parseFrequency(plan.frequency);
@@ -345,7 +349,8 @@ export default function TestPage({ session }) {
                 generatedJobs.push(...newJobsForDay.map(job => ({
                   ...job,
                   customerId: site.customers.id,
-                  serviceContent: plan.service_types?.join(', ') || ''
+                  serviceContent: plan.service_types?.join(', ') || '',
+                  planId: plan.id 
                 })));
               }
             });
@@ -376,6 +381,7 @@ export default function TestPage({ session }) {
       delete_note: job.deleteNote,
       service_content: job.serviceContent,
       notes: job.notes || '',
+      plan_id: job.planId, 
       // Thêm các trường còn thiếu
       created_by: session?.user?.id || null,
       job_description: `Công việc định kỳ cho ${job.clientName}`,
@@ -414,7 +420,7 @@ export default function TestPage({ session }) {
 
   // Thêm hàm xử lý chỉnh sửa công việc
   const handleEditJob = (job) => {
-    setJobToEdit(job); // Set trực tiếp job (không sao chép nếu không cần)
+    setJobToEdit(job); 
     setEditDialogOpen(true);
   };
 
@@ -425,7 +431,7 @@ export default function TestPage({ session }) {
 
   const handleSaveEdit = () => {
     // Refresh data sau khi save từ JobFormDialog
-    fetchServicesAndJobs();  // Giờ có thể gọi được
+    fetchServicesAndJobs();  
     setEditDialogOpen(false);
     setJobToEdit(null);
   };
@@ -492,6 +498,7 @@ export default function TestPage({ session }) {
         delete_note: job.deleteNote,
         service_content: job.serviceContent,
         notes: job.notes || '',
+        plan_id: job.planId, // Thêm plan_id
         // Thêm các trường còn thiếu
         created_by: session?.user?.id || null,
         job_description: `Công việc định kỳ cho ${job.clientName}`,
@@ -524,6 +531,7 @@ export default function TestPage({ session }) {
         delete_note: job.deleteNote,
         service_content: job.serviceContent,
         notes: job.notes || '',
+        plan_id: job.planId, // Thêm plan_id
         // Thêm các trường còn thiếu
         created_by: session?.user?.id || null,
         job_description: `Công việc định kỳ cho ${job.clientName}`,
@@ -566,6 +574,7 @@ export default function TestPage({ session }) {
         delete_note: job.deleteNote,
         service_content: job.serviceContent,
         notes: job.notes || '',
+        plan_id: job.planId, // Thêm plan_id
         // Thêm các trường còn thiếu
         created_by: session?.user?.id || null,
         job_description: `Công việc định kỳ cho ${job.clientName}`,
@@ -972,7 +981,7 @@ export default function TestPage({ session }) {
                   />
                 </TableCell>
                 <TableCell>Ngày</TableCell>
-                <TableCell>Khách Hàng</TableCell>
+                <TableCell>Địa Điểm Thực Hiện</TableCell>
                 <TableCell>Nội Dung Công Việc</TableCell>
                 <TableCell>Thời Gian Thực Hiện</TableCell>
                 <TableCell>Trạng Thái</TableCell>
@@ -1007,7 +1016,7 @@ export default function TestPage({ session }) {
           {index === 0 && formatDateWithDay(new Date(dateKey))}
         </TableCell>
         <TableCell>
-          {job.clientName}
+          {job.siteName || ''} 
         </TableCell>
         <TableCell>
           {job.serviceContent}
@@ -1040,7 +1049,7 @@ export default function TestPage({ session }) {
         </TableCell>
         <TableCell>
           {job.assignedTechs.map((tech, idx) => {
-            const techInfo = techniciansData.find(t => t.id === tech.technician_id); // Sử dụng technician_id
+            const techInfo = techniciansData.find(t => t.id === tech.technician_id); 
             return (
               <Box key={idx} sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
                 <Typography variant="body2" sx={{ mr: 1 }}>
@@ -1049,7 +1058,7 @@ export default function TestPage({ session }) {
                 <Typography 
                   variant="body2" 
                   sx={{ color: 'error.main', cursor: 'pointer', fontWeight: 'bold' }}
-                  onClick={() => handleRemoveTechnician(job.id, tech.technician_id)} // Sử dụng technician_id
+                  onClick={() => handleRemoveTechnician(job.id, tech.technician_id)} 
                 >
                   ×
                 </Typography>
@@ -1109,7 +1118,7 @@ export default function TestPage({ session }) {
                 <TableHead>
                   <TableRow>
                     <TableCell>Ngày</TableCell>
-                    <TableCell>Khách Hàng</TableCell>
+                    <TableCell>Địa Điểm Thực Hiện</TableCell>
                     <TableCell>Nội Dung Công Việc</TableCell>
                     <TableCell>Thời Gian Thực Hiện</TableCell>
                     <TableCell>Trạng Thái</TableCell>
@@ -1122,7 +1131,10 @@ export default function TestPage({ session }) {
                   {deletedJobs.map((job) => (
                     <TableRow key={job.id}>
                       <TableCell>{formatDateWithDay(job.date)}</TableCell>
-                      <TableCell sx={{ textDecoration: 'line-through' }}>{job.clientName}</TableCell>
+                      <TableCell sx={{ textDecoration: 'line-through' }}>
+                        {job.customer_sites_plans?.customer_sites?.site_name || ''}
+
+                      </TableCell>
                       <TableCell sx={{ textDecoration: 'line-through' }}>{job.serviceContent || ''}</TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -1153,7 +1165,7 @@ export default function TestPage({ session }) {
                       </TableCell>
                       <TableCell>
                         {job.assignedTechs.map((tech, idx) => {
-                          const techInfo = techniciansData.find(t => t.id === tech.technician_id); // Sử dụng technician_id
+                          const techInfo = techniciansData.find(t => t.id === tech.technician_id); 
                           return (
                             <Chip
                               key={idx}

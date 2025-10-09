@@ -40,22 +40,45 @@ export default function DanhSachCongViec({ session }) {
         .select(`
           id,
           job_content,
-          service_type,
+          service_content,
           status,
           scheduled_date,
-          assigned_technicians,
-          team_lead_id,
-          customers (
-            id,
-            name,
-            customer_code
+          scheduled_time,
+          start_time,
+          end_time,
+          notes,
+          completed,
+          contact_person,
+          contact_phone,
+          special_requests,
+          team_size,
+          delete_note,
+          customer_sites_plans!inner (
+            site_id,
+            customer_sites!inner (
+              customer_id,
+              site_name,
+              address,
+              customers!inner (
+                id,
+                name,
+                customer_code
+              )
+            )
           ),
-          customer_sites (
-            site_name,
-            address
+          job_assignments (
+            role,
+            profiles (
+              id,
+              name,
+              tech_code,
+              phone,
+              position,
+              email
+            )
           )
         `)
-        .eq('is_deleted', false)  // Thêm filter để chỉ lấy công việc chưa xóa mềm
+        .eq('is_deleted', false)
         .order('scheduled_date', { ascending: false });
 
       if (error) {
@@ -81,15 +104,15 @@ export default function DanhSachCongViec({ session }) {
   const fetchTechnicians = async () => {
     try {
       const { data, error } = await supabase
-        .from('technician_users')
-        .select('technician_id, name, tech_code')
+        .from('profiles')  // Thay technician_users bằng profiles từ profiles.sql
+        .select('id, name, tech_code, phone, position, email')
+        .eq('active', true)  // Chỉ lấy technicians active
         .order('name', { ascending: true });
       
       if (error) {
         console.error('Error fetching technicians:', error);
       } else {
-        const mapped = (data || []).map(item => ({ id: item.technician_id, name: item.name, tech_code: item.tech_code }));
-        setTechnicians(mapped);
+        setTechnicians(data || []);
       }
     } catch (error) {
       console.error('Error in fetchTechnicians:', error);
@@ -136,17 +159,14 @@ export default function DanhSachCongViec({ session }) {
   };
 
   const getTechniciansNames = (job) => {
-    if (!job.assigned_technicians || job.assigned_technicians.length === 0) {
+    if (!job.job_assignments || job.job_assignments.length === 0) {
       return 'Chưa phân công';
     }
     
-    const teamLeadId = job.team_lead_id;
-    // Giả sử assigned_technicians là mảng [{technician_id: UUID, role: 'string', status: 'string', name: 'string'}]
-    const techniciansNames = job.assigned_technicians
+    const techniciansNames = job.job_assignments
       .map(assignment => {
-        const techName = assignment.name || 'N/A';
-        const techId = assignment.technician_id;
-        const isTeamLead = techId === teamLeadId;
+        const techName = assignment.profiles?.name || 'N/A';
+        const isTeamLead = assignment.role === 'lead';
         return isTeamLead ? `${techName} (Team Lead)` : techName;
       })
       .join(', ');
@@ -221,14 +241,14 @@ export default function DanhSachCongViec({ session }) {
   const filteredJobs = jobs.filter(job => {
     const matchesSearch = !searchTerm || 
       job.job_content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.customers?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.customers?.customer_code?.toLowerCase().includes(searchTerm.toLowerCase());
+      job.customer_sites_plans?.customer_sites?.customers?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.customer_sites_plans?.customer_sites?.customers?.customer_code?.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = !statusFilter || job.status === statusFilter;
     
     const matchesTechnician = !technicianFilter || 
-      (job.assigned_technicians && job.assigned_technicians.some(
-        assignment => assignment.technician_id === technicianFilter
+      (job.job_assignments && job.job_assignments.some(
+        assignment => assignment.profiles?.id === technicianFilter
       ));
     
     return matchesSearch && matchesStatus && matchesTechnician;
@@ -368,23 +388,23 @@ export default function DanhSachCongViec({ session }) {
                   <TableCell>
                     <Box>
                       <Typography variant="body2" fontWeight={500}>
-                        {job.customers?.name || 'N/A'}
+                        {job.customer_sites_plans?.customer_sites?.customers?.name || 'N/A'}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {job.customers?.customer_code || ''}
+                        {job.customer_sites_plans?.customer_sites?.customers?.customer_code || ''}
                       </Typography>
                     </Box>
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">
-                      {job.customer_sites?.site_name || 'N/A'}
+                      {job.customer_sites_plans?.customer_sites?.site_name || 'N/A'}
                     </Typography>
                   </TableCell>
                   <TableCell>
                     <Chip 
-                      label={job.service_type} 
+                      label={job.service_content} 
                       size="small"
-                      color={job.service_type === 'SOS' ? 'error' : 'default'}
+                      color={job.service_content === 'SOS' ? 'error' : 'default'}
                     />
                   </TableCell>
                   <TableCell>
@@ -496,7 +516,7 @@ export default function DanhSachCongViec({ session }) {
                   Nội dung: {jobToDelete.job_content}
                 </Typography>
                 <Typography variant="body2">
-                  Khách hàng: {jobToDelete.customers?.name || 'N/A'}
+                  Khách hàng: {jobToDelete.customer_sites_plans?.customer_sites?.customers?.name || 'N/A'}
                 </Typography>
               </Box>
             )}

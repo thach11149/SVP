@@ -34,25 +34,44 @@ export default function LichLamViec() {
         .select(`
           id,
           job_content,
-          service_type,
+          service_content,
           scheduled_date,
+          scheduled_time,
+          start_time,
+          end_time,
           status,
           notes,
           created_at,
           checklist,
-          customers (
-            id,
-            name,
-            customer_code
+          completed,
+          contact_person,
+          contact_phone,
+          special_requests,
+          team_size,
+          delete_note,
+          customer_sites_plans!inner (
+            site_id,
+            customer_sites!inner (
+              customer_id,
+              customers!inner (
+                id,
+                name,
+                customer_code
+              )
+            )
           ),
           job_assignments (
-            technicians (
+            profiles (
               id,
               name,
-              tech_code
+              tech_code,
+              phone,
+              position,
+              email
             )
           )
         `)
+        .eq('is_deleted', false)
         .order('scheduled_date', { ascending: true });
 
       if (error) {
@@ -71,8 +90,8 @@ export default function LichLamViec() {
         .filter(job => job.scheduled_date) // Filter out jobs without dates first
         .map(job => {
           try {
-            // Parse the scheduled_date to ensure proper datetime format
-            const scheduledDateTime = new Date(job.scheduled_date);
+            // Parse the scheduled_date and time to ensure proper datetime format
+            const scheduledDateTime = new Date(job.scheduled_date + (job.scheduled_time ? `T${job.scheduled_time}` : ''));
             
             // Check if the date is valid
             if (isNaN(scheduledDateTime.getTime())) {
@@ -80,13 +99,23 @@ export default function LichLamViec() {
               return null;
             }
             
+            // Lấy thông tin customer từ nested join
+            const customer = job.customer_sites_plans?.customer_sites?.customers;
+            
             return {
               id: job.id,
-              title: `${job.customers?.name || 'Khách hàng'} - ${job.job_content}`,
+              title: `${customer?.name || 'Khách hàng'} - ${job.job_content}`,
               start: scheduledDateTime.toISOString(), // Use ISO string for proper datetime
               allDay: false, // Explicitly set to false to show in time slots
               extendedProps: {
-                jobData: job, // Store full job data for dialog
+                jobData: { 
+                  ...job, 
+                  customers: customer,  // Cập nhật với nested data
+                  job_assignments: job.job_assignments?.map(assignment => ({
+                    ...assignment,
+                    profiles: assignment.profiles  // Đảm bảo profiles được gán đúng
+                  })) || []
+                }, // Store full job data for dialog
                 scheduledTime: scheduledDateTime.toLocaleTimeString('vi-VN', {
                   hour: '2-digit',
                   minute: '2-digit'
@@ -109,7 +138,7 @@ export default function LichLamViec() {
         .filter(job => job.scheduled_date) // Filter out jobs without dates
         .forEach(job => {
           try {
-            const scheduledDateTime = new Date(job.scheduled_date);
+            const scheduledDateTime = new Date(job.scheduled_date + (job.scheduled_time ? `T${job.scheduled_time}` : ''));
             if (isNaN(scheduledDateTime.getTime())) {
               console.warn('Invalid date for summary:', job.id, job.scheduled_date);
               return;
