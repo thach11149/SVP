@@ -41,16 +41,18 @@ export default function JobFormDialog({
       // Fetch customers
       const { data: customersData, error: customersError } = await supabase
         .from('customers')
-        .select('id, customer_code, name, address, ward_name, district_name, province_name, primary_contact_name, primary_contact_phone');
+        .select('id, customer_code, name, primary_contact_name, primary_contact_phone')
+        .eq('is_deleted', false);
       
       if (customersError) throw customersError;
       setCustomers(customersData || []);
 
-      // Fetch technicians
+      // Fetch technicians (profiles)
       const { data: techniciansData, error: techniciansError } = await supabase
-        .from('technicians')
-        .select('id, tech_code, name, phone, email, position')
-        .eq('active', true);
+        .from('profiles')
+        .select('id, full_name, phone, email, position')
+        .eq('is_active', true)
+        .eq('is_deleted', false);
       
       if (techniciansError) throw techniciansError;
       setTechniciansData(techniciansData || []);
@@ -84,7 +86,7 @@ export default function JobFormDialog({
     
     // Get assigned technicians
     const assignedTechnicians = editJob.job_assignments 
-      ? editJob.job_assignments.map(assignment => assignment.technicians?.id).filter(Boolean)
+      ? editJob.job_assignments.map(assignment => assignment.profiles?.id).filter(Boolean)
       : [];
     
     // Find and set selected customer
@@ -100,7 +102,7 @@ export default function JobFormDialog({
       checklist: editJob.checklist || [],
       technicians: assignedTechnicians,
       team_lead_id: editJob.team_lead_id || '', // Load team lead từ editJob
-      status: editJob.status || 'Mới tạo'
+      status: (editJob.status === 'unassigned' ? 'Mới tạo' : editJob.status) || 'Mới tạo'
     });
   }, [editJob, customers]);
 
@@ -186,7 +188,7 @@ export default function JobFormDialog({
         if (formData.technicians.length > 0) {
           const assignmentData = formData.technicians.map(techId => ({
             job_id: editJob.id,
-            technician_id: techId,
+            profile_id: techId,
             status: 'assigned'
           }));
 
@@ -212,7 +214,6 @@ export default function JobFormDialog({
           service_type: formData.service_type,
           scheduled_date: formData.scheduled_date,
           job_content: formData.job_content,
-          job_description: formData.job_content,
           notes: formData.notes || null,
           checklist: formData.checklist,
           team_lead_id: formData.team_lead_id || null, // Add team lead
@@ -231,7 +232,7 @@ export default function JobFormDialog({
         if (jobResult && jobResult.id && formData.technicians.length > 0) {
           const assignmentData = formData.technicians.map(techId => ({
             job_id: jobResult.id,
-            technician_id: techId,
+            profile_id: techId,
             status: 'assigned'
           }));
 
@@ -312,8 +313,8 @@ export default function JobFormDialog({
 
   const filteredTechnicians = techniciansData.filter(tech => {
     if (!searchTech) return true;
-    return tech.name?.toLowerCase().includes(searchTech.toLowerCase()) ||
-           tech.tech_code?.toLowerCase().includes(searchTech.toLowerCase());
+    return tech.full_name?.toLowerCase().includes(searchTech.toLowerCase()) ||
+           tech.id?.toLowerCase().includes(searchTech.toLowerCase());
   });
 
   // Format address helper
@@ -595,7 +596,7 @@ export default function JobFormDialog({
                           label={
                             <Box>
                               <Typography variant="body2" fontWeight={500}>
-                                {tech.name} ({tech.tech_code})
+                                {tech.full_name} ({tech.id})
                                 {tech.id === formData.team_lead_id && (
                                   <Chip 
                                     label="Team Lead" 
@@ -648,7 +649,7 @@ export default function JobFormDialog({
                         • Số lượng nhân viên: {formData.technicians.length} người
                         <br />
                         • Team Lead: {formData.team_lead_id ? 
-                          filteredTechnicians.find(t => t.id === formData.team_lead_id)?.name || 'N/A' 
+                          filteredTechnicians.find(t => t.id === formData.team_lead_id)?.full_name || 'N/A' 
                           : (formData.technicians.length > 1 ? 'Chưa chọn' : 'Không cần (làm cá nhân)')}
                       </Typography>
                     </Box>
