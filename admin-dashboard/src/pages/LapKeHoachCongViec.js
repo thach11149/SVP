@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box, Typography, Paper, Button, Grid, Snackbar, Alert
 } from '@mui/material';
@@ -114,6 +114,33 @@ export default function LapKeHoachCongViec({ session }) {
     
   }, []); // Chỉ chạy một lần khi mount
 
+  // Fetch service plan data khi chọn customer
+  const fetchCustomerServicePlan = useCallback(async (customerId) => {
+    try {
+      const { data, error } = await supabase
+        .from('customer_sites')
+        .select(`
+          *,
+          customer_sites_plans(*)  // Join đúng với bảng customer_sites_plans
+        `)
+        .eq('customer_id', customerId)
+        .limit(1);  // Lấy site đầu tiên; điều chỉnh nếu cần tất cả sites
+    
+      if (error) {
+        console.error('Error fetching customer service plan:', error);
+        setCustomerServicePlan(null);
+      } else {
+        // Lấy plan đầu tiên của site đầu tiên (hoặc xử lý nhiều plans nếu cần)
+        const site = data?.[0];
+        const plan = site?.customer_sites_plans?.[0] || null;
+        setCustomerServicePlan(plan);
+      }
+    } catch (error) {
+      console.error('Error in fetchCustomerServicePlan:', error);
+      setCustomerServicePlan(null);
+    }
+  }, []);
+
   // useEffect riêng cho set selectedCustomer khi preselectedCustomerId hoặc customers thay đổi
   useEffect(() => {
     if (preselectedCustomerId && customers.length > 0) {
@@ -159,34 +186,7 @@ export default function LapKeHoachCongViec({ session }) {
         }
       }
     }
-  }, [preselectedCustomerId, customers]);
-
-  // Fetch service plan data khi chọn customer
-  const fetchCustomerServicePlan = async (customerId) => {
-    try {
-      const { data, error } = await supabase
-        .from('customer_sites')
-        .select(`
-          *,
-          customer_sites_plans(*)  // Join đúng với bảng customer_sites_plans
-        `)
-        .eq('customer_id', customerId)
-        .limit(1);  // Lấy site đầu tiên; điều chỉnh nếu cần tất cả sites
-    
-      if (error) {
-        console.error('Error fetching customer service plan:', error);
-        setCustomerServicePlan(null);
-      } else {
-        // Lấy plan đầu tiên của site đầu tiên (hoặc xử lý nhiều plans nếu cần)
-        const site = data?.[0];
-        const plan = site?.customer_sites_plans?.[0] || null;
-        setCustomerServicePlan(plan);
-      }
-    } catch (error) {
-      console.error('Error in fetchCustomerServicePlan:', error);
-      setCustomerServicePlan(null);
-    }
-  };
+  }, [preselectedCustomerId, customers, fetchCustomerServicePlan]);  // Thêm fetchCustomerServicePlan vào dependencies
 
   const handleChecklistAdded = (newItems) => {
     // Refresh checklist sau khi thêm mới từ popup

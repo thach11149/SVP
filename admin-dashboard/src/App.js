@@ -14,7 +14,7 @@ import LapKeHoachCongViec from './pages/LapKeHoachCongViec';
 import ChecklistCongViec from './pages/ChecklistCongViec';
 import DanhSachCongViec from './pages/DanhSachCongViec';
 import Sidebar from './components/ui/Sidebar';
-import TestPage from './pages/TestPage';
+// import TestPage from './pages/TestPage';
 import KhoangCachDiChuyen from './pages/KhoangCachDiChuyen'; // Thêm import
 import ESGPage from './pages/ESGPage';
 import QuanLyTonKho from './pages/QuanLyTonKho';
@@ -85,7 +85,7 @@ function App() {
                       <Route path="/lap-ke-hoach-cong-viec" element={<LapKeHoachCongViec session={session} />} />
                       <Route path="/checklist-cong-viec" element={<ChecklistCongViec session={session} />} />
                       <Route path="/danh-sach-cong-viec" element={<DanhSachCongViec session={session} />} />
-                      <Route path="/test" element={<TestPage />} />
+                      {/* <Route path="/test" element={<TestPage />} /> */}
                       <Route path="/khoang-cach-di-chuyen" element={<KhoangCachDiChuyen />} />  {/* Thêm route */}
                       <Route path="/esg" element={<ESGPage />} />
                       <Route path="/quan-ly-ton-kho" element={<QuanLyTonKho />} />

@@ -185,7 +185,6 @@ export default function TestPage({ session }) {
           contact_person: null, 
           contact_phone: null,
           special_requests: null,
-          address: null, 
           team_lead_id: null,
           team_size: null,
           team_members: null
@@ -393,7 +392,6 @@ export default function TestPage({ session }) {
       contact_person: null,
       contact_phone: null,
       special_requests: null,
-      address: null,
       team_lead_id: null,
       team_size: null,
       team_members: null
@@ -502,15 +500,14 @@ export default function TestPage({ session }) {
         // Thêm các trường còn thiếu
         created_by: session?.user?.id || null,
         job_description: `Công việc định kỳ cho ${job.clientName}`,
-        scheduled_time: null,
+        scheduled_time: null, 
         service_type: 'Định kỳ',
         job_content: job.serviceContent,
         checklist: [],
         completed: false,
-        contact_person: null,
+        contact_person: null, 
         contact_phone: null,
         special_requests: null,
-        address: null,
         team_lead_id: null,
         team_size: null,
         team_members: null
@@ -543,7 +540,6 @@ export default function TestPage({ session }) {
         contact_person: null,
         contact_phone: null,
         special_requests: null,
-        address: null,
         team_lead_id: null,
         team_size: null,
         team_members: null
@@ -586,7 +582,6 @@ export default function TestPage({ session }) {
         contact_person: null,
         contact_phone: null,
         special_requests: null,
-        address: null,
         team_lead_id: null,
         team_size: null,
         team_members: null
