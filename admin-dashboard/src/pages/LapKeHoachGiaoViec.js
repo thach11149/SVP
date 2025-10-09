@@ -66,7 +66,7 @@ export default function TestPage({ session }) {
 
   // Di chuyển fetchServicesAndJobs ra ngoài useEffect
   const fetchServicesAndJobs = useCallback(async () => {
-    // Fetch services
+    // Fetch services (giữ nguyên)
     const { data: servicesData, error: servicesError } = await supabase
       .from('customer_sites')
       .select(`
@@ -82,7 +82,7 @@ export default function TestPage({ session }) {
       return;
     }
 
-    // Fetch existing jobs
+    // Fetch existing jobs, join với job_assignments để lấy technicians
     const { data: jobsData, error: jobsError } = await supabase
       .from('jobs')
       .select(`
@@ -90,6 +90,13 @@ export default function TestPage({ session }) {
         customer_sites_plans!inner (
           site_id,
           customer_sites!inner (site_name)
+        ),
+        job_assignments (
+          technician_id,
+          status,
+          role,
+          notes,
+          profiles!inner (id, name, tech_code)
         )
       `)
       .order('scheduled_date', { ascending: true });
@@ -99,20 +106,25 @@ export default function TestPage({ session }) {
       return;
     }
 
-    // Define existingJobKeys here, outside if-else
+    // Xử lý jobs với assignedTechs từ job_assignments
     const existingJobKeys = new Set(
       (jobsData || []).map(job => `${job.customer_id}_${job.scheduled_date}`)
     );
 
     if (jobsData && jobsData.length > 0) {
-      // Convert to job format
       const existingJobs = jobsData.map(job => ({
         id: job.id,
         customerId: job.customer_id,
         clientName: job.customer_name,
         date: new Date(job.scheduled_date),
         status: job.status,
-        assignedTechs: job.assigned_technicians || [],
+        assignedTechs: (job.job_assignments || []).map(assignment => ({
+          technician_id: assignment.technician_id,
+          name: assignment.profiles?.name,
+          role: assignment.role,
+          status: assignment.status,
+          notes: assignment.notes
+        })),
         startTime: job.start_time || '08:00',
         endTime: job.end_time || '10:00',
         isDeleted: job.is_deleted || false,
@@ -120,7 +132,7 @@ export default function TestPage({ session }) {
         serviceContent: job.service_content || '',
         notes: job.notes,
         planId: job.plan_id,
-        siteName: job.customer_sites_plans?.customer_sites?.site_name || ''  
+        siteName: job.customer_sites_plans?.customer_sites?.site_name || ''
       }));
       setJobs(existingJobs);
     } else {
@@ -166,23 +178,22 @@ export default function TestPage({ session }) {
           customer_name: job.clientName,
           scheduled_date: job.date.toISOString().split('T')[0],
           status: job.status,
-          assigned_technicians: job.assignedTechs,
+          // Bỏ assigned_technicians khỏi insert
           start_time: job.startTime,
           end_time: job.endTime,
           is_deleted: job.isDeleted,
           delete_note: job.deleteNote,
           service_content: job.serviceContent,
           notes: job.notes || '',
-          plan_id: job.planId, 
-          // Thêm các trường còn thiếu theo schema
+          plan_id: job.planId,
           created_by: session?.user?.id || null,
           job_description: `Công việc định kỳ cho ${job.clientName}`,
-          scheduled_time: null, 
+          scheduled_time: null,
           service_type: 'Định kỳ',
           job_content: job.serviceContent,
           checklist: [],
           completed: false,
-          contact_person: null, 
+          contact_person: null,
           contact_phone: null,
           special_requests: null,
           team_lead_id: null,
@@ -198,7 +209,6 @@ export default function TestPage({ session }) {
         if (insertError) {
           console.error('Error inserting jobs:', insertError);
         } else {
-          // Set jobs with database ids
           const jobsWithIds = insertedJobs.map((dbJob, index) => ({
             ...generatedJobs[index],
             id: dbJob.id
@@ -373,7 +383,7 @@ export default function TestPage({ session }) {
       customer_name: job.clientName,
       scheduled_date: job.date.toISOString().split('T')[0],
       status: job.status,
-      assigned_technicians: job.assignedTechs,
+      // Bỏ assigned_technicians khỏi insert
       start_time: job.startTime,
       end_time: job.endTime,
       is_deleted: job.isDeleted,
@@ -482,30 +492,29 @@ export default function TestPage({ session }) {
   const handleSave = async () => {
     // Chỉ upsert jobs đã có id UUID từ Supabase
     const jobsToUpsert = jobs
-      .filter(job => typeof job.id === 'string') // UUID từ database
+      .filter(job => typeof job.id === 'string')
       .map(job => ({
         id: job.id,
         customer_id: job.customerId,
         customer_name: job.clientName,
         scheduled_date: job.date.toISOString().split('T')[0],
         status: job.status,
-        assigned_technicians: job.assignedTechs,
+        // Bỏ assigned_technicians
         start_time: job.startTime,
         end_time: job.endTime,
         is_deleted: job.isDeleted,
         delete_note: job.deleteNote,
         service_content: job.serviceContent,
         notes: job.notes || '',
-        plan_id: job.planId, // Thêm plan_id
-        // Thêm các trường còn thiếu
+        plan_id: job.planId,
         created_by: session?.user?.id || null,
         job_description: `Công việc định kỳ cho ${job.clientName}`,
-        scheduled_time: null, 
+        scheduled_time: null,
         service_type: 'Định kỳ',
         job_content: job.serviceContent,
         checklist: [],
         completed: false,
-        contact_person: null, 
+        contact_person: null,
         contact_phone: null,
         special_requests: null,
         team_lead_id: null,
@@ -513,23 +522,22 @@ export default function TestPage({ session }) {
         team_members: null
       }));
 
-    // Insert jobs mới (từ generateContractJobs, id là số)
+    // Insert jobs mới
     const newJobsToInsert = jobs
       .filter(job => typeof job.id === 'number')
       .map(job => ({
+        // Giống như trên, bỏ assigned_technicians
         customer_id: job.customerId,
         customer_name: job.clientName,
         scheduled_date: job.date.toISOString().split('T')[0],
         status: job.status,
-        assigned_technicians: job.assignedTechs,
         start_time: job.startTime,
         end_time: job.endTime,
         is_deleted: job.isDeleted,
         delete_note: job.deleteNote,
         service_content: job.serviceContent,
         notes: job.notes || '',
-        plan_id: job.planId, // Thêm plan_id
-        // Thêm các trường còn thiếu
+        plan_id: job.planId,
         created_by: session?.user?.id || null,
         job_description: `Công việc định kỳ cho ${job.clientName}`,
         scheduled_time: null,
@@ -563,7 +571,6 @@ export default function TestPage({ session }) {
         customer_name: job.clientName,
         scheduled_date: job.date.toISOString().split('T')[0],
         status: job.status,
-        assigned_technicians: job.assignedTechs,
         start_time: job.startTime,
         end_time: job.endTime,
         is_deleted: job.isDeleted,
@@ -712,55 +719,35 @@ export default function TestPage({ session }) {
       return;
     }
 
-    setJobs(prevJobs =>
-      prevJobs.map(job =>
-        selectedJobs.includes(job.id)
-          ? {
-              ...job,
-              assignedTechs: [
-                ...job.assignedTechs,
-                ...selectedBulkTechnicians.map(techId => ({
-                  technician_id: techId,  // Thay đổi từ techId thành technician_id để nhất quán
-                  startTime: '08:00',
-                  endTime: '10:00'
-                })).filter(newTech => !job.assignedTechs.some(existing => existing.technician_id === newTech.technician_id))  // Thay đổi từ techId thành technician_id
-              ],
-              status: 'assigned'
-            }
-          : job
-      )
-    );
-
-    // Update database for each job
+    // Insert vào job_assignments cho mỗi job và technician
+    const assignmentsToInsert = [];
     selectedJobs.forEach(jobId => {
-      const job = jobs.find(j => j.id === jobId);
-      const newAssigned = [
-        ...job.assignedTechs,
-        ...selectedBulkTechnicians.map(techId => {
-          const tech = techniciansData.find(t => t.id === techId);
-          return {
-            name: tech?.name,
-            role: 'member',
-            status: 'assigned',
-            technician_id: techId
-          };
-        }).filter(newTech => !job.assignedTechs.some(existing => existing.technician_id === newTech.technician_id))  // Thay đổi từ techId thành technician_id
-      ];
-      supabase
-        .from('jobs')
-        .update({
-          assigned_technicians: newAssigned,
-          status: 'assigned'
-        })
-        .eq('id', jobId)
-        .then(({ error }) => {
-          if (error) console.error('Error updating job:', error);
+      selectedBulkTechnicians.forEach(techId => {
+        assignmentsToInsert.push({
+          job_id: jobId,
+          technician_id: techId,
+          status: 'assigned',
+          role: 'member', // Mặc định member, có thể sửa nếu cần lead
+          notes: null
         });
+      });
     });
 
-    setSelectedJobs([]);
-    setSelectedBulkTechnicians([]);
-    setAlert({ type: 'success', message: `Đã thêm ${selectedBulkTechnicians.length} nhân viên vào ${selectedJobs.length} công việc.`, duration: 4000 });
+    supabase
+      .from('job_assignments')
+      .insert(assignmentsToInsert)
+      .then(({ error }) => {
+        if (error) {
+          console.error('Error inserting assignments:', error);
+          setAlert({ type: 'error', message: 'Lỗi khi giao việc!', duration: 4000 });
+        } else {
+          // Refresh jobs sau khi insert
+          fetchServicesAndJobs();
+          setSelectedJobs([]);
+          setSelectedBulkTechnicians([]);
+          setAlert({ type: 'success', message: `Đã thêm ${selectedBulkTechnicians.length} nhân viên vào ${selectedJobs.length} công việc.`, duration: 4000 });
+        }
+      });
   };
 
   // Handler cho select all jobs
@@ -793,32 +780,19 @@ export default function TestPage({ session }) {
 
   // Thêm hàm handleRemoveTechnician sau handleTimeChange
   const handleRemoveTechnician = (jobId, technicianId) => {
-    setJobs(prevJobs =>
-      prevJobs.map(job =>
-        job.id === jobId
-          ? {
-              ...job,
-              assignedTechs: job.assignedTechs.filter(tech => tech.technician_id !== technicianId),
-              status: job.assignedTechs.filter(tech => tech.technician_id !== technicianId).length > 0 ? 'assigned' : 'unassigned'
-            }
-          : job
-      )
-    );
-    // Update database
-    const job = jobs.find(j => j.id === jobId);
-    if (job) {
-      const updatedAssigned = job.assignedTechs.filter(tech => tech.technician_id !== technicianId);
-      supabase
-        .from('jobs')
-        .update({
-          assigned_technicians: updatedAssigned,
-          status: updatedAssigned.length > 0 ? 'assigned' : 'unassigned'
-        })
-        .eq('id', jobId)
-        .then(({ error }) => {
-          if (error) console.error('Error removing technician:', error);
-        });
-    }
+    supabase
+      .from('job_assignments')
+      .delete()
+      .eq('job_id', jobId)
+      .eq('technician_id', technicianId)
+      .then(({ error }) => {
+        if (error) {
+          console.error('Error removing technician:', error);
+        } else {
+          // Refresh jobs
+          fetchServicesAndJobs();
+        }
+      });
   };
 
   return (
