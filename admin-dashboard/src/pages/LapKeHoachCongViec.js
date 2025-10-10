@@ -258,27 +258,28 @@ export default function LapKeHoachCongViec({ session }) {
       const [date, time] = datetime.split('T');
       
       // Xác định team members names cho hiển thị
-      const selectedTechNames = techniciansData
-        .filter(tech => technicians.includes(tech.id))
-        .map(tech => tech.name);
-      const teamMembersString = selectedTechNames.length > 1 ? selectedTechNames.join(', ') : null;
+      // Bỏ teamMembersString (không dùng nữa, vì team members lưu trong job_assignments)
+      // const selectedTechNames = techniciansData
+      //   .filter(tech => technicians.includes(tech.id))
+      //   .map(tech => tech.name);
+      // const teamMembersString = selectedTechNames.length > 1 ? selectedTechNames.join(', ') : null;
       
-      // Populate assigned_technicians JSONB (thay thế job_assignments)
-      const assignedTechnicians = technicians.map(techId => {
-        const tech = techniciansData.find(t => t.id === techId);
-        return {
-          technician_id: techId,
-          role: techId === teamLead ? 'lead' : 'member',
-          status: 'assigned',
-          name: tech?.name || 'N/A'  // Populate name để tránh JOIN phức tạp
-        };
-      });
-      
+      // Bỏ populate assigned_technicians JSONB (dùng job_assignments thay thế)
+      // const assignedTechnicians = technicians.map(techId => {
+      //   const tech = techniciansData.find(t => t.id === techId);
+      //   return {
+      //     technician_id: techId,
+      //     role: techId === teamLead ? 'lead' : 'member',
+      //     status: 'assigned',
+      //     name: tech?.name || 'N/A'
+      //   };
+      // });
+
       // Tạo một job chung cho tất cả technicians
       const jobData = {
-        customer_id: customer,
+        // Bỏ customer_id (lấy từ join customer_sites_plans -> customer_sites -> customers)
         created_by: session?.user?.id, // Người tạo job
-        service_type: serviceType,
+        // Bỏ service_type (không có trong schema, có thể bỏ hoặc thêm nếu cần)
         scheduled_date: date,
         scheduled_time: time || null,
         job_content: taskContent,
@@ -287,15 +288,16 @@ export default function LapKeHoachCongViec({ session }) {
         special_requests: notes || null,
         contact_person: selectedCustomer?.primary_contact_name || '',
         contact_phone: selectedCustomer?.primary_contact_phone || '',
-        address: formatFullAddress(selectedCustomer),
+        // Bỏ address (lấy từ join customer_sites_plans -> customer_sites)
         checklist: checklist,  // Array, Supabase sẽ tự chuyển JSONB
         status: 'Đã giao',
-        team_members: teamMembersString,
-        team_lead_id: teamLead || null,
+        // Bỏ team_members (không có trong schema)
+        // Bỏ team_lead_id (không có trong schema)
         team_size: technicians.length,
-        assigned_technicians: assignedTechnicians,  // Populate đầy đủ
+        // Bỏ assigned_technicians (không có trong schema, dùng job_assignments nếu cần)
         start_time: null,  // Set null nếu không có logic cụ thể
-        end_time: null     // Set null nếu không có logic cụ thể
+        end_time: null,     // Set null nếu không có logic cụ thể
+        plan_id: customerServicePlan?.id || null  // Thêm plan_id (đã có trong schema)
       };
 
       // Lưu công việc vào bảng jobs
@@ -309,7 +311,21 @@ export default function LapKeHoachCongViec({ session }) {
         throw new Error(`Lỗi khi tạo công việc: ${jobError.message}`);
       }
 
-      // Bỏ insert job_assignments (đã thay bằng assigned_technicians)
+      // Thêm insert job_assignments (thay thế assigned_technicians jsonb)
+      const assignmentsToInsert = technicians.map(techId => ({
+        job_id: jobResult.id,
+        technician_id: techId,
+        status: 'assigned',
+        role: techId === teamLead ? 'lead' : 'member',  // Dùng role từ job_assignments
+        notes: null
+      }));
+      const { error: assignmentError } = await supabase
+        .from('job_assignments')
+        .insert(assignmentsToInsert);
+      if (assignmentError) {
+        console.error('Error inserting assignments:', assignmentError);
+        // Có thể rollback job nếu cần
+      }
 
       // Lưu checklist vào bảng job_checklist_items
       if (jobResult && jobResult.id && checklist.length > 0) {
@@ -332,10 +348,11 @@ export default function LapKeHoachCongViec({ session }) {
         await supabase.from('job_materials').insert(materialsData);
       }
 
+      // Trong snackbar, dùng trực tiếp selectedTechNames.join(', ')
       setSnackbar({ 
         open: true, 
         type: 'success', 
-        message: `Đã tạo và phân công thành công công việc cho ${selectedTechNames.join(', ')}! Mã công việc: ${jobResult.id}` 
+        message: `Đã tạo và phân công thành công công việc cho ${techniciansData.filter(tech => technicians.includes(tech.id)).map(tech => tech.name).join(', ')}!` 
       });
       resetForm();
 
