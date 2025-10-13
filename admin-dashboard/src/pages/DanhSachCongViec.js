@@ -357,10 +357,10 @@ export default function DanhSachCongViec({ session }) {
             <TableHead>
               <TableRow sx={{ bgcolor: '#f5f5f5' }}>
                 <TableCell><strong>Mã CV</strong></TableCell>
-                <TableCell><strong>Nội dung công việc</strong></TableCell>
                 <TableCell><strong>Khách hàng</strong></TableCell>
                 <TableCell><strong>Địa điểm</strong></TableCell>
                 <TableCell><strong>Loại dịch vụ</strong></TableCell>
+                <TableCell><strong>Nội dung công việc</strong></TableCell>
                 <TableCell><strong>Ngày thực hiện</strong></TableCell>
                 <TableCell><strong>Người thực hiện</strong></TableCell>
                 <TableCell><strong>Trạng thái</strong></TableCell>
@@ -372,17 +372,7 @@ export default function DanhSachCongViec({ session }) {
                 <TableRow key={job.id} hover>
                   <TableCell>
                     <Typography variant="body2" fontFamily="monospace">
-                      {String(job.id).slice(0, 8)}...
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2" sx={{ 
-                      maxWidth: 200, 
-                      overflow: 'hidden', 
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      {job.job_content}
+                      {String(job.id).slice(0, 4)}...
                     </Typography>
                   </TableCell>
                   <TableCell>
@@ -406,6 +396,16 @@ export default function DanhSachCongViec({ session }) {
                       size="small"
                       color={job.service_content === 'SOS' ? 'error' : 'default'}
                     />
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" sx={{ 
+                      maxWidth: 200, 
+                      overflow: 'hidden', 
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {job.job_content}
+                    </Typography>
                   </TableCell>
                   <TableCell>
                     <Typography variant="body2">

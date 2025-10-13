@@ -89,7 +89,10 @@ export default function TestPage({ session }) {
         *,
         customer_sites_plans!inner (
           site_id,
-          customer_sites!inner (site_name)
+          customer_sites!inner (
+            site_name,
+            customers!inner (id, name)
+          )
         ),
         job_assignments (
           technician_id,
@@ -108,14 +111,14 @@ export default function TestPage({ session }) {
 
     // Xử lý jobs với assignedTechs từ job_assignments
     const existingJobKeys = new Set(
-      (jobsData || []).map(job => `${job.customer_id}_${job.scheduled_date}`)
+      (jobsData || []).map(job => `${job.customer_sites_plans?.customer_sites?.customers?.id}_${job.scheduled_date}`)
     );
 
     if (jobsData && jobsData.length > 0) {
       const existingJobs = jobsData.map(job => ({
         id: job.id,
-        customerId: job.customer_id,
-        clientName: job.customer_name,
+        customerId: job.customer_sites_plans?.customer_sites?.customers?.id || '',
+        clientName: job.customer_sites_plans?.customer_sites?.customers?.name || '',
         date: new Date(job.scheduled_date),
         status: job.status,
         assignedTechs: (job.job_assignments || []).map(assignment => ({
@@ -140,7 +143,7 @@ export default function TestPage({ session }) {
       const generatedJobs = [];
       servicesData.forEach(site => {
         site.customer_sites_plans?.forEach(plan => {
-          if (plan.days_of_week && plan.frequency && plan.start_date && plan.end_date) {
+          if (plan.id && plan.days_of_week && plan.frequency && plan.start_date && plan.end_date) {
             plan.days_of_week.forEach(day => {
               const jobsForDay = generateContractJobs(
                 `${site.customers.name} - ${site.site_name}`,
@@ -166,7 +169,7 @@ export default function TestPage({ session }) {
               })));
             });
           } else {
-            console.log('Plan missing required fields:', plan);
+            console.log('Plan missing required fields or ID:', plan);
           }
         });
       });
@@ -174,11 +177,8 @@ export default function TestPage({ session }) {
       // Insert to database
       if (generatedJobs.length > 0) {
         const jobsToInsert = generatedJobs.map(job => ({
-          customer_id: job.customerId,
-          customer_name: job.clientName,
           scheduled_date: job.date.toISOString().split('T')[0],
           status: job.status,
-          // Bỏ assigned_technicians khỏi insert
           start_time: job.startTime,
           end_time: job.endTime,
           is_deleted: job.isDeleted,
@@ -189,16 +189,13 @@ export default function TestPage({ session }) {
           created_by: session?.user?.id || null,
           job_description: `Công việc định kỳ cho ${job.clientName}`,
           scheduled_time: null,
-          service_type: 'Định kỳ',
           job_content: job.serviceContent,
           checklist: [],
           completed: false,
           contact_person: null,
           contact_phone: null,
           special_requests: null,
-          team_lead_id: null,
-          team_size: null,
-          team_members: null
+          team_size: 1
         }));
 
         const { data: insertedJobs, error: insertError } = await supabase
@@ -307,13 +304,15 @@ export default function TestPage({ session }) {
     }
 
     // First, get existing jobs for selected customers to avoid duplicates
+    const customerIds = selectedCustomers.map(siteId => {
+      const site = customers.find(c => c.id === siteId);
+      return site?.customers?.id;
+    }).filter(id => id);
+
     const { data: existingJobs, error: fetchError } = await supabase
       .from('jobs')
-      .select('customer_id, scheduled_date')
-      .in('customer_id', selectedCustomers.map(siteId => {
-        const site = customers.find(c => c.id === siteId);
-        return site?.customers?.id;
-      }).filter(id => id))
+      .select('scheduled_date, customer_sites_plans!inner(customer_sites!inner(customers!inner(id)))')
+      .in('customer_sites_plans.customer_sites.customers.id', customerIds)
       .eq('is_deleted', false);
 
     if (fetchError) {
@@ -324,7 +323,7 @@ export default function TestPage({ session }) {
 
     // Create a set of existing job keys for quick lookup
     const existingJobKeys = new Set(
-      existingJobs.map(job => `${job.customer_id}_${job.scheduled_date}`)
+      existingJobs.map(job => `${job.customer_sites_plans.customer_sites.customers.id}_${job.scheduled_date}`)
     );
 
     // Generate jobs for selected sites
@@ -334,7 +333,7 @@ export default function TestPage({ session }) {
       if (site) {
         site.customer_sites_plans?.forEach(plan => {
           console.log('Processing plan for site:', site.customers.name, site.site_name, plan);
-          if (plan.days_of_week && plan.frequency && plan.start_date && plan.end_date) {
+          if (plan.id && plan.days_of_week && plan.frequency && plan.start_date && plan.end_date) {
             const frequency = parseFrequency(plan.frequency);
             plan.days_of_week.forEach(day => {
               const dayNumber = typeof day === 'string' ? dayMap[day] : day;
@@ -364,7 +363,7 @@ export default function TestPage({ session }) {
               }
             });
           } else {
-            console.log('Plan missing required fields:', plan);
+            console.log('Plan missing required fields or ID:', plan);
           }
         });
       }
@@ -377,34 +376,35 @@ export default function TestPage({ session }) {
       return;
     }
 
-    // Insert to database
-    const jobsToInsert = generatedJobs.map(job => ({
-      customer_id: job.customerId,
-      customer_name: job.clientName,
+    // Filter out jobs without valid planId and insert to database
+    const validGeneratedJobs = generatedJobs.filter(job => job.planId);
+    console.log('Valid jobs to insert:', validGeneratedJobs.length);
+    
+    if (validGeneratedJobs.length === 0) {
+      setAlert({ type: 'info', message: 'Không có công việc hợp lệ để tạo.', duration: 4000 });
+      return;
+    }
+
+    const jobsToInsert = validGeneratedJobs.map(job => ({
       scheduled_date: job.date.toISOString().split('T')[0],
       status: job.status,
-      // Bỏ assigned_technicians khỏi insert
       start_time: job.startTime,
       end_time: job.endTime,
       is_deleted: job.isDeleted,
       delete_note: job.deleteNote,
       service_content: job.serviceContent,
       notes: job.notes || '',
-      plan_id: job.planId, 
-      // Thêm các trường còn thiếu
+      plan_id: job.planId,
       created_by: session?.user?.id || null,
       job_description: `Công việc định kỳ cho ${job.clientName}`,
       scheduled_time: null,
-      service_type: 'Định kỳ',
       job_content: job.serviceContent,
       checklist: [],
       completed: false,
       contact_person: null,
       contact_phone: null,
       special_requests: null,
-      team_lead_id: null,
-      team_size: null,
-      team_members: null
+      team_size: 1
     }));
 
     const { data: insertedJobs, error: insertError } = await supabase
@@ -418,11 +418,11 @@ export default function TestPage({ session }) {
     } else {
       // Set jobs with database ids
       const jobsWithIds = insertedJobs.map((dbJob, index) => ({
-        ...generatedJobs[index],
+        ...validGeneratedJobs[index],
         id: dbJob.id
       }));
       setJobs(prevJobs => [...prevJobs, ...jobsWithIds]);
-      setAlert({ type: 'success', message: `${generatedJobs.length} công việc mới đã được tạo và lưu thành công!`, duration: 4000 });
+      setAlert({ type: 'success', message: `${validGeneratedJobs.length} công việc mới đã được tạo và lưu thành công!`, duration: 4000 });
     }
   };
 
@@ -495,11 +495,8 @@ export default function TestPage({ session }) {
       .filter(job => typeof job.id === 'string')
       .map(job => ({
         id: job.id,
-        customer_id: job.customerId,
-        customer_name: job.clientName,
         scheduled_date: job.date.toISOString().split('T')[0],
         status: job.status,
-        // Bỏ assigned_technicians
         start_time: job.startTime,
         end_time: job.endTime,
         is_deleted: job.isDeleted,
@@ -510,25 +507,19 @@ export default function TestPage({ session }) {
         created_by: session?.user?.id || null,
         job_description: `Công việc định kỳ cho ${job.clientName}`,
         scheduled_time: null,
-        service_type: 'Định kỳ',
         job_content: job.serviceContent,
         checklist: [],
         completed: false,
         contact_person: null,
         contact_phone: null,
         special_requests: null,
-        team_lead_id: null,
-        team_size: null,
-        team_members: null
+        team_size: 1
       }));
 
     // Insert jobs mới
     const newJobsToInsert = jobs
       .filter(job => typeof job.id === 'number')
       .map(job => ({
-        // Giống như trên, bỏ assigned_technicians
-        customer_id: job.customerId,
-        customer_name: job.clientName,
         scheduled_date: job.date.toISOString().split('T')[0],
         status: job.status,
         start_time: job.startTime,
@@ -537,7 +528,8 @@ export default function TestPage({ session }) {
         delete_note: job.deleteNote,
         service_content: job.serviceContent,
         notes: job.notes || '',
-        plan_id: job.planId,
+        plan_id: job.planId, // Thêm plan_id
+        // Thêm các trường còn thiếu
         created_by: session?.user?.id || null,
         job_description: `Công việc định kỳ cho ${job.clientName}`,
         scheduled_time: null,
@@ -567,8 +559,6 @@ export default function TestPage({ session }) {
 
     if (newJobsToInsert.length > 0) {
       const jobsToInsert = newJobsToInsert.map(job => ({
-        customer_id: job.customerId,
-        customer_name: job.clientName,
         scheduled_date: job.date.toISOString().split('T')[0],
         status: job.status,
         start_time: job.startTime,
@@ -577,21 +567,17 @@ export default function TestPage({ session }) {
         delete_note: job.deleteNote,
         service_content: job.serviceContent,
         notes: job.notes || '',
-        plan_id: job.planId, // Thêm plan_id
-        // Thêm các trường còn thiếu
+        plan_id: job.planId,
         created_by: session?.user?.id || null,
         job_description: `Công việc định kỳ cho ${job.clientName}`,
         scheduled_time: null,
-        service_type: 'Định kỳ',
         job_content: job.serviceContent,
         checklist: [],
         completed: false,
         contact_person: null,
         contact_phone: null,
         special_requests: null,
-        team_lead_id: null,
-        team_size: null,
-        team_members: null
+        team_size: 1
       }));
       const { data: insertedJobs, error } = await supabase
         .from('jobs')
@@ -604,7 +590,7 @@ export default function TestPage({ session }) {
         // Cập nhật state với id UUID từ Supabase
         const updatedJobs = jobs.map(job => {
           if (typeof job.id === 'number') {
-            const inserted = insertedJobs.find(ij => ij.customer_id === job.customerId && ij.scheduled_date === job.date.toISOString().split('T')[0]);
+            const inserted = insertedJobs.find(ij => ij.plan_id === job.planId && ij.scheduled_date === job.date.toISOString().split('T')[0]);
             return inserted ? { ...job, id: inserted.id } : job;
           }
           return job;
@@ -750,13 +736,42 @@ export default function TestPage({ session }) {
       });
   };
 
-  // Handler cho select all jobs
-  const handleSelectAllJobs = () => {
-    if (selectedJobs.length === filteredJobs.length) {
-      setSelectedJobs([]);
-    } else {
-      setSelectedJobs(filteredJobs.map(job => job.id));
+  // Handler cho bulk delete
+  const handleBulkDelete = () => {
+    if (selectedJobs.length === 0) {
+      setAlert({ type: 'warning', message: 'Vui lòng chọn công việc cần xóa.', duration: 4000 });
+      return;
     }
+
+    const note = prompt('Lý do xóa công việc:');
+    if (!note) return;
+
+    // Cập nhật state cho tất cả selectedJobs
+    setJobs(prevJobs =>
+      prevJobs.map(job =>
+        selectedJobs.includes(job.id)
+          ? { ...job, isDeleted: true, deleteNote: note }
+          : job
+      )
+    );
+
+    // Cập nhật database cho tất cả selectedJobs
+    supabase
+      .from('jobs')
+      .update({
+        is_deleted: true,
+        delete_note: note
+      })
+      .in('id', selectedJobs)
+      .then(({ error }) => {
+        if (error) {
+          console.error('Error updating jobs:', error);
+          setAlert({ type: 'error', message: 'Lỗi khi xóa công việc!', duration: 4000 });
+        } else {
+          setSelectedJobs([]);
+          setAlert({ type: 'success', message: `Đã xóa ${selectedJobs.length} công việc thành công.`, duration: 4000 });
+        }
+      });
   };
 
   // Thêm hàm handleTimeChange sau handleNotesChange
@@ -793,6 +808,14 @@ export default function TestPage({ session }) {
           fetchServicesAndJobs();
         }
       });
+  };
+
+  const handleSelectAllJobs = () => {
+    if (selectedJobs.length === filteredJobs.length) {
+      setSelectedJobs([]);
+    } else {
+      setSelectedJobs(filteredJobs.map(job => job.id));
+    }
   };
 
   return (
@@ -936,6 +959,14 @@ export default function TestPage({ session }) {
             disabled={selectedJobs.length === 0 || selectedBulkTechnicians.length === 0}
           >
             Giao cho công việc đã chọn
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleBulkDelete}
+            disabled={selectedJobs.length === 0}
+          >
+            Xóa công việc đã chọn
           </Button>
         </Box>
         <TableContainer component={Paper}>

@@ -62,8 +62,13 @@ export const customerService = {
   async getCustomerServicePlan(customerId) {
     const { data, error } = await supabase
       .from('customer_sites_plans')
-      .select('*')
-      .eq('customer_id', customerId)
+      .select(`
+        *,
+        customer_sites!inner (
+          customer_id
+        )
+      `)
+      .eq('customer_sites.customer_id', customerId)
       .single();
 
     if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
@@ -73,26 +78,55 @@ export const customerService = {
     return data;
   },
 
+  // Get customer service plan by site_id
+  async getCustomerServicePlanBySite(siteId) {
+    const { data, error } = await supabase
+      .from('customer_sites_plans')
+      .select('*')
+      .eq('site_id', siteId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+      throw error;
+    }
+
+    return data;
+  },
+
+  // Get site_ids from customer_id (customers can have multiple sites)
+  async getSiteIdsByCustomerId(customerId) {
+    const { data, error } = await supabase
+      .from('customer_sites')
+      .select('id')
+      .eq('customer_id', customerId);
+
+    if (error) throw error;
+    return data.map(d => d.id);
+  },
+
   // Create or update service plan
   async saveServicePlan(servicePlanData) {
-    const { customer_id } = servicePlanData;
+    const { site_id, ...planData } = servicePlanData;
+    if (!site_id) {
+      throw new Error('site_id is required in servicePlanData');
+    }
 
     // Check if plan exists
-    const existingPlan = await this.getCustomerServicePlan(customer_id);
+    const existingPlan = await this.getCustomerServicePlanBySite(site_id);
 
     if (existingPlan) {
       // Update
       const { error } = await supabase
         .from('customer_sites_plans')
-        .update(servicePlanData)
-        .eq('customer_id', customer_id);
+        .update(planData)
+        .eq('site_id', site_id);
 
       if (error) throw error;
     } else {
       // Create
       const { error } = await supabase
         .from('customer_sites_plans')
-        .insert([servicePlanData]);
+        .insert([{ ...planData, site_id }]);
 
       if (error) throw error;
     }
